@@ -1,0 +1,1245 @@
+// Fonts
+@import url('https://fonts.bunny.net/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Add all your accessibility CSS here
+:root {
+    --accessibility-primary: #667eea;
+    --accessibility-secondary: #764ba2;
+    --accessibility-success: #28a745;
+    --glow-color-1: rgba(102, 126, 234, 0.1);
+    --glow-color-2: rgba(118, 75, 162, 0.1);
+    --glow-color-3: rgba(255, 255, 255, 0.8);
+}
+
+/* Enhanced Accessibility Styles */
+.font-size-small { font-size: 0.875rem !important; }
+.font-size-small .btn, .font-size-small .form-control, .font-size-small .card { font-size: 0.875rem !important; }
+.font-size-medium { font-size: 1rem !important; }
+.font-size-large { font-size: 1.125rem !important; }
+.font-size-large .btn, .font-size-large .form-control, .font-size-large .card { font-size: 1.125rem !important; }
+.font-size-xlarge { font-size: 1.25rem !important; }
+.font-size-xlarge .btn, .font-size-xlarge .form-control, .font-size-xlarge .card { font-size: 1.25rem !important; }
+
+/* Contrast Modes */
+.contrast-high {
+    --bs-body-color: #000000;
+    --bs-body-bg: #ffffff;
+    --bs-primary: #0056b3;
+    --bs-border-color: #000000;
+    filter: contrast(1.5);
+}
+
+.contrast-very-high {
+    --bs-body-color: #000000;
+    --bs-body-bg: #ffffff;
+    --bs-primary: #0000ff;
+    --bs-border-color: #000000;
+    filter: contrast(2);
+}
+
+.high-contrast {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+.high-contrast .card {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+}
+
+/* Focus indicators */
+.btn:focus, .form-control:focus, .form-select:focus {
+    outline: 3px solid #0d6efd !important;
+    outline-offset: 2px;
+}
+
+/* Skip link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #0d6efd;
+    color: white;
+    padding: 8px;
+    z-index: 10000;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Clean Accessibility Button */
+.accessibility-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+    background: linear-gradient(135deg, var(--accessibility-primary), var(--accessibility-secondary));
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.accessibility-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+/* Organized Accessibility Panel */
+.accessibility-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 380px;
+    height: 100vh;
+    background: white;
+    box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+    z-index: 1060;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+}
+
+.accessibility-panel.show {
+    right: 0;
+}
+
+.panel-header {
+    background: linear-gradient(135deg, var(--accessibility-primary), var(--accessibility-secondary));
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.panel-body {
+    padding: 1.5rem;
+}
+
+.setting-group {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.setting-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.setting-group h6 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.setting-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.setting-option:hover {
+    background-color: #f8f9fa;
+}
+
+.setting-label {
+    flex: 1;
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+.btn-group-setting {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-setting {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 80px;
+}
+
+.btn-setting.active {
+    background: var(--accessibility-primary);
+    color: white;
+    border-color: var(--accessibility-primary);
+}
+
+.preset-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.preset-card:hover {
+    border-color: var(--accessibility-primary);
+    transform: translateY(-2px);
+}
+
+.preset-card.active {
+    border-color: var(--accessibility-primary);
+    background-color: #f8f9ff;
+}
+
+.preset-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accessibility-primary);
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-quick-action {
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.btn-quick-action:hover {
+    background: #f8f9fa;
+    border-color: var(--accessibility-primary);
+}
+
+/* No focus outline for when highlight focus is disabled */
+.no-focus-outline *:focus {
+    outline: none !important;
+}
+
+/* Simplified layout styles */
+.simplified-layout .card,
+.simplified-layout .navbar,
+.simplified-layout .btn {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.simplified-layout .accessibility-panel {
+    box-shadow: -2px 0 8px rgba(0,0,0,0.1) !important;
+}
+
+/* ====================== */
+/* PWD SIDEBAR FIXES */
+/* ====================== */
+
+/* Fix for content taking full space */
+.main-content {
+    margin-left: 0;
+    width: 100%;
+    min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+    .main-content {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+}
+
+/* Ensure content uses full width - FIX FOR EMPTY SPACE */
+.main-content .container-fluid {
+    max-width: none !important;
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+    width: 100% !important;
+}
+
+/* Remove any container restrictions */
+.main-content .container {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Ensure cards use full width */
+.main-content .card {
+    width: 100%;
+}
+
+/* Fix for empty space */
+body {
+    overflow-x: hidden;
+}
+
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.col-md-12, .col-12 {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* ====================== */
+/* NEW PWD SIDEBAR STYLES */
+/* ====================== */
+
+.pwd-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 250px;
+    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    z-index: 1060;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 768px) {
+    .pwd-sidebar {
+        transform: translateX(0);
+    }
+}
+
+.pwd-sidebar.mobile-open {
+    transform: translateX(0);
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.2);
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.user-details h6 {
+    color: white;
+    font-weight: 600;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar-nav {
+    padding: 20px 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-section {
+    margin-bottom: 25px;
+}
+
+.nav-section.mt-auto {
+    margin-top: auto;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 20px 8px 20px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-left-color: #3498db;
+}
+
+.nav-link.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-left-color: #e74c3c;
+    font-weight: 600;
+}
+
+.nav-link.text-danger {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.nav-link.text-danger:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c !important;
+    border-left-color: #e74c3c;
+}
+
+.nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.badge {
+    font-size: 0.7em;
+    padding: 4px 8px;
+}
+
+/* Mobile menu button */
+.mobile-menu-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1055;
+    background: #3498db;
+    border: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+/* Sidebar overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1055;
+    display: none;
+}
+
+.sidebar-overlay.mobile-open {
+    display: block;
+}
+
+/* Remove old sidebar toggle button */
+.pwd-sidebar-toggle {
+    display: none;
+}
+
+/* ====================== */
+/* DASHBOARD HEADER STYLES */
+/* ====================== */
+
+.dashboard-header {
+    background: linear-gradient(135deg, var(--accessibility-primary), var(--accessibility-secondary));
+    color: white;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* ====================== */
+/* CARD HOVER EFFECTS */
+/* ====================== */
+
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+/* ====================== */
+/* RESPONSIVE ADJUSTMENTS */
+/* ====================== */
+
+@media (max-width: 767.98px) {
+    .main-content .container-fluid {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    .dashboard-header .text-md-end {
+        text-align: left !important;
+        margin-top: 1rem;
+    }
+
+    .btn-group {
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        flex: 1;
+    }
+}
+
+/* ====================== */
+/* ENHANCED GLOW EFFECTS FOR NEW SIDEBAR */
+/* ====================== */
+
+.pwd-sidebar .nav-link {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 8px;
+    margin: 2px 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pwd-sidebar .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.15),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.pwd-sidebar .nav-link:hover::before {
+    left: 100%;
+}
+
+.pwd-sidebar .nav-link:hover {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0.12) 100%) !important;
+    color: white !important;
+    transform: translateX(8px);
+    box-shadow:
+        0 4px 20px rgba(255, 255, 255, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.pwd-sidebar .nav-link.active {
+    background: linear-gradient(135deg,
+        rgba(231, 76, 60, 0.8) 0%,
+        rgba(192, 57, 43, 0.8) 50%,
+        rgba(231, 76, 60, 0.8) 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow:
+        0 4px 25px rgba(231, 76, 60, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.pwd-sidebar .nav-link.text-danger:hover {
+    background: linear-gradient(135deg,
+        rgba(231, 76, 60, 0.3) 0%,
+        rgba(192, 57, 43, 0.3) 50%,
+        rgba(231, 76, 60, 0.3) 100%) !important;
+    transform: translateX(8px);
+    box-shadow:
+        0 6px 30px rgba(231, 76, 60, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+// ======================
+// EYE-CATCHING GRADIENT GLOW HOVER EFFECTS
+// PWD-Friendly with Smooth Animations
+// ======================
+
+// Main navigation glow hover effects
+.navbar-dark .nav-link {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 8px;
+    margin: 2px 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.navbar-dark .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.navbar-dark .nav-link:hover::before {
+    left: 100%;
+}
+
+.navbar-dark .nav-link:hover {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.15) 100%) !important;
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 20px rgba(255, 255, 255, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+.navbar-dark .nav-link.active {
+    background: linear-gradient(135deg,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0.3) 50%,
+        rgba(0, 0, 0, 0.4) 100%) !important;
+    font-weight: 600;
+    box-shadow:
+        0 4px 25px rgba(255, 255, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+// Dropdown glow hover effects
+.dropdown-item {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 6px;
+    margin: 2px 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dropdown-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(13, 110, 253, 0.1),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.dropdown-item:hover::before {
+    left: 100%;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg,
+        rgba(13, 110, 253, 0.08) 0%,
+        rgba(13, 110, 253, 0.04) 50%,
+        rgba(13, 110, 253, 0.08) 100%) !important;
+    color: #0d6efd !important;
+    transform: translateX(8px) scale(1.02);
+    box-shadow:
+        0 4px 15px rgba(13, 110, 253, 0.15),
+        0 0 0 1px rgba(13, 110, 253, 0.1) !important;
+}
+
+// PWD Sidebar glow hover effects - Enhanced with gradient animation
+.pwd-sidebar .nav-link {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 8px;
+    margin: 2px 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pwd-sidebar .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(13, 110, 253, 0.15),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.pwd-sidebar .nav-link:hover::before {
+    left: 100%;
+}
+
+.pwd-sidebar .nav-link:hover {
+    background: linear-gradient(135deg,
+        rgba(13, 110, 253, 0.12) 0%,
+        rgba(13, 110, 253, 0.06) 50%,
+        rgba(13, 110, 253, 0.12) 100%) !important;
+    color: #0d6efd !important;
+    transform: translateX(8px);
+    box-shadow:
+        0 4px 20px rgba(13, 110, 253, 0.2),
+        0 0 0 1px rgba(13, 110, 253, 0.1) !important;
+}
+
+.pwd-sidebar .nav-link.active {
+    background: linear-gradient(135deg,
+        #1A4D8F 0%,
+        #153a6e 50%,
+        #1A4D8F 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow:
+        0 4px 25px rgba(26, 77, 143, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.pwd-sidebar .nav-link.active:hover {
+    background: linear-gradient(135deg,
+        #153a6e 0%,
+        #102a52 50%,
+        #153a6e 100%) !important;
+    transform: translateX(8px);
+    box-shadow:
+        0 6px 30px rgba(26, 77, 143, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+
+
+
+
+/* ====================== */
+/* FIX FOR DASHBOARD SPACING */
+/* ====================== */
+
+/* Main content adjustment */
+.main-content {
+    margin-left: 0;
+    width: 100%;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .main-content.main-content-with-sidebar {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+}
+
+/* Ensure content uses full available space */
+.main-content .container-fluid {
+    max-width: none;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Remove any max-width restrictions */
+.main-content .container {
+    max-width: none;
+    width: 100%;
+}
+
+/* Ensure no horizontal scrolling */
+body {
+    overflow-x: hidden;
+}
+
+/* Fix for double navbar and screen fitting */
+.main-content-with-sidebar {
+    margin-left: 0;
+    width: 100%;
+    transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .main-content-with-sidebar {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+}
+
+/* Remove the old sidebar toggle button that causes the slide issue */
+.pwd-sidebar-toggle {
+    display: none !important;
+}
+
+/* Remove any mobile menu button if it exists */
+.mobile-menu-btn {
+    display: none !important;
+}
+
+/* Fix for empty space on sides */
+body {
+    overflow-x: hidden;
+}
+
+.main-content .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.main-content .col-md-12,
+.main-content .col-12 {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Ensure cards use full width */
+.main-content .card {
+    width: 100%;
+}
+
+/* ====================== */
+/* FIX SIDEBAR SCROLL ISSUES */
+/* ====================== */
+
+.pwd-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 250px;
+    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    z-index: 1060;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transform: translateX(0); /* Remove any transform that causes sliding */
+    transition: none; /* Remove transitions that cause sliding */
+}
+
+/* Remove any mobile overlay that causes sliding */
+.sidebar-overlay {
+    display: none !important;
+}
+
+/* Remove sidebar toggle in header if exists */
+.sidebar-toggle {
+    display: none !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// Accessibility panel glow effects
+.btn-setting {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-setting::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(102, 126, 234, 0.15),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.btn-setting:hover::before {
+    left: 100%;
+}
+
+.btn-setting:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 6px 25px rgba(102, 126, 234, 0.25),
+        0 0 0 1px rgba(102, 126, 234, 0.1) !important;
+    background: linear-gradient(135deg,
+        rgba(102, 126, 234, 0.1) 0%,
+        rgba(102, 126, 234, 0.05) 50%,
+        rgba(102, 126, 234, 0.1) 100%) !important;
+}
+
+.btn-setting.active:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 6px 30px rgba(102, 126, 234, 0.5),
+        0 0 0 1px rgba(102, 126, 234, 0.2) !important;
+}
+
+// Preset cards with glowing animation
+.preset-card {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.preset-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(102, 126, 234, 0.1),
+        transparent
+    );
+    transition: left 0.7s ease;
+}
+
+.preset-card:hover::before {
+    left: 100%;
+}
+
+.preset-card:hover {
+    transform: translateY(-5px);
+    box-shadow:
+        0 8px 35px rgba(102, 126, 234, 0.3),
+        0 0 0 1px rgba(102, 126, 234, 0.15) !important;
+    border-color: var(--accessibility-primary) !important;
+}
+
+// Quick actions with pulse glow
+.btn-quick-action {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-quick-action::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(102, 126, 234, 0.1),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.btn-quick-action:hover::before {
+    left: 100%;
+}
+
+.btn-quick-action:hover {
+    transform: scale(1.08);
+    background: linear-gradient(135deg,
+        rgba(102, 126, 234, 0.08) 0%,
+        rgba(102, 126, 234, 0.04) 50%,
+        rgba(102, 126, 234, 0.08) 100%) !important;
+    border-color: var(--accessibility-primary) !important;
+    box-shadow:
+        0 6px 25px rgba(102, 126, 234, 0.25),
+        0 0 0 1px rgba(102, 126, 234, 0.1) !important;
+}
+
+// Button glow effects
+.btn {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 6px 25px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+// Card glow hover effects
+.card {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(13, 110, 253, 0.05),
+        transparent
+    );
+    transition: left 0.8s ease;
+}
+
+.card:hover::before {
+    left: 100%;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow:
+        0 12px 40px rgba(13, 110, 253, 0.15),
+        0 0 0 1px rgba(13, 110, 253, 0.1) !important;
+}
+
+// Focus states for keyboard navigation - Enhanced with glow
+.nav-link:focus,
+.dropdown-item:focus,
+.btn:focus,
+.btn-setting:focus {
+    outline: 3px solid #0d6efd !important;
+    outline-offset: 2px;
+    box-shadow:
+        0 0 0 4px rgba(13, 110, 253, 0.2),
+        0 0 20px rgba(13, 110, 253, 0.3) !important;
+    transform: scale(1.02);
+}
+
+// Form control glow effects
+.form-control:hover,
+.form-select:hover {
+    border-color: #0d6efd;
+    box-shadow:
+        0 0 0 0.2rem rgba(13, 110, 253, 0.1),
+        0 4px 15px rgba(13, 110, 253, 0.1) !important;
+    transform: translateY(-1px);
+}
+
+// Reduce motion for users who prefer it
+@media (prefers-reduced-motion: reduce) {
+    .navbar-dark .nav-link,
+    .dropdown-item,
+    .pwd-sidebar .nav-link,
+    .btn-setting,
+    .preset-card,
+    .btn-quick-action,
+    .btn,
+    .card {
+        transition-duration: 0.1s !important;
+    }
+
+    .navbar-dark .nav-link::before,
+    .dropdown-item::before,
+    .pwd-sidebar .nav-link::before,
+    .btn-setting::before,
+    .preset-card::before,
+    .btn-quick-action::before,
+    .btn::before,
+    .card::before {
+        display: none;
+    }
+
+    .navbar-dark .nav-link:hover,
+    .dropdown-item:hover,
+    .pwd-sidebar .nav-link:hover,
+    .btn-setting:hover,
+    .preset-card:hover,
+    .btn-quick-action:hover,
+    .btn:hover,
+    .card:hover {
+        transform: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .accessibility-panel {
+        width: 100%;
+        right: -100%;
+    }
+
+    .accessibility-toggle {
+        bottom: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+
+    .btn-group-setting {
+        flex-direction: column;
+    }
+
+    .btn-setting {
+        min-width: auto;
+    }
+
+    .pwd-sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+    }
+
+    .pwd-sidebar.show {
+        transform: translateX(0);
+    }
+
+    .main-content-with-sidebar {
+        margin-left: 0;
+    }
+
+    .pwd-sidebar-toggle {
+        top: 15px;
+        left: 15px;
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* Remove old toolbar styles */
+.accessibility-toolbar,
+.accessibility-quick-toolbar {
+    display: none;
+}
+
+/* Your existing registration styles */
+.registration-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.government-logo {
+    max-width: 80px;
+    height: auto;
+}
+
+.logo-placeholder {
+    width: 60px;
+    height: 60px;
+}
+
+.section-header {
+    border-left: 4px solid #0d6efd;
+}
+
+/* ... include any other existing styles from your app.css ... */
