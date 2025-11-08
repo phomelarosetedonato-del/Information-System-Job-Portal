@@ -13,7 +13,8 @@ class AccessibilityController extends Controller
      */
     public function settings()
     {
-        return view('accessibility.settings');
+        $preferences = self::getPreferences();
+        return view('accessibility.settings', compact('preferences'));
     }
 
     /**
@@ -28,13 +29,14 @@ class AccessibilityController extends Controller
             'reduced_motion' => $request->boolean('reduced_motion', false),
             'high_visibility_focus' => $request->boolean('high_visibility_focus', true),
             'screen_reader_optimized' => $request->boolean('screen_reader_optimized', false),
+            'language' => $request->input('language', 'en'), // Add language preference
         ];
 
         $cookie = cookie('accessibility_preferences', json_encode($preferences), 60 * 24 * 30); // 30 days
 
         return redirect()->back()
             ->withCookie($cookie)
-            ->with('success', 'Accessibility preferences updated successfully!');
+            ->with('success', __('Accessibility preferences updated successfully!'));
     }
 
     /**
@@ -46,7 +48,7 @@ class AccessibilityController extends Controller
 
         return redirect()->back()
             ->withCookie($cookie)
-            ->with('success', 'Accessibility preferences reset to default.');
+            ->with('success', __('Accessibility preferences reset to default.'));
     }
 
     /**
@@ -67,6 +69,7 @@ class AccessibilityController extends Controller
             'reduced_motion' => false,
             'high_visibility_focus' => true,
             'screen_reader_optimized' => false,
+            'language' => 'en', // Default language
         ];
     }
 
@@ -102,6 +105,11 @@ class AccessibilityController extends Controller
             $classes[] = 'screen-reader-optimized';
         }
 
+        // Add language class
+        if (isset($preferences['language'])) {
+            $classes[] = 'lang-' . $preferences['language'];
+        }
+
         return implode(' ', $classes);
     }
 
@@ -120,6 +128,8 @@ class AccessibilityController extends Controller
                 return $this->handleContrast($action);
             case 'read_aloud':
                 return $this->handleReadAloud($request);
+            case 'language':
+                return $this->handleLanguage($request->input('language'));
             default:
                 return response()->json(['error' => 'Invalid tool'], 400);
         }
@@ -147,30 +157,102 @@ class AccessibilityController extends Controller
     }
 
     private function handleContrast($action)
-    {
-        $levels = ['normal', 'high', 'very-high'];
-        $preferences = self::getPreferences();
-        $currentContrast = $preferences['contrast'];
-        $currentIndex = array_search($currentContrast, $levels);
+{
+    $levels = ['normal', 'high', 'very-high'];
+    $preferences = self::getPreferences();
+    $currentContrast = $preferences['contrast'];
+    $currentIndex = array_search($currentContrast, $levels);
 
-        if ($action === 'increase' && $currentIndex < count($levels) - 1) {
-            $newContrast = $levels[$currentIndex + 1];
-        } elseif ($action === 'decrease' && $currentIndex > 0) {
-            $newContrast = $levels[$currentIndex - 1];
-        } else {
-            $newContrast = $currentContrast;
-        }
-
-        $preferences['contrast'] = $newContrast;
-        $cookie = cookie('accessibility_preferences', json_encode($preferences), 60 * 24 * 30);
-
-        return response()->json(['contrast' => $newContrast])->withCookie($cookie);
+    if ($action === 'increase' && $currentIndex < count($levels) - 1) {
+        $newContrast = $levels[$currentIndex + 1];
+    } elseif ($action === 'decrease' && $currentIndex > 0) {
+        $newContrast = $levels[$currentIndex - 1];
+    } else {
+        $newContrast = $currentContrast;
     }
 
+    $preferences['contrast'] = $newContrast;
+    $cookie = cookie('accessibility_preferences', json_encode($preferences), 60 * 24 * 30);
+
+    return response()->json([
+        'contrast' => $newContrast,
+        'message' => $this->getContrastMessage($newContrast)
+    ])->withCookie($cookie);
+}
+
+private function getContrastMessage($contrast)
+{
+    switch($contrast) {
+        case 'very-high':
+            return 'Very high contrast mode activated. Text is white on black background.';
+        case 'high':
+            return 'High contrast mode activated.';
+        default:
+            return 'Normal contrast mode activated.';
+    }
+}
     private function handleReadAloud(Request $request)
     {
         $text = $request->input('text', '');
         // This would integrate with a text-to-speech service
         return response()->json(['status' => 'success', 'text' => $text]);
+    }
+
+    /**
+     * Handle language translation
+     */
+    private function handleLanguage($language)
+    {
+        $supportedLanguages = ['en', 'tl'];
+        $preferences = self::getPreferences();
+
+        if (in_array($language, $supportedLanguages)) {
+            $preferences['language'] = $language;
+            $cookie = cookie('accessibility_preferences', json_encode($preferences), 60 * 24 * 30);
+
+            // Set Laravel application locale
+            app()->setLocale($language);
+
+            return response()->json([
+                'success' => true,
+                'language' => $language,
+                'message' => $language === 'tl' ? 'Ang wika ay na-update sa Tagalog' : 'Language updated to English'
+            ])->withCookie($cookie);
+        }
+
+        return response()->json(['error' => 'Unsupported language'], 400);
+    }
+
+    /**
+     * Get current language
+     */
+    public static function getCurrentLanguage()
+    {
+        $preferences = self::getPreferences();
+        return $preferences['language'] ?? 'en';
+    }
+
+    /**
+     * Toggle between English and Tagalog
+     */
+    public function toggleLanguage()
+    {
+        $currentLanguage = self::getCurrentLanguage();
+        $newLanguage = $currentLanguage === 'en' ? 'tl' : 'en';
+
+        $preferences = self::getPreferences();
+        $preferences['language'] = $newLanguage;
+
+        $cookie = cookie('accessibility_preferences', json_encode($preferences), 60 * 24 * 30);
+
+        // Set Laravel application locale
+        app()->setLocale($newLanguage);
+
+        return redirect()->back()
+            ->withCookie($cookie)
+            ->with('success', $newLanguage === 'tl'
+                ? 'Ang wika ay na-update sa Tagalog'
+                : 'Language updated to English'
+            );
     }
 }

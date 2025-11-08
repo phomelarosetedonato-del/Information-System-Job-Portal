@@ -8,7 +8,7 @@
         <h1 class="h3 mb-0 text-gray-800">
             <i class="fas fa-briefcase"></i> Job Postings Management
         </h1>
-        <a href="{{ route('job-postings.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <a href="{{ route('admin.job-postings.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
             <i class="fas fa-plus fa-sm text-white-50"></i> Create New Job Posting
         </a>
     </div>
@@ -100,7 +100,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Filters & Search</h6>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('job-postings.index') }}">
+            <form method="GET" action="{{ route('admin.job-postings.index') }}">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -135,7 +135,7 @@
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">All Job Postings</h6>
-            <a href="{{ route('job-postings.create') }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('admin.job-postings.create') }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-plus"></i> New Job Posting
             </a>
         </div>
@@ -210,19 +210,19 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                             <!-- View Button -->
-                                            <a href="{{ route('job-postings.show', $job->id) }}"
+                                            <a href="{{ route('admin.job-postings.show', $job->id) }}"
                                                class="btn btn-info btn-sm" title="View">
                                                 <i class="fas fa-eye"></i>
                                             </a>
 
                                             <!-- Edit Button -->
-                                            <a href="{{ route('job-postings.edit', $job->id) }}"
+                                            <a href="{{ route('admin.job-postings.edit', $job->id) }}"
                                                class="btn btn-primary btn-sm" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
                                             <!-- Toggle Status Button -->
-                                            <form action="{{ route('job-postings.toggle-status', $job->id) }}"
+                                            <form action="{{ route('admin.job-postings.toggle-status', $job->id) }}"
                                                   method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-warning btn-sm" title="{{ $job->is_active ? 'Deactivate' : 'Activate' }}">
@@ -231,7 +231,7 @@
                                             </form>
 
                                             <!-- Delete Button -->
-                                            <form action="{{ route('job-postings.destroy', $job->id) }}"
+                                            <form action="{{ route('admin.job-postings.destroy', $job->id) }}"
                                                   method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
@@ -258,7 +258,7 @@
                     <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
                     <h3 class="text-muted">No Job Postings Found</h3>
                     <p class="text-muted">Get started by creating your first job posting.</p>
-                    <a href="{{ route('job-postings.create') }}" class="btn btn-primary">
+                    <a href="{{ route('admin.job-postings.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Create Job Posting
                     </a>
                 </div>

@@ -120,11 +120,10 @@ class LoginController extends Controller
     protected function validateLogin(Request $request)
     {
         $request->validate([
-            $this->username() => 'required|string|email',
+            'login' => 'required|string',
             'password' => 'required|string',
         ], [
-            'email.required' => 'Email address is required.',
-            'email.email' => 'Please enter a valid email address.',
+            'login.required' => 'Email or username is required.',
             'password.required' => 'Password is required.',
         ]);
     }
@@ -136,7 +135,43 @@ class LoginController extends Controller
      */
     public function username()
     {
-        return 'email';
+        // we accept either email or username via the 'login' form field
+        return 'login';
+    }
+
+    /**
+     * Override credentials to accept email or username
+     */
+    protected function credentials(Request $request)
+    {
+        $login = $request->input('login');
+        $password = $request->input('password');
+
+        // If input is a valid email, authenticate using email
+        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            return ['email' => $login, 'password' => $password];
+        }
+
+        // Otherwise attempt to find user by username, fall back to email
+        $user = User::where('username', $login)->orWhere('email', $login)->first();
+        if ($user) {
+            return ['email' => $user->email, 'password' => $password];
+        }
+
+        // Fallback to email field with the provided value (will fail)
+        return ['email' => $login, 'password' => $password];
+    }
+
+    /**
+     * Attempt to log the user into the application.
+     * Ensure the remember option is respected.
+     */
+    protected function attemptLogin(Request $request)
+    {
+        return $this->guard()->attempt(
+            $this->credentials($request),
+            $request->filled('remember')
+        );
     }
 
     /**
@@ -146,65 +181,76 @@ class LoginController extends Controller
      * @param  mixed  $user
      * @return mixed
      */
-    protected function authenticated(Request $request, $user)
-    {
-        // Check if user account is active
-        if (!$user->isActive()) {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                $this->username() => 'Your account has been deactivated. Please contact administrator.',
-            ]);
-        }
+   protected function authenticated(Request $request, $user)
+{
+    // Check if user account is active
+    if (!$user->isActive()) {
+        Auth::logout();
+        throw ValidationException::withMessages([
+            $this->username() => 'Your account has been deactivated. Please contact administrator.',
+        ]);
+    }
 
-        // Check if account is locked
-        if ($user->isAccountLocked()) {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                $this->username() => 'Account is temporarily locked. Please try again later.',
-            ]);
-        }
+    // Check if account is locked
+    if ($user->isAccountLocked()) {
+        Auth::logout();
+        throw ValidationException::withMessages([
+            $this->username() => 'Account is temporarily locked. Please try again later.',
+        ]);
+    }
 
-        // Reset failed login attempts on successful login
-        if ($user->failed_login_attempts > 0) {
-            $user->unlockAccount();
-        }
+    // Reset failed login attempts on successful login
+    if ($user->failed_login_attempts > 0) {
+        $user->unlockAccount();
+    }
 
-        // Update last login timestamp using your existing method
-        $user->updateLastLogin($request->ip());
+    // Update last login timestamp using your existing method
+    $user->updateLastLogin($request->ip());
 
-        // Redirect based on user role
-        if ($user->isAdmin()) {
-            Log::channel('admin')->info('Admin user logged in', [
-                'user_id' => $user->id,
-                'name' => $user->name,
-                'ip' => $request->ip(),
-            ]);
+    // Log regular user login
+    Log::channel('auth')->info('User logged in', [
+        'user_id' => $user->id,
+        'name' => $user->name,
+        'role' => $user->role,
+        'ip' => $request->ip(),
+    ]);
 
-            return redirect()->route('admin.dashboard');
-        }
-
-        // Log regular user login
-        Log::channel('auth')->info('User logged in', [
+    // ROLE-BASED REDIRECTION - FIXED VERSION
+    if ($user->isAdmin()) {
+        Log::channel('admin')->info('Admin user logged in', [
             'user_id' => $user->id,
             'name' => $user->name,
-            'role' => $user->role,
             'ip' => $request->ip(),
         ]);
+        return redirect()->route('admin.dashboard');
+    }
 
-        // For PWD users, check if profile is completed
-        if ($user->isPwd() && !$user->hasPwdProfile()) {
+    // For PWD users
+    if ($user->isPwd()) {
+        if (!$user->hasPwdProfile()) {
             return redirect()->route('profile.pwd-complete-form')
                 ->with('info', 'Please complete your PWD profile to access all features.');
         }
-
-        // For employers, check if profile is complete
-        if ($user->isEmployer() && !$user->isEmployerProfileComplete()) {
-            return redirect()->route('profile.edit')
-                ->with('info', 'Please complete your employer profile to access all features.');
-        }
-
-        return redirect()->intended($this->redirectPath());
+        // Redirect PWD users to their dashboard after profile completion
+        return redirect()->route('pwd.dashboard');
     }
+
+    // For employers - FIXED: Add employer dashboard redirect
+    if ($user->isEmployer()) {
+        Log::channel('employer')->info('Employer user logged in', [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'company' => $user->company_name,
+            'ip' => $request->ip(),
+        ]);
+
+        // Always redirect employers to their dashboard
+        return redirect()->route('employer.dashboard');
+    }
+
+    // Default redirect for regular users
+    return redirect()->route('dashboard');
+}
 
     /**
      * Get the failed login response instance.

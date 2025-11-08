@@ -137,11 +137,12 @@ class RegisterController extends Controller
             ]);
 
           // Create PWD profile if user registered as PWD
+           // In your RegisterController, update the PWD profile creation to:
 if ($data['user_type'] === 'pwd') {
     PwdProfile::create([
         'user_id' => $user->id,
-        'disability_type' => 'Not Specified', // Required field
-        'disability_severity' => null,
+        'disability_type' => 'Not Specified',
+        'disability_severity' => 'moderate', // MUST be: 'mild', 'moderate', or 'severe'
         'assistive_devices' => null,
         'accessibility_needs' => null,
         'skills' => null,
@@ -156,7 +157,8 @@ if ($data['user_type'] === 'pwd') {
     ]);
 }
 
-            // Log successful registration
+
+          // Log successful registration
             Log::channel('registration')->info('User registered successfully', [
                 'user_id' => $user->id,
                 'email' => $user->email,

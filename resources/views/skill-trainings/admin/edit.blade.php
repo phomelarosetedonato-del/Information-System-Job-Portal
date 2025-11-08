@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Edit Skill Training - PWD System')
 
@@ -14,7 +14,7 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('skill-trainings.update', $skillTraining) }}" method="POST">
+                    <form action="{{ route('admin.skill-trainings.update', $skillTraining) }}" method="POST">
                         @csrf
                         @method('PUT')
 
@@ -114,11 +114,11 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('skill-trainings.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.skill-trainings.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <div>
-                                <a href="{{ route('skill-trainings.show', $skillTraining) }}" class="btn btn-info">
+                                <a href="{{ route('admin.skill-trainings.show', $skillTraining) }}" class="btn btn-info">
                                     <i class="fas fa-eye"></i> View
                                 </a>
                                 <button type="submit" class="btn btn-primary">

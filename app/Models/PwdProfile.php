@@ -12,6 +12,7 @@ class PwdProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'disability_type_id',
         'disability_type',
         'disability_severity',
         'assistive_devices',
@@ -51,6 +52,14 @@ class PwdProfile extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relationship to DisabilityType (if set)
+     */
+    public function disabilityType()
+    {
+        return $this->belongsTo(\App\Models\DisabilityType::class, 'disability_type_id');
     }
 
     /**

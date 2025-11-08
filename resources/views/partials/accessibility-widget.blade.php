@@ -1,5 +1,40 @@
 <!-- Accessibility Widget -->
 <div class="accessibility-widget">
+    @php
+        // Completely safe language preference handling
+        $currentLanguage = 'en';
+
+        // If $preferences exists, handle it safely regardless of its type
+        if (isset($preferences)) {
+            if (is_array($preferences) && isset($preferences['language']) && is_string($preferences['language'])) {
+                $currentLanguage = $preferences['language'];
+            } elseif (is_string($preferences)) {
+                // If it's a string, try to decode it
+                $decoded = json_decode($preferences, true);
+                if (is_array($decoded) && isset($decoded['language']) && is_string($decoded['language'])) {
+                    $currentLanguage = $decoded['language'];
+                }
+            }
+        }
+
+        // Always fallback to checking cookie directly
+        if (isset($_COOKIE['accessibility_preferences'])) {
+            try {
+                $cookieValue = $_COOKIE['accessibility_preferences'];
+                $decodedCookie = json_decode(base64_decode($cookieValue), true);
+                if (is_array($decodedCookie) && isset($decodedCookie['language']) && is_string($decodedCookie['language'])) {
+                    $currentLanguage = $decodedCookie['language'];
+                }
+            } catch (Exception $e) {
+                // Use default 'en' if cookie parsing fails
+                $currentLanguage = 'en';
+            }
+        }
+
+        // Final safety check - ensure $currentLanguage is a string
+        $currentLanguage = is_string($currentLanguage) ? $currentLanguage : 'en';
+    @endphp
+
     <button class="accessibility-toggle" id="accessibilityToggle" aria-label="Accessibility Options">
         <i class="fas fa-universal-access"></i>
     </button>
@@ -14,6 +49,22 @@
         </div>
 
         <div class="panel-body">
+            <!-- Language Toggle -->
+            <div class="setting-group">
+                <h6><i class="fas fa-language me-2"></i>Language</h6>
+                <div class="btn-group-setting">
+                    <button class="btn-setting language-btn {{ $currentLanguage === 'en' ? 'active' : '' }}" data-language="en">
+                        <span class="language-flag">🇺🇸</span> English
+                    </button>
+                    <button class="btn-setting language-btn {{ $currentLanguage === 'tl' ? 'active' : '' }}" data-language="tl">
+                        <span class="language-flag">🇵🇭</span> Tagalog
+                    </button>
+                </div>
+                <small class="text-muted d-block mt-2" id="currentLanguageText">
+                    {{ $currentLanguage === 'en' ? 'Current language: English' : 'Kasalukuyang wika: Tagalog' }}
+                </small>
+            </div>
+
             <!-- Text Size Settings -->
             <div class="setting-group">
                 <h6><i class="fas fa-text-height me-2"></i>Text Size</h6>
@@ -106,12 +157,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Language Settings -->
-            <div class="setting-group">
-                <h6><i class="fas fa-globe me-2"></i>Language</h6>
-                <div id="google_translate_element"></div>
-            </div>
         </div>
     </div>
 </div>
@@ -142,6 +187,10 @@
                     <span>Toggle Contrast</span>
                 </div>
                 <div class="shortcut-item">
+                    <kbd>Alt + L</kbd>
+                    <span>Toggle Language</span>
+                </div>
+                <div class="shortcut-item">
                     <kbd>Alt + R</kbd>
                     <span>Reset All Settings</span>
                 </div>
@@ -170,6 +219,43 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!panel.contains(event.target) && !toggleBtn.contains(event.target)) {
             panel.classList.remove('show');
         }
+    });
+
+    // Language controls
+    document.querySelectorAll('.language-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const language = this.dataset.language;
+
+            fetch('/accessibility/quick-tool', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    tool: 'language',
+                    language: language
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update active state
+                    document.querySelectorAll('.language-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Update language text
+                    document.getElementById('currentLanguageText').textContent =
+                        language === 'tl' ? 'Kasalukuyang wika: Tagalog' : 'Current language: English';
+
+                    // Reload page to apply language changes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
     });
 
     // Font size controls
@@ -277,6 +363,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.preventDefault();
                     toggleContrast();
                     break;
+                case 'l':
+                case 'L':
+                    e.preventDefault();
+                    toggleLanguage();
+                    break;
                 case 'r':
                 case 'R':
                     e.preventDefault();
@@ -336,6 +427,12 @@ document.addEventListener('DOMContentLoaded', function() {
         setContrast(contrasts[nextIndex]);
     }
 
+    function toggleLanguage() {
+        const currentLang = document.querySelector('.language-btn.active').dataset.language;
+        const newLang = currentLang === 'en' ? 'tl' : 'en';
+        document.querySelector(`[data-language="${newLang}"]`).click();
+    }
+
     // Global functions for quick actions
     window.speakPageTitle = function() {
         if ('speechSynthesis' in window) {
@@ -389,18 +486,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
-
-// Google Translate API (optional)
-function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'en,es,fr,de,it,pt,ru,zh,ja,ko,ar,hi',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-    }, 'google_translate_element');
-}
 </script>
 
 <style>
+/* Language-specific styles */
+.language-flag {
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+.lang-tl {
+    /* Add any Tagalog-specific styles if needed */
+}
+
 /* Additional CSS for new features */
 .reduce-motion * {
     animation-duration: 0.01ms !important;

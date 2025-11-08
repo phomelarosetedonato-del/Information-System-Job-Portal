@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\PwdProfile;
+use App\Models\DisabilityType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -16,11 +17,27 @@ class ProfileController extends Controller
     public function show()
     {
         $user = auth()->user();
+
+        // Check if user exists (should always exist for authenticated users)
+        if (!$user) {
+            abort(404, 'User not found');
+        }
+
         $pwdProfile = $user->pwdProfile;
+
+        // If user is PWD but has no profile, redirect to complete it
+        if ($user->isPwd() && !$pwdProfile) {
+            return redirect()->route('profile.pwd-complete-form')
+                ->with('error', 'Please complete your PWD profile to access all features.');
+        }
+
+        // Provide disability types for select inputs
+        $disabilityTypes = DisabilityType::orderBy('type')->get();
 
         return view('profile.show', [
             'user' => $user,
-            'pwdProfile' => $pwdProfile
+            'pwdProfile' => $pwdProfile,
+            'disabilityTypes' => $disabilityTypes,
         ]);
     }
 
@@ -30,11 +47,25 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = auth()->user();
-        $pwdProfile = $user->pwdProfile; // This will be null if user doesn't have a PWD profile
+
+        if (!$user) {
+            abort(404, 'User not found');
+        }
+
+        $pwdProfile = $user->pwdProfile;
+
+        // If PWD user has no profile, redirect to complete it first
+        if ($user->isPwd() && !$pwdProfile) {
+            return redirect()->route('profile.pwd-complete-form')
+                ->with('error', 'Please complete your PWD profile before editing.');
+        }
+
+        $disabilityTypes = DisabilityType::orderBy('type')->get();
 
         return view('profile.edit', [
             'user' => $user,
-            'pwdProfile' => $pwdProfile
+            'pwdProfile' => $pwdProfile,
+            'disabilityTypes' => $disabilityTypes,
         ]);
     }
 
@@ -60,7 +91,7 @@ class ProfileController extends Controller
             // If user is PWD, update PWD profile fields
             if ($user->isPwd()) {
                 $pwdValidated = $request->validate([
-                    'disability_type' => 'required|string|max:255',
+                    'disability_type_id' => 'required|integer|exists:disability_types,id',
                     'gender' => 'nullable|string|max:10',
                     'birthdate' => 'nullable|date',
                     'is_employed' => 'nullable|boolean',
@@ -82,6 +113,14 @@ class ProfileController extends Controller
 
                     // Store the new profile photo
                     $pwdValidated['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
+                }
+
+                // Map disability_type_id to legacy disability_type string for compatibility
+                if (!empty($pwdValidated['disability_type_id'])) {
+                    $dt = DisabilityType::find($pwdValidated['disability_type_id']);
+                    if ($dt) {
+                        $pwdValidated['disability_type'] = $dt->type;
+                    }
                 }
 
                 // Update or create PWD profile
@@ -139,9 +178,12 @@ class ProfileController extends Controller
 
         $pwdProfile = $user->pwdProfile ?? new PwdProfile();
 
+        $disabilityTypes = DisabilityType::orderBy('type')->get();
+
         return view('profile.pwd-complete', [
             'user' => $user,
-            'pwdProfile' => $pwdProfile
+            'pwdProfile' => $pwdProfile,
+            'disabilityTypes' => $disabilityTypes,
         ]);
     }
 
@@ -154,7 +196,7 @@ class ProfileController extends Controller
 
         // Validation rules for PWD profile
         $validated = $request->validate([
-            'disability_type' => 'required|string|max:255',
+            'disability_type_id' => 'required|integer|exists:disability_types,id',
             'disability_level' => 'required|string|max:255',
             'assistive_devices' => 'nullable|string|max:500',
             'medical_conditions' => 'nullable|string|max:500',
@@ -189,13 +231,13 @@ class ProfileController extends Controller
 
             // Map form fields to database columns
             $mappedData = [
-                'disability_type' => $validated['disability_type'],
+                'disability_type_id' => $validated['disability_type_id'],
                 'disability_severity' => $validated['disability_level'],
-                'assistive_devices' => $validated['assistive_devices'],
-                'special_needs' => $validated['medical_conditions'],
-                'accessibility_needs' => $validated['accommodation_needs'],
-                'skills' => $validated['skills'],
-                'qualifications' => $validated['interests'],
+                'assistive_devices' => $validated['assistive_devices'] ?? null,
+                'special_needs' => $validated['medical_conditions'] ?? null,
+                'accessibility_needs' => $validated['accommodation_needs'] ?? null,
+                'skills' => $validated['skills'] ?? null,
+                'qualifications' => $validated['interests'] ?? null,
                 'emergency_contact_name' => $validated['emergency_contact_name'],
                 'emergency_contact_phone' => $validated['emergency_contact_phone'],
                 'emergency_contact_relationship' => $validated['emergency_contact_relationship'],
@@ -204,6 +246,16 @@ class ProfileController extends Controller
                 'pwd_id_photo' => $validated['pwd_id_photo'] ?? null,
                 'profile_completed' => true,
             ];
+
+            // Also set legacy disability_type string for backward compatibility when possible
+            try {
+                $dt = DisabilityType::find($mappedData['disability_type_id']);
+                if ($dt) {
+                    $mappedData['disability_type'] = $dt->type;
+                }
+            } catch (\Exception $e) {
+                // ignore
+            }
 
             // Create or update PWD profile
             if ($user->pwdProfile) {
@@ -240,4 +292,71 @@ class ProfileController extends Controller
             'profile_completed_at' => $user->profile_completed_at,
         ]);
     }
+
+/**
+ * Upload resume
+ */
+public function uploadResume(Request $request)
+{
+    $user = auth()->user();
+
+    if (!$user->canUploadResume()) {
+        return redirect()->back()->with('error', 'You are not allowed to upload a resume.');
+    }
+
+    $request->validate([
+        'resume' => 'required|file|mimes:pdf,doc,docx,txt|max:5120', // 5MB
+    ]);
+
+    try {
+        // Delete old resume if exists
+        if ($user->resume) {
+            Storage::disk('public')->delete($user->resume);
+        }
+
+        // Store new resume
+        $resumePath = $request->file('resume')->store('resumes', 'public');
+        $user->update(['resume' => $resumePath]);
+
+        return redirect()->back()->with('success', 'Resume uploaded successfully!');
+
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Error uploading resume: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Download resume
+ */
+public function downloadResume()
+{
+    $user = auth()->user();
+
+    if (!$user->hasResume()) {
+        return redirect()->back()->with('error', 'No resume found.');
+    }
+
+    return Storage::disk('public')->download($user->resume, $user->resume_file_name);
+}
+
+/**
+ * Delete resume
+ */
+public function deleteResume()
+{
+    $user = auth()->user();
+
+    try {
+        if ($user->resume) {
+            Storage::disk('public')->delete($user->resume);
+            $user->update(['resume' => null]);
+        }
+
+        return redirect()->back()->with('success', 'Resume deleted successfully!');
+
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Error deleting resume: ' . $e->getMessage());
+    }
+}
+
 }

@@ -149,25 +149,25 @@
 
                             <!-- Email Input with Enhanced Accessibility -->
                             <div class="mb-4">
-                                <label for="email" class="form-label fw-semibold">
+                                <label for="login" class="form-label fw-semibold">
                                     <i class="fas fa-envelope me-2 text-primary" aria-hidden="true"></i>
-                                    Email Address
+                                    Email or Username
                                     <span class="text-danger" aria-hidden="true">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <input
-                                        id="email"
-                                        type="email"
-                                        class="form-control form-control-lg @error('email') is-invalid @enderror"
-                                        name="email"
-                                        value="{{ old('email') }}"
-                                        required
-                                        autocomplete="email"
-                                        autofocus
-                                        aria-required="true"
-                                        aria-describedby="email-help @error('email') email-error @enderror"
-                                        placeholder="your.email@example.com"
-                                    >
+                                        <input
+                                            id="login"
+                                            type="text"
+                                            class="form-control form-control-lg @error('login') is-invalid @enderror"
+                                            name="login"
+                                            value="{{ old('login') }}"
+                                            required
+                                            autocomplete="username"
+                                            autofocus
+                                            aria-required="true"
+                                            aria-describedby="email-help @error('login') login-error @enderror"
+                                            placeholder="you@example.com or username"
+                                        >
                                     <span class="input-group-text bg-transparent">
                                         <i class="fas fa-user text-muted" aria-hidden="true"></i>
                                     </span>
@@ -179,8 +179,8 @@
                                 </div>
 
                                 <!-- Error Message -->
-                                @error('email')
-                                    <div id="email-error" class="invalid-feedback d-block" role="alert" aria-live="polite">
+                                @error('login')
+                                    <div id="login-error" class="invalid-feedback d-block" role="alert" aria-live="polite">
                                         <i class="fas fa-exclamation-circle me-1" aria-hidden="true"></i>
                                         <strong>{{ $message }}</strong>
                                     </div>
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .high-contrast {
     --bs-body-color: #000 !important;
     --bs-body-bg: #fff !important;
-    --bs-primary: #0056b3 !important;
+    --bs-primary: #166534 !important;
     --bs-border-color: #000 !important;
     filter: contrast(1.5);
 }
@@ -497,15 +497,15 @@ document.addEventListener('DOMContentLoaded', function() {
     border: 2px solid #000 !important;
 }
 .high-contrast .btn-primary {
-    background-color: #0056b3 !important;
-    border-color: #0056b3 !important;
+    background-color: #166534 !important;
+    border-color: #166534 !important;
     color: #fff !important;
 }
 .high-contrast .text-muted {
     color: #666 !important;
 }
 .high-contrast .bg-primary {
-    background-color: #0056b3 !important;
+    background-color: #166534 !important;
 }
 
 .simplified-layout .card {

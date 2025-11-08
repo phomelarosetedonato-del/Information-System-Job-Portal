@@ -12,15 +12,17 @@
             border: none;
             border-radius: 15px;
             overflow: hidden;
+            height: 100%;
         }
         .training-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         .training-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient( #0056b3 100%);
             color: white;
             padding: 20px;
+            position: relative;
         }
         .training-badge {
             position: absolute;
@@ -44,11 +46,21 @@
             margin-bottom: 30px;
         }
         .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #ffffff 0%, #0056b3 100%);
+            color: rgb(78, 78, 78);
             border-radius: 10px;
             padding: 20px;
             text-align: center;
+            margin-bottom: 20px;
+        }
+        .stats-card.warning {
+            background: linear-gradient(135deg, #ffffff 0%, #0056b3 100%);
+        }
+        .stats-card.info {
+            background: linear-gradient(135deg, #ffffff 0%, #0056b3 100%);
+        }
+        .stats-card.success {
+            background: linear-gradient(135deg, #ffffff 0%, #0056b3 100%);
         }
         .empty-state {
             text-align: center;
@@ -59,6 +71,12 @@
             font-size: 4rem;
             margin-bottom: 20px;
             color: #dee2e6;
+        }
+        .progress {
+            height: 8px;
+        }
+        .training-details {
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -94,34 +112,34 @@
                     <div class="stats-icon">
                         <i class="fas fa-graduation-cap fa-2x mb-3"></i>
                     </div>
-                    <h3>{{ $totalTrainings }}</h3>
+                    <h3>{{ $totalTrainings ?? 0 }}</h3>
                     <p class="mb-0">Total Trainings</p>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="stats-card warning">
                     <div class="stats-icon">
                         <i class="fas fa-users fa-2x mb-3"></i>
                     </div>
-                    <h3>{{ $activeTrainings }}</h3>
+                    <h3>{{ $activeTrainings ?? 0 }}</h3>
                     <p class="mb-0">Active Now</p>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="stats-card info">
                     <div class="stats-icon">
                         <i class="fas fa-calendar-check fa-2x mb-3"></i>
                     </div>
-                    <h3>{{ $upcomingTrainings }}</h3>
+                    <h3>{{ $upcomingTrainings ?? 0 }}</h3>
                     <p class="mb-0">Upcoming</p>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <div class="stats-card success">
                     <div class="stats-icon">
                         <i class="fas fa-user-check fa-2x mb-3"></i>
                     </div>
-                    <h3>{{ $userEnrollments }}</h3>
+                    <h3>{{ $userEnrollments ?? 0 }}</h3>
                     <p class="mb-0">My Enrollments</p>
                 </div>
             </div>
@@ -131,13 +149,13 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="filter-section">
-                    <form method="GET" action="{{ route('skill-trainings.public') }}">
+                    <form method="GET" action="{{ route('skill-trainings.public.index') }}">
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <label for="status" class="form-label">Training Status</label>
                                 <select class="form-select" id="status" name="status">
                                     <option value="">All Status</option>
-                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active (Ongoing)</option>
                                     <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
                                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                                 </select>
@@ -154,10 +172,15 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">&nbsp;</label>
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-primary">
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <button type="submit" class="btn btn-primary flex-fill">
                                         <i class="fas fa-search me-2"></i>Search
                                     </button>
+                                    @if(request()->anyFilled(['status', 'location', 'trainer']))
+                                        <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-times me-2"></i>Clear
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -187,8 +210,8 @@
                             </p>
                         </div>
 
-                        <div class="card-body">
-                            <p class="card-text text-muted mb-3">
+                        <div class="card-body d-flex flex-column">
+                            <p class="card-text text-muted mb-3 flex-grow-1">
                                 {{ Str::limit($training->description, 120) }}
                             </p>
 
@@ -215,21 +238,22 @@
 
                             <!-- Progress Bar -->
                             @php
-                                $enrollmentPercentage = min(100, (($training->enrollments_count ?? $training->enrollments->count()) / $training->max_participants) * 100);
+                                $enrollmentCount = $training->enrollments_count ?? $training->enrollments->count();
+                                $enrollmentPercentage = min(100, ($enrollmentCount / $training->max_participants) * 100);
                                 $progressColor = $enrollmentPercentage >= 90 ? 'bg-danger' : ($enrollmentPercentage >= 75 ? 'bg-warning' : 'bg-success');
                             @endphp
-                            <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress mb-3">
                                 <div class="progress-bar {{ $progressColor }}"
                                      style="width: {{ $enrollmentPercentage }}%"
-                                     title="{{ $enrollmentPercentage }}% filled">
+                                     title="{{ number_format($enrollmentPercentage, 1) }}% filled">
                                 </div>
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="d-grid gap-2">
+                            <div class="d-grid gap-2 mt-auto">
                                 @php
                                     $userEnrollment = $training->enrollments->where('user_id', auth()->id())->first();
-                                    $isFull = ($training->enrollments_count ?? $training->enrollments->count()) >= $training->max_participants;
+                                    $isFull = $enrollmentCount >= $training->max_participants;
                                     $canEnroll = !$userEnrollment && !$isFull && $training->is_active && $training->start_date->isFuture();
                                 @endphp
 
@@ -265,7 +289,7 @@
                                     </form>
                                 @endif
 
-                                <a href="{{ route('skill-trainings.public-show', $training->id) }}"
+                                <a href="{{ route('skill-trainings.public.show', $training->id) }}"
                                    class="btn btn-outline-primary">
                                     <i class="fas fa-info-circle me-2"></i>View Details
                                 </a>
@@ -278,9 +302,15 @@
                     <div class="empty-state">
                         <i class="fas fa-graduation-cap"></i>
                         <h4>No Trainings Available</h4>
-                        <p class="text-muted">There are currently no skill trainings matching your criteria.</p>
+                        <p class="text-muted">
+                            @if(request()->anyFilled(['status', 'location', 'trainer']))
+                                No skill trainings match your current filters.
+                            @else
+                                There are currently no skill trainings available. Please check back later.
+                            @endif
+                        </p>
                         @if(request()->anyFilled(['status', 'location', 'trainer']))
-                            <a href="{{ route('skill-trainings.public') }}" class="btn btn-primary mt-2">
+                            <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-primary mt-2">
                                 <i class="fas fa-refresh me-2"></i>Clear Filters
                             </a>
                         @endif
@@ -291,54 +321,41 @@
 
         <!-- Pagination -->
         @if($skillTrainings->hasPages())
-            <div class="row mt-4">
-                <div class="col-12">
-                    <nav aria-label="Training pagination">
-                        {{ $skillTrainings->links() }}
-                    </nav>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-center">
+                    {{ $skillTrainings->links() }}
                 </div>
             </div>
+        </div>
         @endif
     </div>
-    @endsection
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Auto-refresh progress bars and status
-        function updateTrainingStatus() {
-            document.querySelectorAll('.training-card').forEach(card => {
-                const startDate = new Date(card.dataset.startDate);
-                const endDate = new Date(card.dataset.endDate);
-                const now = new Date();
-
-                // You can add real-time status updates here if needed
-            });
-        }
-
-        // Update every minute
-        setInterval(updateTrainingStatus, 60000);
-
-        // Add smooth scrolling for pagination
+        // Add confirmation for enrollment
         document.addEventListener('DOMContentLoaded', function() {
-            const paginationLinks = document.querySelectorAll('.pagination a');
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const url = this.href;
+            const enrollmentForms = document.querySelectorAll('form[action="{{ route("enrollments.store") }}"]');
 
-                    // Smooth scroll to top before navigation
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-
-                    // Small delay to allow scroll to complete
-                    setTimeout(() => {
-                        window.location.href = url;
-                    }, 300);
+            enrollmentForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const trainingTitle = this.closest('.training-card').querySelector('.card-title').textContent;
+                    if (!confirm(`Are you sure you want to enroll in "${trainingTitle}"?`)) {
+                        e.preventDefault();
+                    }
                 });
+            });
+
+            // Auto-hide alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
             });
         });
     </script>
+    @endsection
 </body>
 </html>

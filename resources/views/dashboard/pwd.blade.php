@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'PWD Dashboard - PWD System')
+@section('title', 'PWD Dashboard - PWD Job Portal')
 
 @section('content')
 <!-- Skip Navigation for Accessibility -->
@@ -8,410 +8,687 @@
     Skip to main content
 </a>
 
-@php
-    // Safe method checks to prevent errors
-    $applicationCount = method_exists(auth()->user(), 'jobApplications') ? auth()->user()->jobApplications()->count() : 0;
-    $enrollmentCount = method_exists(auth()->user(), 'trainingEnrollments') ? auth()->user()->trainingEnrollments()->count() : 0;
-    $documentCount = method_exists(auth()->user(), 'documents') ? auth()->user()->documents()->count() : 0;
-    $isProfileComplete = method_exists(auth()->user(), 'isProfileComplete') ? auth()->user()->isProfileComplete() : true;
-    $hasPwdProfile = method_exists(auth()->user(), 'hasPwdProfile') ? auth()->user()->hasPwdProfile() : true;
-
-    // Initialize arrays to avoid undefined variable errors
-    $userJobApplications = [];
-    $userTrainingEnrollments = [];
-
-    // Get user applications and enrollments if methods exist
-    if (method_exists(auth()->user(), 'jobApplications')) {
-        $userJobApplications = auth()->user()->jobApplications()->pluck('job_posting_id')->toArray();
-    }
-    if (method_exists(auth()->user(), 'trainingEnrollments')) {
-        $userTrainingEnrollments = auth()->user()->trainingEnrollments()->pluck('skill_training_id')->toArray();
-    }
-@endphp
-
 <div class="dashboard-container" id="main-content" tabindex="-1" role="main" aria-labelledby="dashboard-heading">
     <!-- Dashboard Header -->
-    <div class="dashboard-header bg-primary text-white py-4">
+    <div class="dashboard-header bg-white border-bottom py-4">
         <div class="dashboard-header-content">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="h3 mb-1" id="dashboard-heading">
-                        <i class="fas fa-universal-access me-2" aria-hidden="true"></i>
-                        Welcome back, {{ auth()->user()->name }}!
+                    <h1 class="h3 mb-2 text-dark" id="dashboard-heading">
+                        <i class="fas fa-universal-access me-2 text-primary" aria-hidden="true"></i>
+                        Welcome back, {{ $user->name }}! 👋
                     </h1>
-                    <p class="mb-0 opacity-75">Here's your PWD dashboard overview</p>
+                    <p class="mb-0 text-muted" ml-2>Here's your personalized job portal dashboard</p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="btn-group">
-                        <a href="{{ route('notifications.index') }}" class="btn btn-warning btn-sm">
-                            <i class="fas fa-bell me-1"></i> Notifications
-                            @if(auth()->user()->unreadNotifications->count() > 0)
-                                <span class="badge bg-danger">{{ auth()->user()->unreadNotifications->count() }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('accessibility.settings') }}" class="btn btn-info btn-sm">
-                            <i class="fas fa-universal-access me-1"></i> Accessibility
-                        </a>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
 
     <!-- Main Content Area -->
-    <div class="dashboard-content">
-        <!-- Session Messages & Alerts -->
-        @if (session('status'))
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" aria-live="polite">
-                <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
-                {{ session('status') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success message"></button>
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" aria-live="polite">
-                <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success notification"></button>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" aria-live="assertive">
-                <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close error message"></button>
-            </div>
-        @endif
-
-        <!-- Profile Completion Alert -->
-        @if(!$isProfileComplete)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert" aria-live="polite">
-                <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
-                <strong>Complete Your Profile:</strong> Please complete your PWD profile to access all features.
-                <a href="{{ route('profile.pwd-complete-form') }}" class="alert-link">Complete Profile Now</a>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close profile completion reminder"></button>
-            </div>
-        @endif
-
-        <!-- Quick Stats -->
-        <div class="row mb-4" role="region" aria-labelledby="stats-heading">
-            <h2 id="stats-heading" class="sr-only">Quick Statistics</h2>
-
-            <!-- Job Applications Card -->
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card text-white bg-primary h-100 shadow-sm" role="group" aria-labelledby="applications-card-heading">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h3 class="h5 card-title" id="applications-card-heading">My Applications</h3>
-                                <p class="card-text display-6" aria-live="polite">{{ $applicationCount }}</p>
-                                <small>Active: {{ method_exists(auth()->user(), 'jobApplications') ? auth()->user()->jobApplications()->where('status', 'pending')->count() : 0 }}</small>
-                            </div>
-                            <i class="fas fa-briefcase fa-2x opacity-75" aria-hidden="true"></i>
-                        </div>
-                        <div class="mt-3">
-                            <a href="{{ route('applications.index') }}" class="btn btn-light btn-sm w-100" aria-describedby="applications-help">
-                                View Applications
-                            </a>
-                            <div id="applications-help" class="sr-only">Navigate to your job applications page</div>
-                        </div>
-                    </div>
+    <div class="dashboard-content bg-light">
+        <div class="container-fluid py-4">
+            <!-- Session Messages & Alerts -->
+            @if (session('status'))
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" aria-live="polite">
+                    <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
+                    {{ session('status') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success message"></button>
                 </div>
-            </div>
+            @endif
 
-            <!-- Training Enrollments Card -->
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card text-white bg-success h-100 shadow-sm" role="group" aria-labelledby="trainings-card-heading">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h3 class="h5 card-title" id="trainings-card-heading">My Trainings</h3>
-                                <p class="card-text display-6" aria-live="polite">{{ $enrollmentCount }}</p>
-                                <small>Enrolled: {{ method_exists(auth()->user(), 'trainingEnrollments') ? auth()->user()->trainingEnrollments()->where('status', 'enrolled')->count() : 0 }}</small>
-                            </div>
-                            <i class="fas fa-graduation-cap fa-2x opacity-75" aria-hidden="true"></i>
-                        </div>
-                        <div class="mt-3">
-                            <a href="{{ route('enrollments.index') }}" class="btn btn-light btn-sm w-100" aria-describedby="trainings-help">
-                                View Enrollments
-                            </a>
-                            <div id="trainings-help" class="sr-only">Navigate to your training enrollments page</div>
-                        </div>
-                    </div>
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" aria-live="polite">
+                    <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success notification"></button>
                 </div>
-            </div>
+            @endif
 
-            <!-- Documents Card -->
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card text-white bg-info h-100 shadow-sm" role="group" aria-labelledby="documents-card-heading">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h3 class="h5 card-title" id="documents-card-heading">My Documents</h3>
-                                <p class="card-text display-6" aria-live="polite">{{ $documentCount }}</p>
-                                <small>Uploaded files</small>
-                            </div>
-                            <i class="fas fa-file-alt fa-2x opacity-75" aria-hidden="true"></i>
-                        </div>
-                        <div class="mt-3">
-                            <a href="{{ route('documents.index') }}" class="btn btn-light btn-sm w-100" aria-describedby="documents-help">
-                                Manage Documents
-                            </a>
-                            <div id="documents-help" class="sr-only">Navigate to your documents management page</div>
-                        </div>
-                    </div>
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" aria-live="assertive">
+                    <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close error message"></button>
                 </div>
-            </div>
+            @endif
 
-            <!-- Available Opportunities Card -->
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card text-white bg-warning h-100 shadow-sm" role="group" aria-labelledby="opportunities-card-heading">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h3 class="h5 card-title" id="opportunities-card-heading">Available</h3>
-                                <p class="card-text display-6" aria-live="polite">{{ ($jobPostings->count() ?? 0) + ($skillTrainings->count() ?? 0) }}</p>
-                                <small>Jobs & Trainings</small>
-                            </div>
-                            <i class="fas fa-bullseye fa-2x opacity-75" aria-hidden="true"></i>
-                        </div>
-                        <div class="mt-3">
-                            <a href="{{ route('job-postings.public') }}" class="btn btn-light btn-sm w-100" aria-describedby="opportunities-help">
-                                Explore Opportunities
-                            </a>
-                            <div id="opportunities-help" class="sr-only">Navigate to available opportunities page</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <!-- 🏠 1. Welcome & Profile Summary -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h2 class="h4 mb-3 text-dark">👋 Welcome to Your Job Portal Dashboard</h2>
 
-        <!-- Quick Actions -->
-        <div class="row mb-4" role="navigation" aria-labelledby="quick-actions-heading">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-light">
-                        <h2 class="h5 mb-0" id="quick-actions-heading">
-                            <i class="fas fa-bolt me-2 text-primary"></i>Quick Actions
-                        </h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-xl-3 col-md-6">
-                                <a href="{{ route('job-postings.public') }}" class="btn btn-primary w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="browse-jobs-help">
-                                    <i class="fas fa-search fa-2x mb-2" aria-hidden="true"></i>
-                                    <div class="fw-bold">Browse Jobs</div>
-                                    <small class="opacity-75 text-center">Find employment opportunities</small>
-                                </a>
-                                <div id="browse-jobs-help" class="sr-only">Open job listings page</div>
-                            </div>
-                            <div class="col-xl-3 col-md-6">
-                                <a href="{{ route('skill-trainings.public') }}" class="btn btn-success w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="find-training-help">
-                                    <i class="fas fa-graduation-cap fa-2x mb-2" aria-hidden="true"></i>
-                                    <div class="fw-bold">Find Training</div>
-                                    <small class="opacity-75 text-center">Skill development programs</small>
-                                </a>
-                                <div id="find-training-help" class="sr-only">Open training programs page</div>
-                            </div>
-                            <div class="col-xl-3 col-md-6">
-                                <a href="{{ route('documents.create') }}" class="btn btn-info w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="upload-documents-help">
-                                    <i class="fas fa-upload fa-2x mb-2" aria-hidden="true"></i>
-                                    <div class="fw-bold">Upload Documents</div>
-                                    <small class="opacity-75 text-center">Resume, certificates, IDs</small>
-                                </a>
-                                <div id="upload-documents-help" class="sr-only">Open documents upload page</div>
-                            </div>
-                            <div class="col-xl-3 col-md-6">
-                                <a href="{{ route('profile.edit') }}" class="btn btn-warning w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="update-profile-help">
-                                    <i class="fas fa-user-edit fa-2x mb-2" aria-hidden="true"></i>
-                                    <div class="fw-bold">Update Profile</div>
-                                    <small class="opacity-75 text-center">Keep information current</small>
-                                </a>
-                                <div id="update-profile-help" class="sr-only">Open profile editing page</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opportunities Section -->
-        <div class="row">
-            <!-- Available Job Postings -->
-            <div class="col-xl-6 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h2 class="h5 mb-0" id="jobs-section-heading">
-                            <i class="fas fa-briefcase me-2 text-primary" aria-hidden="true"></i>
-                            Available Job Opportunities
-                        </h2>
-                        <a href="{{ route('job-postings.public') }}" class="btn btn-sm btn-primary">
-                            View All <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        @if(isset($jobPostings) && $jobPostings->count() > 0)
-                            <div class="list-group list-group-flush" role="list" aria-labelledby="jobs-section-heading">
-                                @foreach($jobPostings as $job)
-                                    <div class="list-group-item px-0 border-0 mb-2" role="listitem">
-                                        <div class="card card-hover border">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div class="flex-grow-1">
-                                                        <h3 class="h6 mb-1">{{ $job->title }}</h3>
-                                                        <p class="mb-1 small text-muted">
-                                                            <i class="fas fa-building me-1" aria-hidden="true"></i>{{ $job->company ?? 'N/A' }}
-                                                        </p>
-                                                        <p class="mb-1 small text-muted">
-                                                            <i class="fas fa-map-marker-alt me-1" aria-hidden="true"></i>{{ $job->location ?? 'N/A' }}
-                                                        </p>
-                                                        <p class="mb-2 small text-muted">
-                                                            <i class="fas fa-clock me-1" aria-hidden="true"></i>
-                                                            Apply by: {{ $job->application_deadline ? $job->application_deadline->format('M j, Y') : 'No deadline' }}
-                                                        </p>
-                                                    </div>
-                                                    <div class="text-end ms-3">
-                                                        @if(in_array($job->id, $userJobApplications))
-                                                            <span class="badge bg-success mb-2" aria-label="Already applied">Applied</span>
-                                                        @else
-                                                            <span class="badge bg-primary mb-2" aria-label="Available for application">Available</span>
-                                                        @endif
-                                                        <br>
-                                                        <a href="{{ route('job-postings.public.show', $job) }}" class="btn btn-sm btn-outline-primary mt-1" aria-describedby="job-details-{{ $job->id }}">
-                                                            View Details
-                                                        </a>
-                                                        <div id="job-details-{{ $job->id }}" class="sr-only">
-                                                            View details for {{ $job->title }} at {{ $job->company ?? 'company' }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <!-- Profile Completion (dynamic, computed from user data) -->
+                                    <div class="mb-3">
+                                        @php
+                                            if (method_exists($user, 'getProfileCompletionPercentage')) {
+                                                $completion = (int) $user->getProfileCompletionPercentage();
+                                            } else {
+                                                $completion = $user->profileCompletion ?? null;
+                                                if (is_null($completion)) {
+                                                    $completion = ($user->pwdProfile ?? false) ? 80 : 20;
+                                                }
+                                            }
+                                        @endphp
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted">Profile Completion</span>
+                                            <span class="fw-bold text-primary">{{ $completion }}% Complete</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;" aria-hidden="false" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $completion }}%" aria-valuenow="{{ $completion }}" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
                                     </div>
-                                @endforeach
+
+                                    <p class="text-muted mb-3">Complete your profile to increase your job match rate and visibility to employers.</p>
+
+                                    <div class="d-grid gap-2">
+                                        <form action="{{ route('profile.uploadResume') }}" method="POST" enctype="multipart/form-data" class="d-inline">
+                                            @csrf
+                                            <input type="file" name="resume" id="skills-upload-resume" style="display: none;" onchange="this.form.submit()">
+                                            <label for="skills-upload-resume" class="btn btn-outline-info btn-sm mb-0">
+                                                <i class="fas fa-upload me-1"></i> Upload New Resume
+                                            </label>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-4 d-inline-block">
+                                        <i class="fas fa-user-tie fa-3x text-primary"></i>
+                                    </div>
+                                </div>
                             </div>
-                        @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-briefcase fa-3x text-muted mb-3" aria-hidden="true"></i>
-                                <p class="text-muted mb-2">No available job postings at the moment.</p>
-                                <a href="{{ route('job-postings.public') }}" class="btn btn-primary">Browse All Jobs</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column - Main Content -->
+                <div class="col-lg-8">
+
+                    <!-- Job Filters (PWD friendly) - compact and organized -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-filter me-2 text-muted" aria-hidden="true"></i>
+                                    <h5 class="mb-0 text-dark">Search & Filters</h5>
+                                </div>
+                                <small class="text-muted">{{ $jobPostings->total() }} jobs found</small>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="pwd-filters-form" method="GET" action="{{ route('pwd.dashboard') }}" aria-label="Filter job postings">
+                                <div class="row g-3 align-items-end">
+                                    <!-- Search Input -->
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold" for="q">Search Jobs</label>
+                                        <input id="q" name="q" type="search" class="form-control form-control-sm"
+                                               placeholder="Job title, company, or keywords…"
+                                               value="{{ $filters['q'] ?? request('q') }}"
+                                               aria-label="Search by job title, company, or keywords">
+                                    </div>
+
+                                    <!-- Location Input -->
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold" for="location">Location</label>
+                                        <input id="location" name="location" type="text" class="form-control form-control-sm"
+                                               placeholder="City or province"
+                                               value="{{ $filters['location'] ?? request('location') }}"
+                                               aria-label="Filter by location">
+                                    </div>
+
+                                    <!-- Employment Type Filter - Single Select Dropdown -->
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold" for="employment_type">Job Type</label>
+                                        <select id="employment_type" name="employment_type" class="form-select form-select-sm" aria-label="Employment type">
+                                            <option value="">All Job Types</option>
+                                            @foreach($employmentTypes as $type)
+                                                @if(!empty(trim($type)))
+                                                    <option value="{{ $type }}"
+                                                        {{ ($filters['employment_type'] ?? request('employment_type')) == $type ? 'selected' : '' }}>
+                                                        {{ $type }}
+                                                    </option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- Disability Type Filter -->
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold" for="disability_type_id">Disability Type</label>
+                                        <select id="disability_type_id" name="disability_type_id" class="form-select form-select-sm" aria-label="Disability type">
+                                            <option value="">Any disability type</option>
+                                            @foreach($disabilityTypes as $dt)
+                                                @php $label = trim($dt->type ?? ''); @endphp
+                                                @if($label !== '')
+                                                    <option value="{{ $dt->id }}"
+                                                        {{ (isset($filters['disability_type_id']) && $filters['disability_type_id'] == $dt->id) ? 'selected' : '' }}>
+                                                        {{ $label }}
+                                                    </option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- Accommodations Filter -->
+                                    <div class="col-md-3">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" id="accommodations" name="accommodations" value="1"
+                                                {{ ($filters['accommodations'] ?? request('accommodations')) == '1' ? 'checked' : '' }}>
+                                            <label class="form-check-label small fw-bold" for="accommodations">Show accommodations only</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Remote Work Filter -->
+                                    <div class="col-md-3">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" id="remote" name="remote" value="1"
+                                                {{ ($filters['remote'] ?? request('remote')) == '1' ? 'checked' : '' }}>
+                                            <label class="form-check-label small fw-bold" for="remote">Remote jobs only</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="col-md-2">
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-search me-1"></i> Search
+                                            </button>
+                                            <a href="{{ route('pwd.dashboard') }}" class="btn btn-outline-secondary btn-sm">Clear All</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Filter Tabs -->
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <small class="text-muted me-2">Quick filters:</small>
+                                            <a href="{{ route('pwd.dashboard', ['employment_type' => 'Full-time']) }}" class="badge bg-primary text-decoration-none">Full-time</a>
+                                            <a href="{{ route('pwd.dashboard', ['employment_type' => 'Part-time']) }}" class="badge bg-success text-decoration-none">Part-time</a>
+                                            <a href="{{ route('pwd.dashboard', ['employment_type' => 'Contract']) }}" class="badge bg-info text-decoration-none">Contract</a>
+                                            <a href="{{ route('pwd.dashboard', ['remote' => 1]) }}" class="badge bg-warning text-decoration-none">Remote</a>
+                                            <a href="{{ route('pwd.dashboard', ['accommodations' => 1]) }}" class="badge bg-danger text-decoration-none">With Accommodations</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 💼 2. Recommended Job Opportunities -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h2 class="h5 mb-0 text-dark">
+                                    <i class="fas fa-briefcase me-2 text-primary"></i>
+                                    @if(request()->anyFilled(['q', 'location', 'employment_type', 'disability_type_id', 'accommodations', 'remote']))
+                                        Filtered Job Opportunities
+                                        <span class="badge bg-primary ms-2">Filtered</span>
+                                    @else
+                                        Recommended Job Opportunities
+                                        <span class="badge bg-success ms-2">Personalized</span>
+                                    @endif
+                                </h2>
+                                <small class="text-muted">Showing {{ $jobPostings->count() }} of {{ $jobPostings->total() }} jobs</small>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="pwd-job-results">
+                                @if($jobPostings->count() > 0)
+                                    @include('job-postings.partials.list', ['jobPostings' => $jobPostings])
+                                @else
+                                    <!-- Fallback when no jobs found -->
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                        <h4 class="text-dark mb-3">No jobs match your current filters</h4>
+                                        <p class="text-muted mb-4">Try adjusting your search criteria or browse all available jobs.</p>
+                                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                            <a href="{{ route('pwd.dashboard') }}" class="btn btn-primary">
+                                                <i class="fas fa-refresh me-2"></i>Clear Filters
+                                            </a>
+                                            <a href="{{ route('job-postings.public') }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-briefcase me-2"></i>Browse All Jobs
+                                            </a>
+                                        </div>
+
+                                        <!-- Show some fallback suggestions -->
+                                        @php
+                                            $fallbackJobs = \App\Models\JobPosting::active()
+                                                ->open()
+                                                ->with('employer')
+                                                ->latest()
+                                                ->take(3)
+                                                ->get();
+                                        @endphp
+
+                                        @if($fallbackJobs->count() > 0)
+                                            <div class="mt-5">
+                                                <h5 class="text-dark mb-3">Recently Posted Jobs You Might Like:</h5>
+                                                <div class="row">
+                                                    @foreach($fallbackJobs as $job)
+                                                        <div class="col-md-4 mb-3">
+                                                            <div class="card card-hover h-100">
+                                                                <div class="card-body">
+                                                                    <h6 class="card-title">{{ $job->title }}</h6>
+                                                                    <p class="card-text small text-muted mb-1">{{ $job->employer->company_name ?? 'Company' }}</p>
+                                                                    <p class="card-text small text-muted mb-2">{{ $job->location }}</p>
+                                                                    <span class="badge bg-light text-dark small">{{ $job->employment_type }}</span>
+                                                                </div>
+                                                                <div class="card-footer bg-transparent">
+                                                                    <a href="{{ route('job-postings.public.show', $job) }}" class="btn btn-sm btn-outline-primary w-100">View Job</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if($jobPostings->hasPages() && $jobPostings->count() > 0)
+                            <div class="card-footer bg-white border-top py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted">
+                                            Showing {{ $jobPostings->firstItem() }} to {{ $jobPostings->lastItem() }} of {{ $jobPostings->total() }} results
+                                        </small>
+                                    </div>
+                                    <div>
+                                        {{ $jobPostings->links() }}
+                                    </div>
+                                </div>
                             </div>
                         @endif
                     </div>
-                </div>
-            </div>
 
-            <!-- Available Trainings -->
-            <div class="col-xl-6 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h2 class="h5 mb-0" id="trainings-section-heading">
-                            <i class="fas fa-graduation-cap me-2 text-success" aria-hidden="true"></i>
-                            Available Training Programs
-                        </h2>
-                        <a href="{{ route('skill-trainings.public') }}" class="btn btn-sm btn-success">
-                            View All <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        @if(isset($skillTrainings) && $skillTrainings->count() > 0)
-                            <div class="list-group list-group-flush" role="list" aria-labelledby="trainings-section-heading">
-                                @foreach($skillTrainings as $training)
-                                    <div class="list-group-item px-0 border-0 mb-2" role="listitem">
-                                        <div class="card card-hover border">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div class="flex-grow-1">
-                                                        <h3 class="h6 mb-1">{{ $training->title }}</h3>
-                                                        <p class="mb-1 small text-muted">
-                                                            <i class="fas fa-calendar me-1" aria-hidden="true"></i>
-                                                            Starts: {{ $training->start_date ? $training->start_date->format('M j, Y') : 'TBA' }}
-                                                        </p>
-                                                        <p class="mb-1 small text-muted">
-                                                            <i class="fas fa-clock me-1" aria-hidden="true"></i>
-                                                            Duration: {{ $training->duration_days ?? 'N/A' }} days
-                                                        </p>
-                                                        <p class="mb-2 small text-muted">
-                                                            <i class="fas fa-users me-1" aria-hidden="true"></i>
-                                                            Slots: {{ $training->available_slots ?? 'N/A' }}
-                                                        </p>
-                                                    </div>
-                                                    <div class="text-end ms-3">
-                                                        @if(in_array($training->id, $userTrainingEnrollments))
-                                                            <span class="badge bg-success mb-2" aria-label="Already enrolled">Enrolled</span>
-                                                        @else
-                                                            <span class="badge bg-primary mb-2" aria-label="Available for enrollment">Available</span>
-                                                        @endif
-                                                        <br>
-                                                        <a href="{{ route('skill-trainings.public.show', $training) }}" class="btn btn-sm btn-outline-success mt-1" aria-describedby="training-details-{{ $training->id }}">
-                                                            View Details
-                                                        </a>
-                                                        <div id="training-details-{{ $training->id }}" class="sr-only">
-                                                            View details for {{ $training->title }} training
-                                                        </div>
-                                                    </div>
-                                                </div>
+                    <!-- 📊 3. Application Summary / Stats -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-white border-bottom py-3">
+                                    <h2 class="h5 mb-0 text-dark">📊 Application Summary</h2>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-primary bg-opacity-10 rounded">
+                                                <div class="h4 text-primary mb-1">{{ $applicationStats['total'] }}</div>
+                                                <div class="text-muted small">Total Applications</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-warning bg-opacity-10 rounded">
+                                                <div class="h4 text-warning mb-1">{{ $applicationStats['pending'] }}</div>
+                                                <div class="text-muted small">Under Review</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-success bg-opacity-10 rounded">
+                                                <div class="h4 text-success mb-1">{{ $applicationStats['approved'] }}</div>
+                                                <div class="text-muted small">Shortlisted</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-info bg-opacity-10 rounded">
+                                                <div class="h4 text-info mb-1">{{ $applicationStats['hired'] }}</div>
+                                                <div class="text-muted small">Hired</div>
                                             </div>
                                         </div>
                                     </div>
-                                @endforeach
+
+                                    <!-- Progress Visualization -->
+                                    @if($applicationStats['total'] > 0)
+                                        <div class="mt-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted small">Application Progress</span>
+                                                <span class="text-muted small">{{ $applicationStats['total'] }} applications</span>
+                                            </div>
+                                            <div class="progress" style="height: 12px;">
+                                                @php
+                                                    $pendingWidth = ($applicationStats['pending'] / $applicationStats['total']) * 100;
+                                                    $approvedWidth = ($applicationStats['approved'] / $applicationStats['total']) * 100;
+                                                    $hiredWidth = ($applicationStats['hired'] / $applicationStats['total']) * 100;
+                                                @endphp
+                                                <div class="progress-bar bg-warning" style="width: {{ $pendingWidth }}%" title="Under Review: {{ $applicationStats['pending'] }}"></div>
+                                                <div class="progress-bar bg-success" style="width: {{ $approvedWidth }}%" title="Shortlisted: {{ $applicationStats['approved'] }}"></div>
+                                                <div class="progress-bar bg-info" style="width: {{ $hiredWidth }}%" title="Hired: {{ $applicationStats['hired'] }}"></div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                        @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-graduation-cap fa-3x text-muted mb-3" aria-hidden="true"></i>
-                                <p class="text-muted mb-2">No available training programs at the moment.</p>
-                                <a href="{{ route('skill-trainings.public') }}" class="btn btn-success">Browse All Trainings</a>
+                        </div>
+                    </div>
+
+                    <!-- 🧾 4. Recent Applications -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h2 class="h5 mb-0 text-dark">🧾 Recent Applications</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            @if($recentApplications->count() > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Company</th>
+                                                <th>Date Applied</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($recentApplications as $application)
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ $application->jobPosting->title ?? 'N/A' }}</strong>
+                                                    </td>
+                                                    <td>{{ $application->jobPosting->employer->company_name ?? 'N/A' }}</td>
+                                                    <td>{{ $application->created_at->format('M d, Y') }}</td>
+                                                    <td>
+                                                        <span class="badge bg-{{ $application->status == 'pending' ? 'warning' : ($application->status == 'approved' ? 'success' : ($application->status == 'rejected' ? 'danger' : 'info')) }}">
+                                                            {{ ucfirst($application->status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ route('applications.show', $application) }}" class="btn btn-sm btn-outline-primary">
+                                                            View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card-footer bg-white border-top py-3 text-center">
+                                    <a href="{{ route('applications.index') }}" class="btn btn-outline-primary btn-sm">
+                                        View All Applications <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            @else
+                                <div class="text-center py-5">
+                                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-3">You haven't submitted any applications yet.</p>
+                                    <a href="{{ route('job-postings.public') }}" class="btn btn-primary">Start Applying</a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Sidebar -->
+                <div class="col-lg-4">
+                    <!-- 🔔 5. Notifications / Alerts -->
+                    <div class="card shadow-sm border-warning mb-4">
+                        <div class="card-header bg-warning text-dark border-bottom py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h2 class="h5 mb-0">🔔 Notifications & Alerts</h2>
+                                <span class="badge bg-dark">{{ $user->unreadNotifications->count() }} New</span>
                             </div>
-                        @endif
+                        </div>
+                        <div class="card-body p-0">
+                            @if($user->notifications->count() > 0)
+                                <div class="list-group list-group-flush">
+                                    @foreach($user->notifications->take(5) as $notification)
+                                        <div class="list-group-item border-0 p-3 {{ $notification->unread() ? 'bg-light' : '' }}">
+                                            <div class="d-flex align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-1 small">{{ $notification->data['message'] ?? 'New notification' }}</p>
+                                                    <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
+                                                </div>
+                                                @if($notification->unread())
+                                                    <span class="badge bg-primary ms-2">New</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @if(!$loop->last)
+                                            <hr class="my-0">
+                                        @endif
+                                    @endforeach
+                                </div>
+                                <div class="card-footer bg-white border-top py-2 text-center">
+                                    <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-outline-warning">View All Notifications</a>
+                                </div>
+                            @else
+                                <div class="text-center py-4">
+                                    <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">No notifications</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- 📅 6. Saved Jobs / Favorites -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h2 class="h5 mb-0 text-dark">📅 Saved Jobs</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 p-3 text-center text-muted">
+                                    <i class="fas fa-bookmark fa-2x mb-2"></i>
+                                    <p class="mb-2">No saved jobs yet</p>
+                                    <a href="{{ route('job-postings.public') }}" class="btn btn-sm btn-outline-primary">
+                                        Browse Jobs to Save
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 🧠 7. Skill & Resume Insights -->
+                    <div class="card shadow-sm border-info mb-4">
+                        <div class="card-header bg-info text-white border-bottom py-3">
+                            <h2 class="h5 mb-0">🧠 Skill & Resume Insights</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Tip:</strong> Complete your profile to get better job recommendations.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">Resume Strength</span>
+                                    <span class="badge bg-{{ $user->hasResume() ? 'success' : 'warning' }}">
+                                        {{ $user->hasResume() ? 'Good' : 'Needs Upload' }}
+                                    </span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-{{ $user->hasResume() ? 'success' : 'warning' }}" style="width: {{ $user->hasResume() ? '75' : '25' }}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-dark mb-2">Suggested Improvements:</h6>
+                                <ul class="list-unstyled small text-muted">
+                                    @if(!$user->hasResume())
+                                        <li class="mb-1">📄 Upload your resume</li>
+                                    @endif
+                                    @if($profileCompletion < 80)
+                                        <li class="mb-1">✅ Complete your profile</li>
+                                    @endif
+                                    <li class="mb-1">🎯 Keep skills updated</li>
+                                    <li class="mb-1">📈 Add work experience</li>
+                                </ul>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <form action="{{ route('profile.uploadResume') }}" method="POST" enctype="multipart/form-data" class="d-inline">
+                                    @csrf
+                                    <input type="file" name="resume" id="sidebar-upload-resume" style="display: none;" onchange="this.form.submit()">
+                                    <label for="sidebar-upload-resume" class="btn btn-outline-info btn-sm mb-0 w-100">
+                                        <i class="fas fa-upload me-1"></i> Upload New Resume
+                                    </label>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ⚙️ 9. Account & Settings Quick Links -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h2 class="h5 mb-0 text-dark">⚙️ Account & Settings</h2>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a href="{{ route('profile.show') }}" class="list-group-item list-group-item-action border-0">
+                                    <i class="fas fa-user me-2 text-primary"></i> Profile Details
+                                </a>
+                                <a href="{{ route('accessibility.settings') }}" class="list-group-item list-group-item-action border-0">
+                                    <i class="fas fa-universal-access me-2 text-primary"></i> Accessibility Settings
+                                </a>
+                                <a href="{{ route('notifications.index') }}" class="list-group-item list-group-item-action border-0">
+                                    <i class="fas fa-bell me-2 text-primary"></i> Notification Preferences
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action border-0 text-danger"
+                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+    @csrf
+</form>
 @endsection
 
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-dismiss success alerts after 8 seconds
-    setTimeout(() => {
-        document.querySelectorAll('.alert-success').forEach(alert => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
+    // Quick filter badges
+    const quickFilterBadges = document.querySelectorAll('.badge[href]');
+    quickFilterBadges.forEach(badge => {
+        badge.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = this.href;
         });
-    }, 8000);
+    });
 
-    // Screen reader announcement for new opportunities
-    @if(isset($jobPostings) && isset($skillTrainings) && ($jobPostings->count() > 0 || $skillTrainings->count() > 0))
-    setTimeout(() => {
-        const message = "New job and training opportunities are available. Check the Available Opportunities section.";
-        const liveRegion = document.createElement('div');
-        liveRegion.setAttribute('aria-live', 'polite');
-        liveRegion.setAttribute('aria-atomic', 'true');
-        liveRegion.className = 'sr-only';
-        liveRegion.textContent = message;
-        document.body.appendChild(liveRegion);
-
-        setTimeout(() => {
-            document.body.removeChild(liveRegion);
-        }, 3000);
-    }, 1000);
-    @endif
-
-    // Fix skip link functionality
-    const skipLink = document.querySelector('.skip-link');
-    if (skipLink) {
-        skipLink.addEventListener('focus', function() {
-            this.style.transform = 'translateY(0)';
+    // Real-time search with debounce
+    let searchTimeout;
+    const searchInput = document.getElementById('q');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                document.getElementById('pwd-filters-form').submit();
+            }, 800);
         });
+    }
 
-        skipLink.addEventListener('blur', function() {
-            this.style.transform = 'translateY(-100%)';
+    // Auto-submit form when filters change
+    const filterElements = document.querySelectorAll('#pwd-filters-form select, #pwd-filters-form input[type="checkbox"]');
+    filterElements.forEach(element => {
+        element.addEventListener('change', function() {
+            document.getElementById('pwd-filters-form').submit();
+        });
+    });
+
+    // Show loading state when form is submitting
+    const form = document.getElementById('pwd-filters-form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Searching...';
+                submitBtn.disabled = true;
+            }
         });
     }
 });
 </script>
+@endsection
+
+@section('styles')
+<style>
+    .card-hover {
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-color: #02710b;
+    }
+
+    .dashboard-content {
+        min-height: calc(100vh - 200px);
+    }
+
+    .border-bottom {
+        border-bottom: 1px solid #e9ecef !important;
+    }
+
+    .text-primary { color: #2E8B57 !important; }
+    .text-success { color: #1A5D34 !important; }
+    .text-info { color: #4CAF50 !important; }
+    .text-warning { color: #1C3D2A !important; }
+
+    .btn-outline-primary {
+        border-color: #2E8B57;
+        color: #2E8B57;
+    }
+    .btn-outline-primary:hover {
+        background-color: #2E8B57;
+        border-color: #2E8B57;
+        color: white;
+    }
+
+    .border-primary { border-color: #2E8B57 !important; }
+    .border-success { border-color: #1A5D34 !important; }
+    .border-info { border-color: #4CAF50 !important; }
+    .border-warning { border-color: #1C3D2A !important; }
+
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .progress {
+        border-radius: 10px;
+    }
+
+    .list-group-item {
+        transition: background-color 0.2s ease;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .badge {
+        cursor: pointer;
+    }
+
+    /* Loading animation */
+    .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
 @endsection

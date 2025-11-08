@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\PwdDashboardController;
+use App\Http\Controllers\EmployerDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Accessibility\AccessibilityController;
 use App\Http\Controllers\JobPostingController;
@@ -14,6 +17,8 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\EmployerController;
+use App\Http\Controllers\EmployerVerificationController;
 
 // =========================================================================
 // PUBLIC ROUTES (No authentication required)
@@ -21,12 +26,16 @@ use App\Http\Controllers\AdminController;
 
 // Home and static pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/search', [HomeController::class, 'search'])->name('home.search');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact', [HomeController::class, 'contactSubmit'])->name('contact.submit');
 Route::get('/events', [HomeController::class, 'events'])->name('events');
 Route::get('/read-first', [HomeController::class, 'readFirst'])->name('read-first');
+Route::get('/success-stories', [HomeController::class, 'successStories'])->name('success-stories');
+Route::get('/success-stories/{id}', [HomeController::class, 'showStory'])->name('story.show');
 
-// Terms and Privacy (required for registration)
+// Terms and Privacy
 Route::get('/terms', function () {
     return view('terms');
 })->name('terms');
@@ -35,7 +44,7 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
-// Authentication Routes - FIXED: Use correct LoginController namespace
+// Authentication Routes
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -49,19 +58,21 @@ Route::prefix('password')->group(function () {
     Route::post('/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 });
 
-// Public Accessibility Routes
-Route::prefix('accessibility')->group(function () {
-    Route::post('/quick-tool', [AccessibilityController::class, 'quickTool'])->name('accessibility.quick-tool');
-    Route::get('/features', [AccessibilityController::class, 'features'])->name('accessibility.features');
+// =========================================================================
+// PUBLIC JOB POSTINGS ROUTES (for viewing only - no applications)
+// =========================================================================
+Route::prefix('jobs')->group(function () {
+    Route::get('/', [JobPostingController::class, 'publicIndex'])->name('job-postings.public');
+    Route::get('/{job_posting}', [JobPostingController::class, 'publicShow'])->name('job-postings.public.show');
 });
 
-// Public Job Postings (for all users)
-Route::get('/jobs', [JobPostingController::class, 'publicIndex'])->name('job-postings.public');
-Route::get('/jobs/{job_posting}', [JobPostingController::class, 'publicShow'])->name('job-postings.public.show');
-
-// Public Skill Trainings (for all users)
-Route::get('/trainings', [SkillTrainingController::class, 'publicIndex'])->name('skill-trainings.public');
-Route::get('/trainings/{skill_training}', [SkillTrainingController::class, 'publicShow'])->name('skill-trainings.public-show');
+// =========================================================================
+// PUBLIC SKILL TRAININGS ROUTES (for viewing only - no enrollments)
+// =========================================================================
+Route::prefix('skill-trainings')->group(function () {
+    Route::get('/', [SkillTrainingController::class, 'publicIndex'])->name('skill-trainings.public.index');
+    Route::get('/{skill_training}', [SkillTrainingController::class, 'publicShow'])->name('skill-trainings.public.show');
+});
 
 // Redirect /home to /dashboard for authenticated users, otherwise to home
 Route::get('/home', function () {
@@ -76,7 +87,7 @@ Route::get('/home', function () {
 // =========================================================================
 
 Route::middleware(['auth'])->group(function () {
-    // Logout - FIXED: Use correct LoginController namespace
+    // Logout
     Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
     // Email Verification Routes
@@ -86,30 +97,143 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/resend', [App\Http\Controllers\Auth\VerificationController::class, 'resend'])->name('verification.resend');
     });
 
-    // Dashboard
+    // =========================================================================
+    // DASHBOARD ROUTES - Updated with separate controllers
+    // =========================================================================
+
+    // Main dashboard route that redirects based on role
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Protected Accessibility Routes
-    Route::prefix('accessibility')->group(function () {
-        Route::get('/settings', [AccessibilityController::class, 'settings'])->name('accessibility.settings');
-        Route::post('/preferences', [AccessibilityController::class, 'updatePreferences'])->name('accessibility.update');
-        Route::post('/reset', [AccessibilityController::class, 'resetPreferences'])->name('accessibility.reset');
-        Route::post('/quick-tool-protected', [AccessibilityController::class, 'quickTool'])->name('accessibility.quick-tool-protected');
+    // PWD-specific dashboard (protected by PwdMiddleware)
+    Route::middleware(['pwd'])->group(function () {
+        Route::get('/pwd/dashboard', [PwdDashboardController::class, 'index'])->name('pwd.dashboard');
     });
 
-    // Profile Routes
+    // =========================================================================
+    // EMPLOYER-SPECIFIC ROUTES (Protected by EmployerMiddleware)
+    // =========================================================================
+    Route::middleware(['employer', 'pending.employer.verification'])->prefix('employer')->name('employer.')->group(function () {
+        // Redirect /employer to /employer/dashboard
+        Route::get('/', function () {
+            return redirect()->route('employer.dashboard');
+        });
+
+        // Employer dashboard - accessible to all employers
+        Route::get('/dashboard', [EmployerDashboardController::class, 'index'])->name('dashboard');
+
+        // Settings route
+        Route::get('/settings', [EmployerController::class, 'settings'])->name('settings');
+
+        // Employer verification routes
+        Route::prefix('verification')->name('verification.')->group(function () {
+            Route::get('/apply', [EmployerVerificationController::class, 'showApplicationForm'])->name('apply');
+            Route::post('/apply', [EmployerVerificationController::class, 'submitApplication'])->name('submit');
+            Route::get('/status', [EmployerVerificationController::class, 'status'])->name('status');
+            Route::get('/requirements', [EmployerVerificationController::class, 'requirements'])->name('requirements');
+            Route::get('/renew', [EmployerVerificationController::class, 'showRenewalForm'])->name('renew');
+            Route::post('/renew', [EmployerVerificationController::class, 'submitRenewal'])->name('renew.submit');
+        });
+
+        // Employer Profile Management (always accessible)
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [EmployerController::class, 'profile'])->name('show');
+            Route::get('/edit', [EmployerController::class, 'editProfile'])->name('edit');
+            Route::put('/update', [EmployerController::class, 'updateProfile'])->name('update');
+            Route::get('/stats', [EmployerController::class, 'getStats'])->name('stats');
+            Route::post('/resume/upload', [EmployerController::class, 'uploadResume'])->name('upload-resume');
+            Route::delete('/resume/delete', [EmployerController::class, 'deleteResume'])->name('delete-resume');
+        });
+
+        // Job posting preview/draft routes (accessible without verification)
+        Route::prefix('job-drafts')->name('job-drafts.')->group(function () {
+            Route::get('/', [JobPostingController::class, 'draftIndex'])->name('index');
+            Route::get('/create', [JobPostingController::class, 'createDraft'])->name('create');
+            Route::post('/', [JobPostingController::class, 'storeDraft'])->name('store');
+            Route::get('/{job_posting}/preview', [JobPostingController::class, 'previewDraft'])->name('preview');
+            Route::post('/{job_posting}/submit-verification', [JobPostingController::class, 'submitForVerification'])->name('submit');
+            Route::get('/{job_posting}/edit', [JobPostingController::class, 'editDraft'])->name('edit');
+            Route::put('/{job_posting}', [JobPostingController::class, 'updateDraft'])->name('update');
+            Route::delete('/{job_posting}', [JobPostingController::class, 'destroyDraft'])->name('destroy');
+        });
+    });
+
+    // =========================================================================
+    // VERIFIED EMPLOYER ROUTES (Protected by VerifiedEmployer middleware)
+    // =========================================================================
+    Route::middleware(['employer', 'verified.employer'])->prefix('employer')->name('employer.')->group(function () {
+        // Job Posting Management (Protected by verified employer middleware)
+        Route::prefix('job-postings')->name('job-postings.')->group(function () {
+            Route::get('/', [JobPostingController::class, 'employerIndex'])->name('index');
+            Route::get('/create', [JobPostingController::class, 'create'])->name('create');
+            Route::post('/', [JobPostingController::class, 'store'])->name('store');
+            Route::get('/{job_posting}', [JobPostingController::class, 'show'])->name('show');
+            Route::get('/{job_posting}/edit', [JobPostingController::class, 'edit'])->name('edit');
+            Route::put('/{job_posting}', [JobPostingController::class, 'update'])->name('update');
+            Route::delete('/{job_posting}', [JobPostingController::class, 'destroy'])->name('destroy');
+            Route::post('/{job_posting}/toggle-status', [JobPostingController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/{job_posting}/duplicate', [JobPostingController::class, 'duplicate'])->name('duplicate');
+            Route::post('/{job_posting}/extend-deadline', [JobPostingController::class, 'extendDeadline'])->name('extend-deadline');
+            Route::get('/analytics', [JobPostingController::class, 'employerStatistics'])->name('statistics');
+            Route::get('/export', [JobPostingController::class, 'exportEmployerJobs'])->name('export');
+        });
+
+        // Application Management for employer's job postings
+        Route::prefix('applications')->name('applications.')->group(function () {
+            Route::get('/', [JobApplicationController::class, 'employerIndex'])->name('index');
+            Route::get('/{application}', [JobApplicationController::class, 'show'])->name('show');
+
+            // 🔔 UPDATED: Application status routes with new notification system
+            Route::post('/{application}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
+            Route::post('/{application}/shortlist', [JobApplicationController::class, 'shortlist'])->name('shortlist');
+            Route::post('/{application}/reject', [JobApplicationController::class, 'reject'])->name('reject');
+            Route::post('/{application}/schedule-interview', [JobApplicationController::class, 'scheduleInterview'])->name('schedule-interview');
+            Route::post('/bulk-update', [JobApplicationController::class, 'bulkUpdate'])->name('bulk-update');
+            Route::get('/statistics', [JobApplicationController::class, 'employerStatistics'])->name('statistics');
+            Route::get('/export', [JobApplicationController::class, 'exportEmployerApplications'])->name('export');
+        });
+
+        // Employer Analytics and Reports
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/overview', [EmployerController::class, 'analyticsOverview'])->name('overview');
+            Route::get('/performance', [EmployerController::class, 'performanceMetrics'])->name('performance');
+            Route::get('/applications-trend', [EmployerController::class, 'applicationTrends'])->name('applications-trend');
+            Route::get('/jobs-performance', [EmployerController::class, 'jobsPerformance'])->name('jobs-performance');
+        });
+    });
+
+    // =========================================================================
+    // ACCESSIBILITY ROUTES (All authenticated users)
+    // =========================================================================
+    Route::prefix('accessibility')->group(function () {
+        Route::get('/settings', [AccessibilityController::class, 'settings'])->name('accessibility.settings');
+        Route::post('/preferences', [AccessibilityController::class, 'updatePreferences'])->name('accessibility.update-preferences');
+        Route::get('/reset', [AccessibilityController::class, 'resetPreferences'])->name('accessibility.reset-preferences');
+        Route::post('/quick-tool', [AccessibilityController::class, 'quickTool'])->name('accessibility.quick-tool');
+        Route::post('/toggle-language', [AccessibilityController::class, 'toggleLanguage'])->name('accessibility.toggle-language');
+    });
+
+    // =========================================================================
+    // PROFILE ROUTES (All authenticated users)
+    // =========================================================================
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'show'])->name('profile.show');
         Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/update', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('profile.deletePhoto');
 
+        // Resume Routes
+        Route::post('/resume/upload', [ProfileController::class, 'uploadResume'])->name('profile.uploadResume');
+        Route::get('/resume/download', [ProfileController::class, 'downloadResume'])->name('profile.downloadResume');
+        Route::delete('/resume/delete', [ProfileController::class, 'deleteResume'])->name('profile.deleteResume');
+
         // PWD Profile Completion Routes
         Route::get('/complete', [ProfileController::class, 'showPwdCompleteForm'])->name('profile.pwd-complete-form');
         Route::post('/complete', [ProfileController::class, 'completePwdProfile'])->name('profile.pwd-complete');
     });
 
-    // Notification Routes
+    // =========================================================================
+    // NOTIFICATION ROUTES (All authenticated users)
+    // =========================================================================
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
@@ -119,102 +243,47 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // =========================================================================
-    // JOB APPLICATION ROUTES
+    // PWD-SPECIFIC ROUTES (Protected by PwdMiddleware with Profile Completion Check)
     // =========================================================================
-    Route::prefix('applications')->group(function () {
-        // User's applications
-        Route::get('/', [JobApplicationController::class, 'index'])->name('applications.index');
-        Route::get('/{application}', [JobApplicationController::class, 'show'])->name('applications.show');
-        Route::post('/{application}/withdraw', [JobApplicationController::class, 'withdraw'])->name('applications.withdraw');
+    Route::middleware(['pwd', 'pwd.profile.complete'])->group(function () {
+        // Job Applications (Protected - requires complete profile)
+        Route::prefix('applications')->group(function () {
+            Route::get('/', [JobApplicationController::class, 'index'])->name('applications.index');
+            Route::get('/{application}', [JobApplicationController::class, 'show'])->name('applications.show');
+            Route::post('/{application}/withdraw', [JobApplicationController::class, 'withdraw'])->name('applications.withdraw');
+            Route::post('/{application}/cancel', [JobApplicationController::class, 'cancel'])->name('applications.cancel');
+            Route::post('/job/{job}/apply', [JobApplicationController::class, 'apply'])->name('job.apply');
+        });
 
-        // Job application submission
-        Route::post('/job/{job}/apply', [JobApplicationController::class, 'apply'])->name('job.apply');
+        // Training Enrollments (Protected - requires complete profile)
+        Route::prefix('enrollments')->group(function () {
+            Route::get('/', [TrainingEnrollmentController::class, 'index'])->name('enrollments.index');
+            Route::post('/', [TrainingEnrollmentController::class, 'store'])->name('enrollments.store');
+            Route::get('/{enrollment}', [TrainingEnrollmentController::class, 'show'])->name('enrollments.show');
+            Route::post('/{enrollment}/cancel', [TrainingEnrollmentController::class, 'cancel'])->name('enrollments.cancel');
+            Route::delete('/{enrollment}', [TrainingEnrollmentController::class, 'destroy'])->name('enrollments.destroy');
+
+            // Enrollment status update
+            Route::post('/{enrollment}/status', [TrainingEnrollmentController::class, 'updateStatus'])->name('enrollments.updateStatus');
+        });
+
+        // Documents (Protected - requires complete profile)
+        Route::prefix('documents')->group(function () {
+            Route::get('/', [DocumentController::class, 'index'])->name('documents.index');
+            Route::get('/create', [DocumentController::class, 'create'])->name('documents.create');
+            Route::post('/', [DocumentController::class, 'store'])->name('documents.store');
+            Route::get('/{document}', [DocumentController::class, 'show'])->name('documents.show');
+            Route::get('/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+            Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+        });
+
+        // Skill Training Enrollment (Protected - requires complete profile)
+        Route::post('/skill-trainings/{skill_training}/enroll', [SkillTrainingController::class, 'enroll'])->name('skill-trainings.enroll');
+        // REMOVED DUPLICATE ROUTE: Route::get('/skill-trainings/{skill_training}', [SkillTrainingController::class, 'show'])->name('skill-trainings.show');
     });
 
     // =========================================================================
-    // JOB POSTING MANAGEMENT ROUTES (Admin & Authorized Users)
-    // =========================================================================
-    Route::prefix('job-postings')->group(function () {
-        // Main CRUD routes
-        Route::get('/', [JobPostingController::class, 'index'])->name('job-postings.index');
-        Route::get('/create', [JobPostingController::class, 'create'])->name('job-postings.create');
-        Route::post('/', [JobPostingController::class, 'store'])->name('job-postings.store');
-        Route::get('/{job_posting}', [JobPostingController::class, 'show'])->name('job-postings.show');
-        Route::get('/{job_posting}/edit', [JobPostingController::class, 'edit'])->name('job-postings.edit');
-        Route::put('/{job_posting}', [JobPostingController::class, 'update'])->name('job-postings.update');
-        Route::delete('/{job_posting}', [JobPostingController::class, 'destroy'])->name('job-postings.destroy');
-
-        // Enhanced Job Posting Features
-        Route::post('/{job_posting}/toggle-status', [JobPostingController::class, 'toggleStatus'])
-            ->name('job-postings.toggle-status');
-        Route::post('/{job_posting}/duplicate', [JobPostingController::class, 'duplicate'])
-            ->name('job-postings.duplicate');
-        Route::post('/{job_posting}/extend-deadline', [JobPostingController::class, 'extendDeadline'])
-            ->name('job-postings.extend-deadline');
-
-        // Statistics and Analytics
-        Route::get('/statistics/overview', [JobPostingController::class, 'statistics'])
-            ->name('job-postings.statistics');
-        Route::get('/export/csv', [JobPostingController::class, 'export'])
-            ->name('job-postings.export');
-
-        // Bulk Actions
-        Route::post('/bulk/actions', [JobPostingController::class, 'bulkAction'])
-            ->name('job-postings.bulk-action');
-    });
-
-    // =========================================================================
-    // SKILL TRAININGS ROUTES
-    // =========================================================================
-    Route::prefix('skill-trainings')->group(function () {
-        Route::get('/', [SkillTrainingController::class, 'index'])->name('skill-trainings.index');
-        Route::get('/create', [SkillTrainingController::class, 'create'])->name('skill-trainings.create');
-        Route::post('/', [SkillTrainingController::class, 'store'])->name('skill-trainings.store');
-        Route::get('/{skill_training}', [SkillTrainingController::class, 'show'])->name('skill-trainings.show');
-        Route::get('/{skill_training}/edit', [SkillTrainingController::class, 'edit'])->name('skill-trainings.edit');
-        Route::put('/{skill_training}', [SkillTrainingController::class, 'update'])->name('skill-trainings.update');
-        Route::delete('/{skill_training}', [SkillTrainingController::class, 'destroy'])->name('skill-trainings.destroy');
-
-        // Toggle status route
-        Route::post('/{skill_training}/toggle-status', [SkillTrainingController::class, 'toggleStatus'])
-            ->name('skill-trainings.toggle-status');
-    });
-
-    // =========================================================================
-    // TRAINING ENROLLMENT ROUTES
-    // =========================================================================
-    Route::prefix('enrollments')->group(function () {
-        Route::get('/', [TrainingEnrollmentController::class, 'index'])->name('enrollments.index');
-        Route::post('/', [TrainingEnrollmentController::class, 'store'])->name('enrollments.store');
-        Route::delete('/{enrollment}', [TrainingEnrollmentController::class, 'destroy'])->name('enrollments.destroy');
-    });
-
-    // =========================================================================
-    // ANNOUNCEMENTS ROUTES
-    // =========================================================================
-    Route::prefix('announcements')->group(function () {
-        Route::get('/', [AnnouncementController::class, 'index'])->name('announcements.index');
-        Route::get('/create', [AnnouncementController::class, 'create'])->name('announcements.create');
-        Route::post('/', [AnnouncementController::class, 'store'])->name('announcements.store');
-        Route::get('/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
-        Route::get('/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
-        Route::put('/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
-        Route::delete('/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
-    });
-
-    // =========================================================================
-    // DOCUMENTS ROUTES
-    // =========================================================================
-    Route::prefix('documents')->group(function () {
-        Route::get('/', [DocumentController::class, 'index'])->name('documents.index');
-        Route::get('/create', [DocumentController::class, 'create'])->name('documents.create');
-        Route::post('/', [DocumentController::class, 'store'])->name('documents.store');
-        Route::get('/{document}', [DocumentController::class, 'show'])->name('documents.show');
-        Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-    });
-
-    // =========================================================================
-    // ADMIN ROUTES
+    // ADMIN ROUTES (Protected by AdminMiddleware)
     // =========================================================================
     Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
         // Redirect /admin to /admin/dashboard
@@ -222,24 +291,35 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('admin.dashboard');
         });
 
-        // Dashboard
-        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        // Admin dashboard - using new separate controller
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // =========================================================================
-        // USER MANAGEMENT ROUTES
-        // =========================================================================
+        // Settings route
+        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+
+        // User Management
         Route::prefix('users')->name('users.')->group(function () {
-            // User listing and management
             Route::get('/', [AdminController::class, 'users'])->name('index');
             Route::get('/create', [AdminController::class, 'createUser'])->name('create');
             Route::post('/', [AdminController::class, 'storeUser'])->name('store');
             Route::get('/{user}', [AdminController::class, 'userShow'])->name('show');
-
-            // User status management
             Route::post('/{user}/activate', [AdminController::class, 'activateUser'])->name('activate');
             Route::post('/{user}/deactivate', [AdminController::class, 'deactivateUser'])->name('deactivate');
             Route::post('/{user}/unlock', [AdminController::class, 'unlockUser'])->name('unlock');
             Route::post('/{user}/role', [AdminController::class, 'updateUserRole'])->name('update-role');
+        });
+
+        // Employer Verification Management
+        Route::prefix('employer-verifications')->name('employer-verifications.')->group(function () {
+            Route::get('/', [AdminController::class, 'employerVerifications'])->name('index');
+            Route::get('/pending', [AdminController::class, 'pendingEmployerVerifications'])->name('pending');
+            Route::get('/{employer}/review', [AdminController::class, 'reviewEmployerVerification'])->name('review');
+            Route::post('/{employer}/approve', [AdminController::class, 'approveEmployerVerification'])->name('approve');
+            Route::post('/{employer}/reject', [AdminController::class, 'rejectEmployerVerification'])->name('reject');
+            Route::post('/{employer}/request-more-info', [AdminController::class, 'requestMoreInfo'])->name('request-info');
+            Route::get('/{employer}/documents', [AdminController::class, 'viewEmployerDocuments'])->name('documents');
+            Route::get('/expired', [AdminController::class, 'expiredEmployerVerifications'])->name('expired');
+            Route::post('/{employer}/renew', [AdminController::class, 'renewEmployerVerification'])->name('renew');
         });
 
         // Security Reports
@@ -248,39 +328,65 @@ Route::middleware(['auth'])->group(function () {
         // System Statistics
         Route::get('/statistics', [AdminController::class, 'systemStatistics'])->name('statistics');
 
-        // =========================================================================
-        // APPLICATION MANAGEMENT ROUTES
-        // =========================================================================
+        // Application Management
         Route::prefix('applications')->name('applications.')->group(function () {
             Route::get('/', [JobApplicationController::class, 'adminIndex'])->name('index');
-            Route::post('/{application}/status', [JobApplicationController::class, 'updateStatus'])->name('status');
+            Route::get('/{application}', [JobApplicationController::class, 'show'])->name('show');
+
+            // 🔔 UPDATED: Application status routes with new notification system
+            Route::post('/{application}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
+            Route::post('/{application}/shortlist', [JobApplicationController::class, 'shortlist'])->name('shortlist');
+            Route::post('/{application}/reject', [JobApplicationController::class, 'reject'])->name('reject');
             Route::post('/bulk-update', [JobApplicationController::class, 'bulkUpdate'])->name('bulk-update');
             Route::get('/statistics', [JobApplicationController::class, 'statistics'])->name('statistics');
         });
 
-        // =========================================================================
-        // TRAINING MANAGEMENT ROUTES
-        // =========================================================================
+        // Training Management
         Route::prefix('enrollments')->name('enrollments.')->group(function () {
             Route::get('/', [TrainingEnrollmentController::class, 'adminIndex'])->name('index');
             Route::post('/{enrollment}/status', [TrainingEnrollmentController::class, 'updateStatus'])->name('updateStatus');
         });
 
-        // =========================================================================
-        // JOB POSTING MANAGEMENT ROUTES (Admin-specific)
-        // =========================================================================
+        // Job Posting Management (Admin-specific)
         Route::prefix('job-postings')->name('job-postings.')->group(function () {
-            Route::get('/analytics', [JobPostingController::class, 'statistics'])->name('statistics');
+            Route::get('/', [JobPostingController::class, 'index'])->name('index');
+            Route::get('/create', [JobPostingController::class, 'create'])->name('create');
+            Route::post('/', [JobPostingController::class, 'store'])->name('store');
+            Route::get('/{job_posting}', [JobPostingController::class, 'show'])->name('show');
+            Route::get('/{job_posting}/edit', [JobPostingController::class, 'edit'])->name('edit');
+            Route::put('/{job_posting}', [JobPostingController::class, 'update'])->name('update');
+            Route::delete('/{job_posting}', [JobPostingController::class, 'destroy'])->name('destroy');
+            Route::post('/{job_posting}/toggle-status', [JobPostingController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/{job_posting}/duplicate', [JobPostingController::class, 'duplicate'])->name('duplicate');
+            Route::post('/{job_posting}/extend-deadline', [JobPostingController::class, 'extendDeadline'])->name('extend-deadline');
+            Route::get('/analytics', [JobPostingController::class, 'analytics'])->name('analytics');
             Route::get('/export', [JobPostingController::class, 'export'])->name('export');
             Route::post('/bulk-action', [JobPostingController::class, 'bulkAction'])->name('bulk-action');
         });
 
-        // =========================================================================
-        // RESOURCE MANAGEMENT ROUTES (Backward compatibility)
-        // =========================================================================
-        Route::resource('job-postings', JobPostingController::class)->except(['index', 'show', 'create', 'edit']);
-        Route::resource('skill-trainings', SkillTrainingController::class)->except(['index', 'show', 'create', 'edit']);
-        Route::resource('announcements', AnnouncementController::class)->except(['index', 'show', 'create', 'edit']);
+        // Skill Trainings Management
+        Route::prefix('skill-trainings')->name('skill-trainings.')->group(function () {
+            Route::get('/', [SkillTrainingController::class, 'index'])->name('index');
+            Route::get('/create', [SkillTrainingController::class, 'create'])->name('create');
+            Route::post('/', [SkillTrainingController::class, 'store'])->name('store');
+            Route::get('/{skill_training}', [SkillTrainingController::class, 'show'])->name('show');
+            Route::get('/{skill_training}/edit', [SkillTrainingController::class, 'edit'])->name('edit');
+            Route::put('/{skill_training}', [SkillTrainingController::class, 'update'])->name('update');
+            Route::delete('/{skill_training}', [SkillTrainingController::class, 'destroy'])->name('destroy');
+            Route::post('/{skill_training}/toggle-status', [SkillTrainingController::class, 'toggleStatus'])->name('toggle-status');
+            Route::get('/{skill_training}/enrollments', [SkillTrainingController::class, 'enrollments'])->name('enrollments');
+        });
+
+        // Announcements Management
+        Route::prefix('announcements')->name('announcements.')->group(function () {
+            Route::get('/', [AnnouncementController::class, 'index'])->name('index');
+            Route::get('/create', [AnnouncementController::class, 'create'])->name('create');
+            Route::post('/', [AnnouncementController::class, 'store'])->name('store');
+            Route::get('/{announcement}', [AnnouncementController::class, 'show'])->name('show');
+            Route::get('/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('edit');
+            Route::put('/{announcement}', [AnnouncementController::class, 'update'])->name('update');
+            Route::delete('/{announcement}', [AnnouncementController::class, 'destroy'])->name('destroy');
+        });
     });
 });
 
@@ -289,157 +395,164 @@ Route::middleware(['auth'])->group(function () {
 // =========================================================================
 Route::middleware(['auth'])->group(function () {
     Route::get('/job-postings/filter/counts', [JobPostingController::class, 'getFilterCounts'])->name('job-postings.filter-counts');
-
-    // Additional API routes for job postings
     Route::prefix('api')->group(function () {
         Route::get('/job-postings/stats', [JobPostingController::class, 'getFilterCounts'])->name('api.job-postings.stats');
         Route::get('/job-postings/{id}/quick-stats', [JobPostingController::class, 'getJobStats'])->name('api.job-postings.quick-stats');
+
+        // Employer API routes
+        Route::get('/employer/stats', [EmployerDashboardController::class, 'getStats'])->name('api.employer.stats');
+        Route::get('/employer/application-trends', [EmployerController::class, 'getApplicationTrends'])->name('api.employer.application-trends');
+        Route::get('/employer/performance-metrics', [EmployerController::class, 'getPerformanceMetrics'])->name('api.employer.performance-metrics');
+
+        // Application API routes
+        Route::get('/applications/{application}/status', [JobApplicationController::class, 'show'])->name('api.applications.show');
     });
 });
 
-// =========================================================================
-// DEBUG ROUTES (Conditional - only in development)
-// =========================================================================
-
-if (env('APP_DEBUG', false)) {
-    Route::get('/debug-user', function () {
-        $user = auth()->user();
-
-        if (!$user) {
-            return "No user logged in";
-        }
-
-        return [
-            'user_id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'isAdmin()' => $user->isAdmin() ? 'true' : 'false',
-            'isPwd()' => $user->isPwd() ? 'true' : 'false',
-            'hasPwdProfile()' => $user->hasPwdProfile() ? 'true' : 'false'
-        ];
-    })->middleware('auth');
-
-    // Test basic form submission
-    Route::get('/debug-registration-form', function() {
-        return '
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Debug Registration</title>
-            <style>
-                body { font-family: Arial; padding: 20px; }
-                .form-group { margin: 10px 0; }
-                label { display: block; margin-bottom: 5px; }
-                input, textarea { width: 300px; padding: 5px; }
-                .error { color: red; margin: 5px 0; }
-                .success { color: green; margin: 5px 0; }
-            </style>
-        </head>
-        <body>
-            <h1>Debug Registration Form</h1>
-            <form method="POST" action="' . route('register') . '">
-                ' . csrf_field() . '
-
-                <div class="form-group">
-                    <label>User Type *</label>
-                    <div>
-                        <input type="radio" name="user_type" value="pwd" checked> PWD
-                        <input type="radio" name="user_type" value="employer"> Employer
-                        <input type="radio" name="user_type" value="admin"> Admin
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="name" value="Test User ' . rand(1000,9999) . '" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" value="test' . rand(1000,9999) . '@test.com" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Phone *</label>
-                    <input type="text" name="phone" value="1234567890" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Address *</label>
-                    <textarea name="address" required>Test Address</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Password *</label>
-                    <input type="password" name="password" value="Test1234" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Confirm Password *</label>
-                    <input type="password" name="password_confirmation" value="Test1234" required>
-                </div>
-
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" name="terms" checked required>
-                        I agree to terms *
-                    </label>
-                </div>
-
-                <button type="submit" style="padding: 10px 20px; background: blue; color: white; border: none;">Test Register</button>
-            </form>
-
-            <div style="margin-top: 20px;">
-                <a href="/debug-create-user">Test Direct User Creation</a> |
-                <a href="/debug-session">Check Session</a> |
-                <a href="/register">Back to Real Form</a>
-            </div>
-        </body>
-        </html>
-        ';
-    });
-
-    // Test direct user creation
-    Route::get('/debug-create-user', function() {
-        try {
-            $user = \App\Models\User::create([
-                'name' => 'Debug User ' . rand(1000, 9999),
-                'email' => 'debug' . rand(1000, 9999) . '@test.com',
-                'password' => \Illuminate\Support\Facades\Hash::make('password'),
-                'role' => 'pwd',
-                'phone' => '1234567890',
-                'address' => 'Debug Address',
-                'registration_ip' => request()->ip(),
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'user' => $user->toArray(),
-                'message' => 'User created directly'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ], 500);
-        }
-    });
-
-    // Check what's in the session/validation
-    Route::get('/debug-session', function() {
-        return [
-            'session_data' => session()->all(),
-            'old_input' => old(),
-            'errors' => session('errors') ? session('errors')->all() : 'No errors',
-            'csrf_token' => csrf_token()
-        ];
-    });
-}
-
-// Laravel Auth Routes (keep for compatibility)
-Auth::routes(['register' => false]); // We've already defined custom registration routes
-
 // Keep the home route for Laravel compatibility
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// Laravel Auth Routes (keep for compatibility)
+Auth::routes(['register' => false]);
+
+
+
+
+
+
+
+
+// Add these test routes at the bottom of your web.php file
+Route::get('/test-email-simple', function () {
+    try {
+        $yourEmail = 'phomelarosetedonato@gmail.com';
+
+        \Mail::raw('This is a test email from your PWD System. If you receive this, your email configuration is working!', function ($message) use ($yourEmail) {
+            $message->to($yourEmail)
+                    ->subject('✅ PWD System - Email Test Successful');
+        });
+
+        return '✅ Simple test email sent successfully to: ' . $yourEmail .
+               '<br><br>Please check your email inbox and spam folder.';
+    } catch (\Exception $e) {
+        return '❌ Error: ' . $e->getMessage() .
+               '<br><br>Please check:
+               <br>1. Your Gmail app password is correct
+               <br>2. 2-factor authentication is enabled
+               <br>3. You generated an app password for "Mail"';
+    }
+});
+
+// Test with HTML email
+Route::get('/test-email-html', function () {
+    try {
+        $yourEmail = 'phomelarosetedonato@gmail.com';
+
+        \Mail::send([], [], function ($message) use ($yourEmail) {
+            $message->to($yourEmail)
+                    ->subject('✅ PWD System - HTML Email Test')
+                    ->html('
+                        <h2>PWD System Email Test</h2>
+                        <p>This is a <strong>HTML email test</strong> from your PWD System.</p>
+                        <p>If you receive this, your email configuration is working perfectly!</p>
+                        <hr>
+                        <p><small>System: ' . config('app.name') . '</small></p>
+                    ');
+        });
+
+        return '✅ HTML test email sent successfully to: ' . $yourEmail;
+    } catch (\Exception $e) {
+        return '❌ Error: ' . $e->getMessage();
+    }
+});
+
+
+// Debug route to check notification sending
+Route::get('/debug-notification', function () {
+    try {
+        $application = App\Models\JobApplication::first();
+        if (!$application) {
+            return 'No applications found. Please create an application first.';
+        }
+
+        $user = $application->user;
+
+        \Log::info("Testing notification for application: " . $application->id);
+        \Log::info("User email: " . $user->email);
+        \Log::info("Job: " . ($application->jobPosting->title ?? 'No job posting'));
+
+        // Test the notification directly - NOW WITH ONLY 1 ARGUMENT
+        $user->notify(new App\Notifications\ApplicationApproved($application));
+
+        \Log::info("Notification sent successfully");
+
+        return 'Debug: Notification sent to ' . $user->email .
+               '<br>Job: ' . ($application->jobPosting->title ?? 'Unknown') .
+               '<br>Check storage/logs/laravel.log for details';
+
+    } catch (\Exception $e) {
+        \Log::error('Debug notification failed: ' . $e->getMessage());
+        return 'Error: ' . $e->getMessage() .
+               '<br>File: ' . $e->getFile() .
+               '<br>Line: ' . $e->getLine();
+    }
+});
+// Check queue status
+Route::get('/queue-status', function () {
+    $pendingJobs = \DB::table('jobs')->count();
+    $failedJobs = \DB::table('failed_jobs')->count();
+
+    return 'Pending jobs: ' . $pendingJobs . '<br>' .
+           'Failed jobs: ' . $failedJobs . '<br>' .
+           'Queue connection: ' . config('queue.default') . '<br>' .
+           '<a href="/process-queue">Process Queue Now</a>';
+});
+
+// Process queue manually
+Route::get('/process-queue', function () {
+    try {
+        $exitCode = \Artisan::call('queue:work', [
+            '--once' => true,
+            '--queue' => 'default'
+        ]);
+
+        return 'Queue processed. Exit code: ' . $exitCode;
+    } catch (\Exception $e) {
+        return 'Queue error: ' . $e->getMessage();
+    }
+});
+
+// Enhanced debug notification
+Route::get('/test-notification-enhanced', function () {
+    try {
+        $application = App\Models\JobApplication::first();
+        if (!$application) {
+            return 'No applications found.';
+        }
+
+        $user = $application->user;
+
+        \Log::info("🎯 ENHANCED NOTIFICATION TEST STARTED");
+        \Log::info("📧 User Email: " . $user->email);
+        \Log::info("👤 User Name: " . $user->name);
+        \Log::info("💼 Job: " . ($application->jobPosting->title ?? 'No job'));
+
+        // Test if basic email works first
+        \Mail::raw('Basic email test', function ($message) use ($user) {
+            $message->to($user->email)
+                    ->subject('Basic Email Test');
+        });
+        \Log::info("✅ Basic email sent");
+
+        // Test notification
+        $user->notify(new App\Notifications\ApplicationApproved($application));
+        \Log::info("✅ Notification queued");
+
+        return 'Enhanced test completed for: ' . $user->email .
+               '<br>Check logs for details.';
+
+    } catch (\Exception $e) {
+        \Log::error('❌ Enhanced test failed: ' . $e->getMessage());
+        return 'Error: ' . $e->getMessage();
+    }
+});

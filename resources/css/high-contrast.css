@@ -1,0 +1,368 @@
+/* resources/css/high-contrast.css */
+
+/* ===== HIGH CONTRAST MODE STYLES ===== */
+
+/* Very High Contrast Mode */
+body.contrast-very-high {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Ensure all text is visible in very high contrast */
+body.contrast-very-high * {
+    color: #ffffff !important;
+}
+
+/* Override specific text colors for very high contrast */
+body.contrast-very-high .text-dark,
+body.contrast-very-high .text-gray-800,
+body.contrast-very-high .text-gray-700,
+body.contrast-very-high .text-gray-600,
+body.contrast-very-high .text-gray-500,
+body.contrast-very-high .text-muted {
+    color: #ffffff !important;
+}
+
+/* Background overrides for very high contrast */
+body.contrast-very-high .bg-white,
+body.contrast-very-high .bg-light,
+body.contrast-very-high .bg-gray-50 {
+    background-color: #000000 !important;
+}
+
+/* Card styles for high contrast */
+body.contrast-very-high .card {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .card-body {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .card-header {
+    background-color: #000000 !important;
+    border-bottom: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .card-footer {
+    background-color: #000000 !important;
+    border-top: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Button styles for high contrast */
+body.contrast-very-high .btn {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .btn:hover {
+    background-color: #cccccc !important;
+    color: #000000 !important;
+}
+
+/* Specific button styles */
+body.contrast-very-high .btn-nude-solid,
+body.contrast-very-high .btn-nude-outline {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .btn-nude-solid:hover,
+body.contrast-very-high .btn-nude-outline:hover {
+    background-color: #cccccc !important;
+    color: #000000 !important;
+}
+
+/* Navigation styles for high contrast */
+body.contrast-very-high .navbar {
+    background-color: #000000 !important;
+    border-bottom: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .nav-link {
+    color: #ffffff !important;
+    background-color: #000000 !important;
+}
+
+body.contrast-very-high .nav-link:hover {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .nav-link.active {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* Form elements */
+body.contrast-very-high input,
+body.contrast-very-high select,
+body.contrast-very-high textarea {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high input::placeholder {
+    color: #cccccc !important;
+}
+
+body.contrast-very-high .form-label {
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .form-text {
+    color: #cccccc !important;
+}
+
+/* Links */
+body.contrast-very-high a {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+}
+
+body.contrast-very-high a:hover {
+    color: #cccccc !important;
+}
+
+/* Modal and dropdown */
+body.contrast-very-high .modal-content {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .modal-header {
+    border-bottom: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .modal-footer {
+    border-top: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .dropdown-menu {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .dropdown-item {
+    color: #ffffff !important;
+    background-color: #000000 !important;
+}
+
+body.contrast-very-high .dropdown-item:hover {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
+/* Footer in high contrast */
+body.contrast-very-high .footer-custom {
+    background-color: #000000 !important;
+    border-top: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .footer-custom h5,
+body.contrast-very-high .footer-custom p {
+    color: #ffffff !important;
+}
+
+/* Accessibility panel in high contrast */
+body.contrast-very-high .accessibility-panel {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .accessibility-toggle {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .accessibility-toggle:hover {
+    background-color: #cccccc !important;
+    color: #000000 !important;
+}
+
+/* Badges and alerts */
+body.contrast-very-high .badge {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #ffffff !important;
+}
+
+body.contrast-very-high .alert {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .alert-success {
+    border-color: #00ff00 !important;
+}
+
+body.contrast-very-high .alert-danger {
+    border-color: #ff0000 !important;
+}
+
+body.contrast-very-high .alert-warning {
+    border-color: #ffff00 !important;
+}
+
+body.contrast-very-high .alert-info {
+    border-color: #00ffff !important;
+}
+
+/* Tables */
+body.contrast-very-high .table {
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .table th,
+body.contrast-very-high .table td {
+    border-color: #ffffff !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #1a1a1a !important;
+}
+
+/* Lists */
+body.contrast-very-high .list-group-item {
+    background-color: #000000 !important;
+    border: 1px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Icons - ensure they're visible */
+body.contrast-very-high .fas,
+body.contrast-very-high .far,
+body.contrast-very-high .fab {
+    color: #ffffff !important;
+}
+
+/* Images - add borders for visibility */
+body.contrast-very-high img {
+    border: 2px solid #ffffff !important;
+}
+
+/* High contrast mode (not very high) */
+body.contrast-high {
+    filter: contrast(1.5);
+}
+
+body.contrast-high .text-muted {
+    color: #666666 !important;
+}
+
+/* Focus styles for high contrast */
+body.contrast-very-high *:focus {
+    outline: 3px solid #ffff00 !important;
+    outline-offset: 2px !important;
+}
+
+/* Skip link in high contrast */
+body.contrast-very-high .skip-link {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+}
+
+/* PWD sidebar in high contrast */
+body.contrast-very-high .pwd-sidebar {
+    background-color: #000000 !important;
+    border-right: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .pwd-sidebar .nav-link {
+    color: #ffffff !important;
+    border-bottom: 1px solid #ffffff !important;
+}
+
+body.contrast-very-high .pwd-sidebar .nav-link:hover {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
+/* Hero section adjustments */
+body.contrast-very-high .hero-section {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .hero-section h1,
+body.contrast-very-high .hero-section p {
+    color: #ffffff !important;
+}
+
+/* Stats and numbers */
+body.contrast-very-high .stat-item h3 {
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .stat-item p {
+    color: #cccccc !important;
+}
+
+/* Job cards and training cards */
+body.contrast-very-high .job-card,
+body.contrast-very-high .training-card,
+body.contrast-very-high .story-card {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .company-name,
+body.contrast-very-high .job-meta {
+    color: #ffffff !important;
+}
+
+/* Partner logos */
+body.contrast-very-high .partner-logo {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+body.contrast-very-high .partner-logo .bg-light {
+    background-color: #1a1a1a !important;
+}
+
+/* Success stories */
+body.contrast-very-high .story-avatar {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
+/* CTA sections */
+body.contrast-very-high .bg-primary {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+}
+
+body.contrast-very-high .bg-primary.text-white {
+    color: #ffffff !important;
+}
+
+/* Ensure all borders are visible */
+body.contrast-very-high .border,
+body.contrast-very-high .border-top,
+body.contrast-very-high .border-bottom,
+body.contrast-very-high .border-start,
+body.contrast-very-high .border-end {
+    border-color: #ffffff !important;
+}

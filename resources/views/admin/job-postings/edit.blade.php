@@ -209,6 +209,45 @@
                             <small class="form-text text-muted">List the qualifications, skills, and experience required (minimum 50 characters)</small>
                         </div>
 
+                        <!-- Accessibility / PWD Fields -->
+                        <div class="card mt-3 p-3 border">
+                            <h5 class="mb-2">Accessibility & PWD Options</h5>
+
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="is_remote" name="is_remote" value="1" {{ old('is_remote', $jobPosting->is_remote) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_remote">Is this role remote?</label>
+                            </div>
+
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="provides_accommodations" name="provides_accommodations" value="1" {{ old('provides_accommodations', $jobPosting->provides_accommodations) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="provides_accommodations">Provides accommodations / accessibility</label>
+                            </div>
+
+                            <div class="form-group mt-2">
+                                <label for="accessibility_features" class="font-weight-bold">Accessibility features (optional)</label>
+                                <textarea id="accessibility_features" name="accessibility_features" class="form-control" rows="3">{{ old('accessibility_features', $jobPosting->accessibility_features) }}</textarea>
+                                <small class="form-text text-muted">e.g. wheelchair access, screen reader compatible documentation, flexible hours</small>
+                            </div>
+
+                            <div class="form-group mt-2">
+                                <label for="assistive_technology" class="font-weight-bold">Assistive technology (optional)</label>
+                                <input type="text" id="assistive_technology" name="assistive_technology" class="form-control" value="{{ old('assistive_technology', $jobPosting->assistive_technology) }}" placeholder="e.g. JAWS, NVDA, speech-to-text tools">
+                            </div>
+
+                            <div class="form-group mt-2">
+                                <label class="font-weight-bold">Suitable disability types (optional)</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach($disabilityTypes as $dt)
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="disability_type_ids[]" value="{{ $dt->id }}" id="dt-{{ $dt->id }}"
+                                                {{ in_array($dt->id, old('disability_type_ids', $jobPosting->suitableDisabilityTypes->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                            <label class="form-check-label small" for="dt-{{ $dt->id }}">{{ $dt->type }}</label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Status and Actions -->
                         <div class="row mt-4">
                             <div class="col-md-6">
@@ -249,7 +288,7 @@
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-save"></i> Update Job Posting
                                 </button>
-                                <a href="{{ route('job-postings.index') }}" class="btn btn-secondary btn-lg">
+                                <a href="{{ route('admin.job-postings.index') }}" class="btn btn-secondary btn-lg">
                                     <i class="fas fa-times"></i> Cancel
                                 </a>
                             </div>
@@ -272,7 +311,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{{ route('job-postings.extend-deadline', $jobPosting->id) }}" method="POST">
+            <form action="{{ route('admin.job-postings.extend-deadline', $jobPosting->id) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">

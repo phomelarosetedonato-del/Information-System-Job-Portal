@@ -54,6 +54,29 @@ class DocumentController extends Controller
         return response()->file(storage_path('app/public/' . $document->file_path));
     }
 
+    public function download(Document $document)
+    {
+        // Ensure the document belongs to the current user
+        if ($document->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Get the file path
+        $filePath = storage_path('app/public/' . $document->file_path);
+
+        // Check if file exists
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        // Get the original file extension and create download filename
+        $fileExtension = pathinfo($document->file_path, PATHINFO_EXTENSION);
+        $downloadFileName = $document->name . '.' . $fileExtension;
+
+        // Return file download response
+        return response()->download($filePath, $downloadFileName);
+    }
+
     public function destroy(Document $document)
     {
         // Ensure the document belongs to the current user

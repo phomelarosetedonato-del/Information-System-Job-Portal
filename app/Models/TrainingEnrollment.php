@@ -14,7 +14,18 @@ class TrainingEnrollment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'skill_training_id', 'status', 'notes'
+        'user_id',
+        'skill_training_id',
+        'status',
+        'notes',
+        'enrolled_at',  // ADDED
+        'reviewed_at',  // ADDED
+        'reviewed_by'   // ADDED
+    ];
+
+    protected $casts = [
+        'enrolled_at' => 'datetime',  // ADDED
+        'reviewed_at' => 'datetime'   // ADDED
     ];
 
     public function user()
@@ -25,6 +36,12 @@ class TrainingEnrollment extends Model
     public function skillTraining()
     {
         return $this->belongsTo(SkillTraining::class);
+    }
+
+    // ADDED: Relationship for reviewer
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     /**
@@ -106,6 +123,22 @@ class TrainingEnrollment extends Model
     }
 
     /**
+     * Scope for cancelled enrollments - ADDED
+     */
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', 'cancelled');
+    }
+
+    /**
+     * Scope for active enrollments (pending or approved) - ADDED
+     */
+    public function scopeActive($query)
+    {
+        return $query->whereIn('status', ['pending', 'approved']);
+    }
+
+    /**
      * Get the status with badge color
      */
     public function getStatusBadgeAttribute()
@@ -148,6 +181,22 @@ class TrainingEnrollment extends Model
     }
 
     /**
+     * Check if enrollment is cancelled - ADDED
+     */
+    public function getIsCancelledAttribute()
+    {
+        return $this->status === 'cancelled';
+    }
+
+    /**
+     * Check if enrollment is completed - ADDED
+     */
+    public function getIsCompletedAttribute()
+    {
+        return $this->status === 'completed';
+    }
+
+    /**
      * Check if training has started
      */
     public function getHasTrainingStartedAttribute()
@@ -164,19 +213,47 @@ class TrainingEnrollment extends Model
     }
 
     /**
+     * Check if training is ongoing - ADDED
+     */
+    public function getIsTrainingOngoingAttribute()
+    {
+        return $this->skillTraining &&
+               $this->skillTraining->start_date <= now() &&
+               $this->skillTraining->end_date >= now();
+    }
+
+    /**
      * Get enrollment date in readable format
+     * UPDATED: Use enrolled_at instead of created_at
      */
     public function getEnrolledDateAttribute()
     {
-        return $this->created_at->format('F j, Y');
+        return $this->enrolled_at ? $this->enrolled_at->format('F j, Y') : $this->created_at->format('F j, Y');
     }
 
     /**
      * Get enrollment date in relative format
+     * UPDATED: Use enrolled_at instead of created_at
      */
     public function getEnrolledAgoAttribute()
     {
-        return $this->created_at->diffForHumans();
+        return $this->enrolled_at ? $this->enrolled_at->diffForHumans() : $this->created_at->diffForHumans();
+    }
+
+    /**
+     * Get reviewed date in readable format - ADDED
+     */
+    public function getReviewedDateAttribute()
+    {
+        return $this->reviewed_at ? $this->reviewed_at->format('F j, Y') : 'Not reviewed';
+    }
+
+    /**
+     * Get reviewed date in relative format - ADDED
+     */
+    public function getReviewedAgoAttribute()
+    {
+        return $this->reviewed_at ? $this->reviewed_at->diffForHumans() : null;
     }
 
     /**
@@ -187,5 +264,65 @@ class TrainingEnrollment extends Model
         return $this->is_pending &&
                $this->skillTraining &&
                $this->skillTraining->start_date > now();
+    }
+
+    /**
+     * Check if enrollment can be deleted - ADDED
+     */
+    public function getCanDeleteAttribute()
+    {
+        return in_array($this->status, ['cancelled', 'rejected']);
+    }
+
+    /**
+     * Check if enrollment has been reviewed - ADDED
+     */
+    public function getIsReviewedAttribute()
+    {
+        return !is_null($this->reviewed_at);
+    }
+
+    /**
+     * Get reviewer name - ADDED
+     */
+    public function getReviewerNameAttribute()
+    {
+        return $this->reviewer ? $this->reviewer->name : 'Not reviewed';
+    }
+
+    /**
+     * Get training title with fallback - ADDED
+     */
+    public function getTrainingTitleAttribute()
+    {
+        return $this->skillTraining ? $this->skillTraining->title : 'Training Not Found';
+    }
+
+    /**
+     * Get user name with fallback - ADDED
+     */
+    public function getUserNameAttribute()
+    {
+        return $this->user ? $this->user->name : 'User Not Found';
+    }
+
+    /**
+     * Get training dates - ADDED
+     */
+    public function getTrainingDatesAttribute()
+    {
+        if (!$this->skillTraining) {
+            return 'N/A';
+        }
+
+        return $this->skillTraining->start_date->format('M d, Y') . ' - ' . $this->skillTraining->end_date->format('M d, Y');
+    }
+
+    /**
+     * Get training location - ADDED
+     */
+    public function getTrainingLocationAttribute()
+    {
+        return $this->skillTraining ? $this->skillTraining->location : 'N/A';
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\JobApplication;
 
-class JobApplicationStatusUpdated extends Notification implements ShouldQueue
+class JobApplicationStatusUpdated extends Notification 
 {
     use Queueable;
 

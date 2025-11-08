@@ -8,10 +8,16 @@
 
     <title>@yield('title', 'Admin Panel - PWD System')</title>
 
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Load compiled CSS -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
     <!-- Custom styles -->
     <style>
         :root {
@@ -19,6 +25,8 @@
             --sidebar-bg: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
             --sidebar-color: white;
             --header-height: 70px;
+            --accessibility-primary: #667eea;
+            --accessibility-secondary: #764ba2;
         }
 
         body {
@@ -50,7 +58,7 @@
 
         /* Dashboard Header */
         .dashboard-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accessibility-primary), var(--accessibility-secondary));
             color: white;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             position: sticky;
@@ -194,6 +202,36 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.mobile-open {
+            display: block;
+        }
+
+        /* Content Container */
+        .content-container {
+            padding: 30px;
+        }
+
+        /* Accessibility Widget Overrides for Admin */
+        .accessibility-toggle {
+            z-index: 1051 !important;
+        }
+
+        .accessibility-panel {
+            z-index: 1052 !important;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .pwd-sidebar {
@@ -213,34 +251,6 @@
                 display: flex;
             }
 
-            .sidebar-overlay.mobile-open {
-                display: block;
-            }
-        }
-
-        /* Card Hover Effects */
-        .card-hover {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 1px solid #dee2e6;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-        }
-
-        /* Badge Styles */
-        .badge {
-            font-size: 0.7em;
-            padding: 4px 8px;
-        }
-
-        /* Content Container */
-        .content-container {
-            padding: 30px;
-        }
-
-        @media (max-width: 768px) {
             .content-container {
                 padding: 15px;
             }
@@ -250,7 +260,7 @@
     @yield('styles')
 </head>
 
-<body>
+<body class="{{ App\Http\Controllers\Accessibility\AccessibilityController::getBodyClasses() }}">
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" id="mobileMenuToggle">
         <i class="fas fa-bars"></i>
@@ -304,17 +314,26 @@
             <!-- Content Management -->
             <div class="nav-section">
                 <div class="section-title">Content Management</div>
-                <a href="{{ route('job-postings.index') }}" class="nav-link {{ request()->routeIs('job-postings.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.job-postings.index') }}" class="nav-link {{ request()->routeIs('admin.job-postings.*') ? 'active' : '' }}">
                     <i class="fas fa-briefcase"></i>
                     <span>Job Postings</span>
                 </a>
-                <a href="{{ route('skill-trainings.index') }}" class="nav-link {{ request()->routeIs('skill-trainings.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.skill-trainings.index') }}" class="nav-link {{ request()->routeIs('admin.skill-trainings.*') ? 'active' : '' }}">
                     <i class="fas fa-graduation-cap"></i>
                     <span>Skill Trainings</span>
                 </a>
-                <a href="{{ route('announcements.index') }}" class="nav-link {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.announcements.index') }}" class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
                     <i class="fas fa-bullhorn"></i>
                     <span>Announcements</span>
+                </a>
+            </div>
+
+            <!-- Training Management -->
+            <div class="nav-section">
+                <div class="section-title">Training Management</div>
+                <a href="{{ route('admin.enrollments.index') }}" class="nav-link {{ request()->routeIs('admin.enrollments.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-check"></i>
+                    <span>Training Enrollments</span>
                 </a>
             </div>
 
@@ -351,19 +370,227 @@
 
     <!-- Main Content -->
     <main class="main-content-with-sidebar">
-        @yield('content')
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="container-fluid py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h1 class="h4 mb-0">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            @yield('page-title', 'Admin Dashboard')
+                        </h1>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb justify-content-md-end mb-0">
+                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-white">Home</a></li>
+                                <li class="breadcrumb-item active text-white">@yield('page-title', 'Dashboard')</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="content-container">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @yield('content')
+        </div>
     </main>
 
     <!-- Accessibility Widget -->
-    @include('partials.accessibility-widget')
+    <div class="accessibility-widget">
+        @php
+            $currentLanguage = App\Http\Controllers\Accessibility\AccessibilityController::getCurrentLanguage();
+        @endphp
+
+        <button class="accessibility-toggle" id="accessibilityToggle" aria-label="Accessibility Options">
+            <i class="fas fa-universal-access"></i>
+        </button>
+
+        <div class="accessibility-panel" id="accessibilityPanel">
+            <div class="panel-header">
+                <div>
+                    <h4 class="mb-0"><i class="fas fa-universal-access me-2"></i>Accessibility</h4>
+                    <small class="opacity-75">Customize your viewing experience</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" id="closeAccessibilityPanel" aria-label="Close accessibility panel"></button>
+            </div>
+
+            <div class="panel-body">
+                <!-- Language Toggle -->
+                <div class="setting-group">
+                    <h6><i class="fas fa-language me-2"></i>Language</h6>
+                    <div class="btn-group-setting">
+                        <button class="btn-setting language-btn {{ $currentLanguage === 'en' ? 'active' : '' }}" data-language="en">
+                            <span class="language-flag">🇺🇸</span> English
+                        </button>
+                        <button class="btn-setting language-btn {{ $currentLanguage === 'tl' ? 'active' : '' }}" data-language="tl">
+                            <span class="language-flag">🇵🇭</span> Tagalog
+                        </button>
+                    </div>
+                    <small class="text-muted d-block mt-2" id="currentLanguageText">
+                        {{ $currentLanguage === 'en' ? 'Current language: English' : 'Kasalukuyang wika: Tagalog' }}
+                    </small>
+                </div>
+
+                <!-- Text Size Settings -->
+                <div class="setting-group">
+                    <h6><i class="fas fa-text-height me-2"></i>Text Size</h6>
+                    <div class="btn-group-setting">
+                        <button class="btn-setting" data-size="small">Small</button>
+                        <button class="btn-setting active" data-size="medium">Medium</button>
+                        <button class="btn-setting" data-size="large">Large</button>
+                        <button class="btn-setting" data-size="xlarge">X-Large</button>
+                    </div>
+                </div>
+
+                <!-- Contrast Settings -->
+                <div class="setting-group">
+                    <h6><i class="fas fa-adjust me-2"></i>Color & Contrast</h6>
+                    <div class="btn-group-setting">
+                        <button class="btn-setting active" data-contrast="normal">Normal</button>
+                        <button class="btn-setting" data-contrast="high">High</button>
+                        <button class="btn-setting" data-contrast="very-high">Very High</button>
+                    </div>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="setting-group">
+                    <h6><i class="fas fa-magic me-2"></i>Quick Presets</h6>
+                    <div class="preset-card" data-preset="vision">
+                        <div class="preset-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h6 class="mb-1">Low Vision</h6>
+                        <small class="text-muted">Larger text, high contrast</small>
+                    </div>
+                    <div class="preset-card" data-preset="dyslexia">
+                        <div class="preset-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h6 class="mb-1">Dyslexia Friendly</h6>
+                        <small class="text-muted">OpenDyslexic font, spacing</small>
+                    </div>
+                    <div class="preset-card" data-preset="motor">
+                        <div class="preset-icon">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </div>
+                        <h6 class="mb-1">Motor Assistance</h6>
+                        <small class="text-muted">Large buttons, keyboard nav</small>
+                    </div>
+                </div>
+
+                <!-- Additional Features -->
+                <div class="setting-group">
+                    <h6><i class="fas fa-cog me-2"></i>Additional Features</h6>
+                    <div class="setting-option">
+                        <span class="setting-label">Reduce Animations</span>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="reduceMotion">
+                        </div>
+                    </div>
+                    <div class="setting-option">
+                        <span class="setting-label">Highlight Focus</span>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="highlightFocus" checked>
+                        </div>
+                    </div>
+                    <div class="setting-option">
+                        <span class="setting-label">Simplify Layout</span>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="simplifyLayout">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="setting-group">
+                    <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                    <div class="quick-actions">
+                        <button class="btn-quick-action" onclick="speakPageTitle()">
+                            <i class="fas fa-volume-up mb-2"></i><br>
+                            <small>Read Aloud</small>
+                        </button>
+                        <button class="btn-quick-action" onclick="resetAccessibility()">
+                            <i class="fas fa-redo mb-2"></i><br>
+                            <small>Reset All</small>
+                        </button>
+                        <button class="btn-quick-action" onclick="printPage()">
+                            <i class="fas fa-print mb-2"></i><br>
+                            <small>Print Page</small>
+                        </button>
+                        <button class="btn-quick-action" data-bs-toggle="modal" data-bs-target="#keyboardShortcutsModal">
+                            <i class="fas fa-keyboard mb-2"></i><br>
+                            <small>Shortcuts</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal fade" id="keyboardShortcutsModal" tabindex="-1" aria-labelledby="keyboardShortcutsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="keyboardShortcutsModalLabel">Keyboard Shortcuts</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="shortcut-item">
+                        <kbd>Alt + A</kbd>
+                        <span>Open Accessibility Panel</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt + 1</kbd>
+                        <span>Increase Text Size</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt + 2</kbd>
+                        <span>Decrease Text Size</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt + C</kbd>
+                        <span>Toggle Contrast</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt + L</kbd>
+                        <span>Toggle Language</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Alt + R</kbd>
+                        <span>Reset All Settings</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Mobile sidebar toggle
         document.addEventListener('DOMContentLoaded', function() {
+            // Mobile sidebar toggle
             const mobileToggle = document.getElementById('mobileMenuToggle');
             const sidebar = document.getElementById('pwdSidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -391,15 +618,225 @@
                 });
             }
 
-            // Add active class based on current route
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.nav-link');
+            // Accessibility Widget Functionality
+            const accessibilityToggle = document.getElementById('accessibilityToggle');
+            const accessibilityPanel = document.getElementById('accessibilityPanel');
+            const closeAccessibilityPanel = document.getElementById('closeAccessibilityPanel');
 
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
+            if (accessibilityToggle && accessibilityPanel && closeAccessibilityPanel) {
+                // Toggle panel visibility
+                accessibilityToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    accessibilityPanel.classList.toggle('show');
+                });
+
+                closeAccessibilityPanel.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    accessibilityPanel.classList.remove('show');
+                });
+
+                // Close panel when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!accessibilityPanel.contains(event.target) && !accessibilityToggle.contains(event.target)) {
+                        accessibilityPanel.classList.remove('show');
+                    }
+                });
+
+                // Prevent panel clicks from closing it
+                accessibilityPanel.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            // Language controls
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const language = this.dataset.language;
+
+                    fetch('/accessibility/quick-tool', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            tool: 'language',
+                            language: language
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update active state
+                            document.querySelectorAll('.language-btn').forEach(b => b.classList.remove('active'));
+                            this.classList.add('active');
+
+                            // Update language text
+                            document.getElementById('currentLanguageText').textContent =
+                                language === 'tl' ? 'Kasalukuyang wika: Tagalog' : 'Current language: English';
+
+                            // Reload page to apply language changes
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
             });
+
+            // Font size controls
+            document.querySelectorAll('[data-size]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('[data-size]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Remove all font size classes
+                    document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+                    // Add selected font size class
+                    document.body.classList.add('font-size-' + this.dataset.size);
+
+                    // Save to localStorage
+                    localStorage.setItem('accessibility-font-size', this.dataset.size);
+                });
+            });
+
+            // Contrast controls
+            document.querySelectorAll('[data-contrast]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('[data-contrast]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Remove all contrast classes
+                    document.body.className = document.body.className.replace(/contrast-\w+/g, '');
+                    // Add selected contrast class
+                    document.body.classList.add('contrast-' + this.dataset.contrast);
+
+                    // Save to localStorage
+                    localStorage.setItem('accessibility-contrast', this.dataset.contrast);
+                });
+            });
+
+            // Additional settings
+            const reduceMotion = document.getElementById('reduceMotion');
+            const highlightFocus = document.getElementById('highlightFocus');
+            const simplifyLayout = document.getElementById('simplifyLayout');
+
+            if (reduceMotion) {
+                reduceMotion.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('reduce-motion');
+                    } else {
+                        document.body.classList.remove('reduce-motion');
+                    }
+                    localStorage.setItem('accessibility-reduce-motion', this.checked);
+                });
+            }
+
+            if (highlightFocus) {
+                highlightFocus.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.remove('no-focus-outline');
+                    } else {
+                        document.body.classList.add('no-focus-outline');
+                    }
+                    localStorage.setItem('accessibility-highlight-focus', this.checked);
+                });
+            }
+
+            if (simplifyLayout) {
+                simplifyLayout.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('simplified-layout');
+                    } else {
+                        document.body.classList.remove('simplified-layout');
+                    }
+                    localStorage.setItem('accessibility-simplify-layout', this.checked);
+                });
+            }
+
+            // Load saved settings
+            loadSavedSettings();
+
+            // Global functions for quick actions
+            window.speakPageTitle = function() {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(document.title);
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    alert('Text-to-speech is not supported in your browser.');
+                }
+            };
+
+            window.resetAccessibility = function() {
+                // Reset font size
+                setFontSize('medium');
+                // Reset contrast
+                setContrast('normal');
+                // Reset checkboxes
+                if (reduceMotion) reduceMotion.checked = false;
+                if (highlightFocus) highlightFocus.checked = true;
+                if (simplifyLayout) simplifyLayout.checked = false;
+
+                // Remove all accessibility classes
+                document.body.classList.remove('dyslexia-font', 'motor-friendly', 'reduce-motion', 'simplified-layout', 'no-focus-outline');
+                document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+                document.body.className = document.body.className.replace(/contrast-\w+/g, '');
+
+                // Clear localStorage
+                localStorage.removeItem('accessibility-font-size');
+                localStorage.removeItem('accessibility-contrast');
+                localStorage.removeItem('accessibility-reduce-motion');
+                localStorage.removeItem('accessibility-highlight-focus');
+                localStorage.removeItem('accessibility-simplify-layout');
+            };
+
+            window.printPage = function() {
+                window.print();
+            };
+
+            function setFontSize(size) {
+                document.querySelectorAll('[data-size]').forEach(b => b.classList.remove('active'));
+                const targetBtn = document.querySelector(`[data-size="${size}"]`);
+                if (targetBtn) {
+                    targetBtn.classList.add('active');
+                    document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+                    document.body.classList.add('font-size-' + size);
+                }
+            }
+
+            function setContrast(contrast) {
+                document.querySelectorAll('[data-contrast]').forEach(b => b.classList.remove('active'));
+                const targetBtn = document.querySelector(`[data-contrast="${contrast}"]`);
+                if (targetBtn) {
+                    targetBtn.classList.add('active');
+                    document.body.className = document.body.className.replace(/contrast-\w+/g, '');
+                    document.body.classList.add('contrast-' + contrast);
+                }
+            }
+
+            function loadSavedSettings() {
+                const fontSize = localStorage.getItem('accessibility-font-size');
+                const contrast = localStorage.getItem('accessibility-contrast');
+                const reduceMotion = localStorage.getItem('accessibility-reduce-motion') === 'true';
+                const highlightFocus = localStorage.getItem('accessibility-highlight-focus') !== 'false';
+                const simplifyLayout = localStorage.getItem('accessibility-simplify-layout') === 'true';
+
+                if (fontSize) setFontSize(fontSize);
+                if (contrast) setContrast(contrast);
+                if (reduceMotion) {
+                    document.getElementById('reduceMotion').checked = true;
+                    document.body.classList.add('reduce-motion');
+                }
+                if (!highlightFocus) {
+                    document.getElementById('highlightFocus').checked = false;
+                    document.body.classList.add('no-focus-outline');
+                }
+                if (simplifyLayout) {
+                    document.getElementById('simplifyLayout').checked = true;
+                    document.body.classList.add('simplified-layout');
+                }
+            }
         });
     </script>
 

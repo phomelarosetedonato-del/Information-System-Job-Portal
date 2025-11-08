@@ -8,8 +8,8 @@
     </a>
 
     <div class="row g-0 min-vh-100">
-        <!-- Left Side - Security Information -->
-        <div class="col-lg-6 d-none d-lg-flex bg-dark text-white align-items-center justify-content-center p-5">
+        <!-- Left Side - Security Information (NOW WITH SAME BLUE COLOR AS LOGIN) -->
+        <div class="col-lg-6 d-none d-lg-flex bg-primary text-white align-items-center justify-content-center p-5">
             <div class="text-center" style="max-width: 500px;">
                 <div class="security-features">
                     <h1 class="display-5 fw-bold mb-4" aria-label="Secure PWD Registration">
@@ -20,13 +20,13 @@
                     <div class="row g-4 mb-5">
                         <div class="col-6 text-center">
                             <div class="security-badge mb-2">
-                                <i class="fas fa-shield-alt fa-2x text-success" aria-hidden="true"></i>
+                                <i class="fas fa-shield-alt fa-2x text-warning" aria-hidden="true"></i>
                             </div>
                             <small>End-to-End Encryption</small>
                         </div>
                         <div class="col-6 text-center">
                             <div class="security-badge mb-2">
-                                <i class="fas fa-user-lock fa-2x text-success" aria-hidden="true"></i>
+                                <i class="fas fa-user-lock fa-2x text-warning" aria-hidden="true"></i>
                             </div>
                             <small>Identity Verification</small>
                         </div>
@@ -36,19 +36,19 @@
                     <div class="text-start">
                         <h3 class="h5 mb-3">Security Features:</h3>
                         <ul class="list-unstyled small">
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Strong password requirements</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Phone number verification</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Email verification required</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Bot protection with reCAPTCHA</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Secure data encryption</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Fraud detection system</li>
+                            <li class="mb-2"><i class="fas fa-check text-warning me-2"></i>Strong password requirements</li>
+                            <li class="mb-2"><i class="fas fa-check text-warning me-2"></i>Phone number verification</li>
+                            <li class="mb-2"><i class="fas fa-check text-warning me-2"></i>Email verification required</li>
+                            <li class="mb-2"><i class="fas fa-check text-warning me-2"></i>Bot protection with reCAPTCHA</li>
+                            <li class="mb-2"><i class="fas fa-check text-warning me-2"></i>Secure data encryption</li>
+                            <li class="mb-2"><i class="fas fa-check text-warning me-2"></i>Fraud detection system</li>
                         </ul>
                     </div>
 
                     <!-- Data Privacy Notice -->
-                    <div class="mt-5 p-3 bg-dark border border-secondary rounded">
+                    <div class="mt-5 p-3 bg-primary-dark border border-light rounded">
                         <h4 class="h6 mb-2">
-                            <i class="fas fa-database me-2 text-info"></i>Data Privacy
+                            <i class="fas fa-database me-2 text-warning"></i>Data Privacy
                         </h4>
                         <p class="small mb-0">
                             Your information is protected under the Data Privacy Act of 2012 (RA 10173).
@@ -79,6 +79,7 @@
                     </div>
                 </div>
 
+                <!-- Rest of your registration form remains exactly the same -->
                 <!-- Security Warnings -->
                 @if ($errors->has('suspicious_activity'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -224,17 +225,17 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <input
-                                        id="phone"
-                                        type="tel"
-                                        class="form-control form-control-lg security-input @error('phone') is-invalid @enderror"
-                                        name="phone"
-                                        value="{{ old('phone') }}"
-                                        required
-                                        autocomplete="tel"
-                                        pattern="^(\+63|0)[9][0-9]{9}$"
-                                        title="Please enter a valid Philippine mobile number"
-                                        placeholder="+63 912 345 6789 or 0912 345 6789"
-                                    >
+    id="phone"
+    type="tel"
+    class="form-control form-control-lg security-input @error('phone') is-invalid @enderror"
+    name="phone"
+    value="{{ old('phone') }}"
+    required
+    autocomplete="tel"
+    pattern="^(\+63|63|0)?[9][0-9]{9}$"
+    title="Please enter a valid Philippine mobile number (e.g., +63 912 345 6789, 0912 345 6789, or 912 345 6789)"
+    placeholder="+63 912 345 6789 or 0912 345 6789"
+>
                                     <div class="form-text text-muted security-hint">
                                         Philippine mobile number required for verification
                                     </div>
@@ -451,9 +452,9 @@
                 </div>
 
                 <!-- Security Footer -->
-                <div class="mt-4 p-3 bg-dark text-white rounded text-center">
+                <div class="mt-4 p-3 bg-primary text-white rounded text-center">
                     <h6 class="mb-2">
-                        <i class="fas fa-shield-alt me-2 text-success"></i>Maximum Security
+                        <i class="fas fa-shield-alt me-2 text-warning"></i>Maximum Security
                     </h6>
                     <p class="small mb-0">
                         Protected by end-to-end encryption • Compliant with Data Privacy Act • Regular security audits
@@ -814,6 +815,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .g-recaptcha {
         display: none !important;
     }
+}
+
+/* Make sure the primary background matches your login form */
+.bg-primary-dark {
+    background-color: rgba(0, 0, 0, 0.2) !important;
 }
 </style>
 

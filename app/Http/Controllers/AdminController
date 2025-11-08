@@ -25,11 +25,19 @@ class AdminController extends Controller
             'admin_users' => User::admins()->count(),
             'regular_users' => User::regularUsers()->count(),
             'pending_applications' => JobApplication::where('status', 'pending')->count(),
+            'approved_applications' => JobApplication::where('status', 'approved')->count(),
             'active_trainings' => TrainingEnrollment::where('status', 'enrolled')->count(),
             'total_jobs' => JobPosting::count(),
             'total_trainings' => SkillTraining::count(),
             'locked_users' => User::locked()->count(),
             'users_needing_security' => User::needsSecurityAttention()->count(),
+
+            // Fixed the typos in these lines:
+            'job_postings' => JobPosting::count(),
+            'active_jobs' => JobPosting::where('status', 'active')->count(),
+            'skill_trainings' => SkillTraining::count(),
+            'active_trainings_count' => SkillTraining::where('status', 'active')->count(),
+            'total_documents' => 0, // You can add document count logic if needed
         ];
 
         // Get recent activity
@@ -54,7 +62,7 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact(
+        return view('dashboard.admin', compact(
             'stats',
             'recentApplications',
             'recentEnrollments',
@@ -154,31 +162,47 @@ class AdminController extends Controller
     }
 
     public function userSecurityReport()
-    {
-        auth()->user()->recordAdminAction();
+{
+    auth()->user()->recordAdminAction();
 
-        $securityStats = [
-            'total_users' => User::count(),
-            'users_with_strong_passwords' => User::where('password_meets_current_standards', true)->count(),
-            'users_with_2fa' => User::whereNotNull('two_factor_secret')->count(),
-            'locked_accounts' => User::locked()->count(),
-            'expired_passwords' => User::withExpiredPassword()->count(),
-            'high_risk_users' => User::needsSecurityAttention()->count(),
-        ];
+    $securityStats = [
+        'total_users' => User::count(),
+        'users_with_strong_passwords' => User::where('password_meets_current_standards', true)->count(),
+        'users_with_2fa' => User::whereNotNull('two_factor_secret')->count(),
+        'locked_accounts' => User::locked()->count(),
+        'expired_passwords' => User::withExpiredPassword()->count(),
+        'high_risk_users' => User::needsSecurityAttention()->count(),
+    ];
 
-        $riskUsers = User::needsSecurityAttention()
-            ->with('pwdProfile')
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'user' => $user,
-                    'security_score' => $user->security_score,
-                    'recommendations' => $user->getSecurityRecommendations(),
-                ];
-            });
+    // Get risk users with proper data structure
+    $riskUsers = User::needsSecurityAttention()
+        ->with('pwdProfile')
+        ->get()
+        ->map(function ($user) {
+            // Calculate security score
+            $score = 100;
+            if (!$user->password_meets_current_standards) $score -= 30;
+            if (!$user->two_factor_secret) $score -= 20;
+            if ($user->failed_login_attempts >= 3) $score -= 25;
+            if ($user->account_locked_until && $user->account_locked_until->isFuture()) $score -= 25;
 
-        return view('admin.users.security-report', compact('securityStats', 'riskUsers'));
-    }
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'security_score' => max(0, $score),
+                'password_meets_current_standards' => $user->password_meets_current_standards,
+                'two_factor_secret' => (bool)$user->two_factor_secret,
+                'failed_login_attempts' => $user->failed_login_attempts,
+                'account_locked_until' => $user->account_locked_until,
+                'last_login_at' => $user->last_login_at,
+                'is_active' => $user->is_active,
+            ];
+        });
+
+    return view('admin.users.security-report', compact('securityStats', 'riskUsers'));
+}
 
     public function systemStatistics()
     {

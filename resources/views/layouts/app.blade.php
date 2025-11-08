@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +10,205 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    @vite(['resources/sass/app.scss', 'resources/css/app.css'])
+    @vite(['resources/sass/app.scss', 'resources/css/app.css', 'resources/css/nav.css','resources/css/high-contrast.css' ])
 
     @yield('styles')
+
+    <style>
+        /* Navigation Styles */
+        .navbar-custom {
+            background-color: #2c3e50 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .navbar-custom .navbar-brand {
+            font-weight: 600;
+            color: #ecf0f1 !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-custom .navbar-brand img {
+            height: 45px;
+            width: auto;
+        }
+
+        .navbar-custom .nav-link {
+            color: #bdc3c7 !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            margin: 0 0.1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link:focus {
+            color: #ecf0f1 !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-custom .nav-link.active {
+            color: #ecf0f1 !important;
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+
+        .navbar-custom .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background-color: #3498db;
+        }
+
+        .navbar-custom .dropdown-menu {
+            background-color: #34495e;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-custom .dropdown-item {
+            color: #bdc3c7;
+            transition: all 0.2s ease;
+        }
+
+        .navbar-custom .dropdown-item:hover {
+            color: #ecf0f1;
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+
+        .navbar-toggler {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+        }
+
+       /* Main Content Spacing */
+.main-content-wrapper {
+    min-height: calc(100vh - 160px);
+    padding-top: 20px;
+    margin-left: 0;
+    width: 100%;
+}
+
+.main-content-with-sidebar {
+    margin-left: 0;
+    width: 100%;
+    transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .main-content-with-sidebar {
+        margin-left: 0; /* Remove the 250px left margin */
+        width: 100%; /* Use full width */
+    }
+}
+        /* Footer Styles */
+        .footer-custom {
+            background-color: #2c3e50 !important;
+            color: #ecf0f1;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            margin-top: 3rem;
+        }
+
+        .footer-custom h5 {
+            color: #3498db;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-custom p {
+            color: #bdc3c7;
+        }
+
+        /* Accessibility Toggle Button */
+        .accessibility-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .accessibility-toggle:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        /* Skip link styles */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+            z-index: 10000;
+            border-radius: 0 0 4px 4px;
+            font-weight: 500;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Ensure no horizontal scrolling */
+        body {
+            overflow-x: hidden;
+        }
+
+        .container, .container-fluid {
+            max-width: 100%;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /* Mobile menu button for sidebar */
+        .mobile-menu-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1055;
+            background: #3498db;
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        @media (min-width: 768px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+        }
+    </style>
 </head>
 
 <body class="{{ App\Http\Controllers\Accessibility\AccessibilityController::getBodyClasses() }} @auth @if(auth()->user()->isPwd()) pwd-user @endif @endauth">
@@ -147,7 +345,7 @@
     <!-- Navigation - Only show for non-PWD users and guests -->
     @auth
         @if(!auth()->user()->isPwd())
-            <nav class="navbar navbar-expand-lg navbar-dark bg-primary" aria-label="Main navigation">
+            <nav class="navbar navbar-expand-lg navbar-custom fixed-top" aria-label="Main navigation">
                 <div class="container">
                     <a class="navbar-brand" href="{{ url('/') }}">
                         <i class="fas fa-universal-access me-2"></i>
@@ -159,38 +357,13 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav me-auto">
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ route('home') }}">
-                                    <i class="fas fa-home me-1"></i> Home
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->is('about') ? 'active' : '' }}" href="{{ route('about') }}">
-                                    <i class="fas fa-info-circle me-1"></i> About Us
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->is('contact') ? 'active' : '' }}" href="{{ route('contact') }}">
-                                    <i class="fas fa-envelope me-1"></i> Contact Us
-                                </a>
-                            </li>
-                        </ul>
-
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('dashboard') }}">
                                     <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('profile.show') }}">
-                                    <i class="fas fa-user me-1"></i> Profile
-                                </a>
-                            </li>
+
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('logout') }}"
                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -203,66 +376,61 @@
             </nav>
         @endif
     @else
-        <!-- Guest Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary" aria-label="Main navigation">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="{{ asset('images/pwd_logo.png') }}" alt="PWD System" style="height:45px; width:auto;">
-                </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+<!-- Guest Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm" aria-label="Main navigation">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url('/') }}">
+            <img src="{{ asset('images/pwd_logo.jpg') }}" alt="PWD System">
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ route('home') }}">
-                                <i class="fas fa-home me-1"></i> Home
-                            </a>
-                        </li>
+        </a>
 
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->is('about') ? 'active' : '' }}" href="{{ route('about') }}">
-                                <i class="fas fa-info-circle me-1"></i> About Us
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->is('contact') ? 'active' : '' }}" href="{{ route('contact') }}">
-                                <i class="fas fa-envelope me-1"></i> How it Works
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->is('contact') ? 'active' : '' }}" href="{{ route('contact') }}">
-                                <i class="fas fa-envelope me-1"></i> Contact Us
-                            </a>
-                        </li>
-                    </ul>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle fa-lg"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('login') }}">
-                                        <i class="fas fa-sign-in-alt me-2"></i> Login
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('register') }}">
-                                        <i class="fas fa-user-plus me-2"></i> Register
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Centered Navigation Links -->
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('/') ? 'active' : '' }}"
+                       href="{{ route('home') }}">
+                        <i class="fas fa-home me-2"></i>Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('about') ? 'active' : '' }}"
+                       href="{{ route('about') }}">
+                        <i class="fas fa-info-circle me-2"></i>About Us
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('contact') ? 'active' : '' }}"
+                       href="{{ route('contact') }}">
+                        <i class="fas fa-envelope me-2"></i>Contact Us
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Right Side - Register/Login -->
+            <ul class="navbar-nav ms-auto flex flex-row space-x-3">
+                <li class="nav-item">
+                    <a class="btn btn-sm btn-nude-outline px-4 py-2"
+                       href="{{ route('register') }}">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-sm btn-nude-solid px-4 py-2"
+                       href="{{ route('login') }}">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
     @endauth
 
   <!-- Main Content -->
@@ -271,14 +439,14 @@
 </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light mt-5 py-4" role="contentinfo">
+    <footer class="footer-custom mt-5 py-4" role="contentinfo">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
                     <h5>PWD System - Alaminos City</h5>
                     <p>Empowering Persons with Disabilities through employment and training opportunities.</p>
                 </div>
-                <div class="col-md-6 text-end">
+                <div class="col-md-6 text-md-end">
                     <p>&copy; {{ date('Y') }} Alaminos City PWD System. All rights reserved.</p>
                     <p>Designed with accessibility in mind.</p>
                 </div>
@@ -347,78 +515,5 @@
     @endif
 
     @yield('scripts')
-
-    <style>
-        /* Fix for double navbar and screen fitting */
-        .main-content-with-sidebar {
-            margin-left: 0;
-            width: 100%;
-            transition: margin-left 0.3s ease;
-        }
-
-        @media (min-width: 768px) {
-            .main-content-with-sidebar {
-                margin-left: 250px;
-                width: calc(100% - 250px);
-            }
-        }
-
-        /* Ensure no horizontal scrolling */
-        body {
-            overflow-x: hidden;
-        }
-
-        .container, .container-fluid {
-            max-width: 100%;
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-
-        /* Remove duplicate sidebar toggle button */
-        .pwd-sidebar-toggle {
-            display: none;
-        }
-
-        /* Mobile menu button for sidebar */
-        .mobile-menu-btn {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1055;
-            background: #3498db;
-            border: none;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        @media (min-width: 768px) {
-            .mobile-menu-btn {
-                display: none;
-            }
-        }
-
-        /* Skip link styles */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 6px;
-            background: #000;
-            color: white;
-            padding: 8px;
-            text-decoration: none;
-            z-index: 10000;
-        }
-
-        .skip-link:focus {
-            top: 6px;
-        }
-    </style>
 </body>
 </html>

@@ -162,7 +162,7 @@
                             <a href="{{ route('enrollments.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Back to Enrollments
                             </a>
-                            <a href="{{ route('skill-trainings.index') }}" class="btn btn-success">
+                            <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-success">
                                 <i class="fas fa-search"></i> Browse More Trainings
                             </a>
                         </div>
@@ -269,7 +269,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('skill-trainings.show', $enrollment->skillTraining) }}"
+                    <a href="{{ route('skill-trainings.public.show', $enrollment->skillTraining) }}"
                        class="btn btn-outline-primary btn-block mb-2 w-100">
                         <i class="fas fa-external-link-alt"></i> View Training Details
                     </a>

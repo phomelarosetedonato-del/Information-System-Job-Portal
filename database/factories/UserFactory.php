@@ -27,6 +27,8 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
+            // Ensure role is set for tests (some DB drivers like sqlite may not respect enum defaults)
+            'role' => 'pwd',
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];

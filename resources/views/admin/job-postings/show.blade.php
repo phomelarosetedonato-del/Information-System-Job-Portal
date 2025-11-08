@@ -9,22 +9,22 @@
             <i class="fas fa-eye"></i> Job Posting Details
         </h1>
         <div class="btn-group">
-            <a href="{{ route('job-postings.edit', $jobPosting->id) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('admin.job-postings.edit', $jobPosting->id) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <form action="{{ route('job-postings.toggle-status', $jobPosting->id) }}" method="POST" class="d-inline">
+            <form action="{{ route('admin.job-postings.toggle-status', $jobPosting->id) }}" method="POST" class="d-inline">
                 @csrf
                 <button type="submit" class="btn btn-warning btn-sm">
                     <i class="fas fa-power-off"></i> {{ $jobPosting->is_active ? 'Deactivate' : 'Activate' }}
                 </button>
             </form>
-            <form action="{{ route('job-postings.duplicate', $jobPosting->id) }}" method="POST" class="d-inline">
+            <form action="{{ route('admin.job-postings.duplicate', $jobPosting->id) }}" method="POST" class="d-inline">
                 @csrf
                 <button type="submit" class="btn btn-info btn-sm">
                     <i class="fas fa-copy"></i> Duplicate
                 </button>
             </form>
-            <form action="{{ route('job-postings.destroy', $jobPosting->id) }}" method="POST" class="d-inline">
+            <form action="{{ route('admin.job-postings.destroy', $jobPosting->id) }}" method="POST" class="d-inline">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm"
@@ -32,7 +32,7 @@
                     <i class="fas fa-trash"></i> Delete
                 </button>
             </form>
-            <a href="{{ route('job-postings.index') }}" class="btn btn-secondary btn-sm">
+            <a href="{{ route('admin.job-postings.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>

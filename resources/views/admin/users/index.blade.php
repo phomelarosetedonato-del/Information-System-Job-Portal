@@ -384,6 +384,7 @@
     </div>
 </div>
 
+
 <!-- Accessibility Widget -->
 @include('partials.accessibility-widget')
 @endsection
@@ -402,22 +403,8 @@
             }
         });
 
-        // Initialize DataTables if table exists
-        if ($.fn.DataTable.isDataTable('#dataTable')) {
-            $('#dataTable').DataTable().destroy();
-        }
-
-        $('#dataTable').DataTable({
-            "pageLength": 25,
-            "ordering": true,
-            "info": false,
-            "searching": false,
-            "lengthChange": false,
-            "order": [[0, 'asc']],
-            "language": {
-                "emptyTable": "No users available"
-            }
-        });
+        // Remove DataTables initialization since we're using Laravel pagination
+        // DataTables conflicts with server-side Laravel pagination
     });
 </script>
 @endsection

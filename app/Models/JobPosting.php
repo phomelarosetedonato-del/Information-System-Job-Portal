@@ -6,29 +6,67 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str; // Fixed: Changed from App\Models\Str to Illuminate\Support\Str
 
 class JobPosting extends Model
 {
-    use HasFactory,SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-    'title', 'description', 'requirements', 'location', 'company',
-    'salary_min', 'salary_max', 'employment_type', 'application_deadline',
-    'is_active', 'created_by', 'contact_email', 'contact_phone',
-    'job_category', 'experience_level'
-];
+        'title', 'description', 'requirements', 'location', 'company',
+        'salary_min', 'salary_max', 'employment_type', 'application_deadline',
+        'is_active', 'created_by', 'contact_email', 'contact_phone',
+        'job_category', 'experience_level', 'views',
+        // Accessibility fields
+        'is_remote', 'provides_accommodations', 'accessibility_features', 'assistive_technology'
+    ];
 
     /**
      * The attributes that should be cast.
      */
     protected $casts = [
-    'application_deadline' => 'datetime',
-    'is_active' => 'boolean',
-    'created_at' => 'datetime',
-    'updated_at' => 'datetime',
-    'salary_min' => 'decimal:2',
-    'salary_max' => 'decimal:2',
-];
+        'application_deadline' => 'datetime',
+        'is_active' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'salary_min' => 'decimal:2',
+        'salary_max' => 'decimal:2',
+    ];
+
+    /**
+     * Additional casts for accessibility fields (if present)
+     */
+    protected $attributes = [
+        'is_remote' => false,
+        'provides_accommodations' => false,
+    ];
+
+    /**
+     * The disability types that are suitable for this job
+     */
+    public function suitableDisabilityTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(DisabilityType::class, 'job_posting_disability_types');
+    }
+
+    /**
+     * Scope to filter by disability types
+     */
+    public function scopeForDisabilityTypes($query, $disabilityTypeIds)
+    {
+        return $query->whereHas('suitableDisabilityTypes', function ($q) use ($disabilityTypeIds) {
+            $q->whereIn('disability_types.id', $disabilityTypeIds);
+        });
+    }
+
+    /**
+     * Scope to include jobs with no specific disability requirements
+     */
+    public function scopeOrNoDisabilityRequirements($query)
+    {
+        return $query->orWhereDoesntHave('suitableDisabilityTypes');
+    }
 
     /**
      * Accessor for formatted salary display
@@ -36,11 +74,11 @@ class JobPosting extends Model
     public function getFormattedSalaryAttribute()
     {
         if ($this->salary_min && $this->salary_max) {
-            return '₱' . number_format($this->salary_min) . ' - ₱' . number_format($this->salary_max);
+            return '₱' . number_format((float) $this->salary_min) . ' - ₱' . number_format((float) $this->salary_max);
         } elseif ($this->salary_min) {
-            return '₱' . number_format($this->salary_min) . ' and above';
+            return '₱' . number_format((float) $this->salary_min) . ' and above';
         } elseif ($this->salary_max) {
-            return 'Up to ₱' . number_format($this->salary_max);
+            return 'Up to ₱' . number_format((float) $this->salary_max);
         }
 
         return 'Not specified';
@@ -56,6 +94,15 @@ class JobPosting extends Model
         return $this->hasMany(JobApplication::class);
     }
 
+
+
+    /**
+ * Alias for creator relationship (for compatibility)
+ */
+public function employer()
+{
+    return $this->creator();
+}
     /**
      * Scope for active job postings
      */
@@ -73,6 +120,22 @@ class JobPosting extends Model
             $q->where('application_deadline', '>=', now())
               ->orWhereNull('application_deadline');
         });
+    }
+
+    /**
+     * Scope for featured jobs (most viewed)
+     */
+    public function scopeFeatured($query, $limit = 5)
+    {
+        return $query->orderBy('views', 'desc')->take($limit);
+    }
+
+    /**
+     * Scope for recent jobs
+     */
+    public function scopeRecent($query, $limit = 10)
+    {
+        return $query->orderBy('created_at', 'desc')->take($limit);
     }
 
     /**
@@ -167,14 +230,14 @@ class JobPosting extends Model
     public function getStatusBadgeAttribute()
     {
         if (!$this->is_active) {
-            return '<span class="badge badge-secondary">Inactive</span>';
+            return '<span class="badge bg-secondary">Inactive</span>';
         }
 
         if (!$this->is_open) {
-            return '<span class="badge badge-danger">Closed</span>';
+            return '<span class="badge bg-danger">Closed</span>';
         }
 
-        return '<span class="badge badge-success">Open</span>';
+        return '<span class="badge bg-success">Open</span>';
     }
 
     /**
@@ -192,5 +255,62 @@ class JobPosting extends Model
         }
 
         return $deadline->diffForHumans();
+    }
+
+    /**
+     * Get short description (truncated)
+     */
+    public function getShortDescriptionAttribute()
+    {
+        return Str::limit(strip_tags($this->description), 150);
+    }
+
+    /**
+     * Get short requirements (truncated)
+     */
+    public function getShortRequirementsAttribute()
+    {
+        return Str::limit(strip_tags($this->requirements), 150);
+    }
+
+    /**
+     * Check if job is urgent (deadline within 3 days)
+     */
+    public function getIsUrgentAttribute()
+    {
+        if (!$this->application_deadline) {
+            return false;
+        }
+
+        $deadline = $this->application_deadline;
+        if (!$deadline instanceof \Carbon\Carbon) {
+            $deadline = Carbon::parse($deadline);
+        }
+
+        return $deadline->isFuture() && $deadline->diffInDays(now()) <= 3;
+    }
+
+    /**
+     * Increment views count
+     */
+    public function incrementViews()
+    {
+        $this->increment('views');
+    }
+
+    /**
+     * Get related jobs (same company or category)
+     */
+    public function getRelatedJobsAttribute()
+    {
+        return self::where('is_active', true)
+            ->where('id', '!=', $this->id)
+            ->where(function($query) {
+                $query->where('company', $this->company)
+                      ->orWhere('job_category', $this->job_category)
+                      ->orWhere('employment_type', $this->employment_type);
+            })
+            ->take(4)
+            ->get();
     }
 }

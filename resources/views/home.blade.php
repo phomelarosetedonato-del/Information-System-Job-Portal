@@ -1,509 +1,417 @@
 @extends('layouts.app')
 
-@section('title', 'PWD Employment Opportunities - Alaminos City')
+@section('title', 'PWD Dashboard - PWD System')
 
 @section('content')
-<!-- ADD THE ENTIRE HOMEPAGE CONTENT HERE -->
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center min-vh-80">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold text-white mb-4 animate-fade-in">
-                    Empowering <span class="text-warning">Persons with Disabilities</span> Through Employment
-                </h1>
-                <p class="lead text-white mb-5 animate-slide-up">
-                    Connecting talented PWD individuals with inclusive employers in Alaminos City and beyond.
-                    Build your career or find exceptional talent for your organization.
-                </p>
-                <div class="d-flex flex-wrap gap-3 animate-slide-up">
-                    <a href="{{ route('register') }}" class="btn btn-warning btn-lg px-4 py-3 fw-semibold">
-                        <i class="fas fa-user-plus me-2"></i>Join as Job Seeker
-                    </a>
-                    <a href="{{ route('register') }}?type=employer" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold">
-                        <i class="fas fa-building me-2"></i>Register as Employer
-                    </a>
+<!-- Skip Navigation for Accessibility -->
+<a href="#main-content" class="sr-only sr-only-focusable bg-primary text-white p-2 position-absolute top-0 start-0" style="z-index: 9999; transform: translateY(-100%); transition: transform 0.3s;">
+    Skip to main content
+</a>
+
+@php
+    // Safe method checks to prevent errors
+    $applicationCount = method_exists(auth()->user(), 'jobApplications') ? auth()->user()->jobApplications()->count() : 0;
+    $enrollmentCount = method_exists(auth()->user(), 'trainingEnrollments') ? auth()->user()->trainingEnrollments()->count() : 0;
+    $documentCount = method_exists(auth()->user(), 'documents') ? auth()->user()->documents()->count() : 0;
+    $isProfileComplete = method_exists(auth()->user(), 'isProfileComplete') ? auth()->user()->isProfileComplete() : true;
+    $hasPwdProfile = method_exists(auth()->user(), 'hasPwdProfile') ? auth()->user()->hasPwdProfile() : true;
+
+    // Initialize arrays to avoid undefined variable errors
+    $userJobApplications = [];
+    $userTrainingEnrollments = [];
+
+    // Get user applications and enrollments if methods exist
+    if (method_exists(auth()->user(), 'jobApplications')) {
+        $userJobApplications = auth()->user()->jobApplications()->pluck('job_posting_id')->toArray();
+    }
+    if (method_exists(auth()->user(), 'trainingEnrollments')) {
+        $userTrainingEnrollments = auth()->user()->trainingEnrollments()->pluck('skill_training_id')->toArray();
+    }
+@endphp
+
+<div class="dashboard-container" id="main-content" tabindex="-1" role="main" aria-labelledby="dashboard-heading">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header bg-primary text-white py-4">
+        <div class="dashboard-header-content">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-1" id="dashboard-heading">
+                        <i class="fas fa-universal-access me-2" aria-hidden="true"></i>
+                        Welcome back, {{ auth()->user()->name }}!
+                    </h1>
+                    <p class="mb-0 opacity-75">Here's your PWD dashboard overview</p>
                 </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="hero-image-container">
-                    <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80"
-                         alt="Diverse team working together" class="img-fluid rounded-3 shadow-lg">
-                    <div class="floating-badge bg-success">
-                        <i class="fas fa-users me-2"></i>800+ Successful Placements
+                <div class="col-md-4 text-md-end">
+                    <div class="btn-group">
+                        <a href="{{ route('notifications.index') }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-bell me-1"></i> Notifications
+                            @if(auth()->user()->unreadNotifications->count() > 0)
+                                <span class="badge bg-danger">{{ auth()->user()->unreadNotifications->count() }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('accessibility.settings') }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-universal-access me-1"></i> Accessibility
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</section>
 
-<!-- Quick Stats -->
-<section class="quick-stats py-5 bg-light">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-md-3 col-6 text-center">
-                <div class="stat-card">
-                    <div class="stat-number text-primary">500+</div>
-                    <p class="stat-label">Companies Registered</p>
-                </div>
+    <!-- Main Content Area -->
+    <div class="dashboard-content">
+        <!-- Session Messages & Alerts -->
+        @if (session('status'))
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" aria-live="polite">
+                <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
+                {{ session('status') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success message"></button>
             </div>
-            <div class="col-md-3 col-6 text-center">
-                <div class="stat-card">
-                    <div class="stat-number text-success">2,000+</div>
-                    <p class="stat-label">Active Job Seekers</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-6 text-center">
-                <div class="stat-card">
-                    <div class="stat-number text-warning">1,500+</div>
-                    <p class="stat-label">Jobs Available</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-6 text-center">
-                <div class="stat-card">
-                    <div class="stat-number text-info">95%</div>
-                    <p class="stat-label">Satisfaction Rate</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+        @endif
 
-<!-- Features Section -->
-<section class="features-section py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="section-title">How We Make a Difference</h2>
-            <p class="lead text-muted">Comprehensive support for both job seekers and employers</p>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-lg-4 col-md-6">
-                <div class="feature-card">
-                    <div class="feature-icon bg-primary">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <h4>For Job Seekers</h4>
-                    <p>Find meaningful employment that matches your skills, with accommodations and support throughout your journey.</p>
-                    <ul class="feature-list">
-                        <li>Accessibility-focused job matching</li>
-                        <li>Career counseling and guidance</li>
-                        <li>Resume building assistance</li>
-                        <li>Interview preparation</li>
-                    </ul>
-                </div>
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" aria-live="polite">
+                <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success notification"></button>
             </div>
+        @endif
 
-            <div class="col-lg-4 col-md-6">
-                <div class="feature-card">
-                    <div class="feature-icon bg-success">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <h4>For Employers</h4>
-                    <p>Connect with talented PWD candidates and build an inclusive, diverse workforce that drives innovation.</p>
-                    <ul class="feature-list">
-                        <li>Access to qualified PWD talent</li>
-                        <li>Workplace accommodation guidance</li>
-                        <li>Diversity and inclusion training</li>
-                        <li>Government incentive information</li>
-                    </ul>
-                </div>
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" aria-live="assertive">
+                <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close error message"></button>
             </div>
+        @endif
 
-            <div class="col-lg-4 col-md-6">
-                <div class="feature-card">
-                    <div class="feature-icon bg-warning">
-                        <i class="fas fa-hands-helping"></i>
-                    </div>
-                    <h4>Support Services</h4>
-                    <p>Comprehensive support system ensuring success for both employees and employers in the workplace.</p>
-                    <ul class="feature-list">
-                        <li>Accessibility assessments</li>
-                        <li>Assistive technology guidance</li>
-                        <li>Workplace modification support</li>
-                        <li>Ongoing career development</li>
-                    </ul>
-                </div>
+        <!-- Profile Completion Alert -->
+        @if(!$isProfileComplete)
+            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert" aria-live="polite">
+                <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                <strong>Complete Your Profile:</strong> Please complete your PWD profile to access all features.
+                <a href="{{ route('profile.pwd-complete-form') }}" class="alert-link">Complete Profile Now</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close profile completion reminder"></button>
             </div>
-        </div>
-    </div>
-</section>
+        @endif
 
-<!-- Job Categories -->
-<section class="categories-section py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="section-title">Popular Job Categories</h2>
-            <p class="lead text-muted">Explore opportunities across various industries</p>
-        </div>
+        <!-- Quick Stats -->
+        <div class="row mb-4" role="region" aria-labelledby="stats-heading">
+            <h2 id="stats-heading" class="sr-only">Quick Statistics</h2>
 
-        <div class="row g-3">
-            <div class="col-lg-3 col-md-6">
-                <div class="category-card">
-                    <i class="fas fa-laptop-code category-icon"></i>
-                    <h5>IT & Technology</h5>
-                    <span class="badge bg-primary">120+ Jobs</span>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="category-card">
-                    <i class="fas fa-stethoscope category-icon"></i>
-                    <h5>Healthcare</h5>
-                    <span class="badge bg-success">85+ Jobs</span>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="category-card">
-                    <i class="fas fa-chalkboard-teacher category-icon"></i>
-                    <h5>Education</h5>
-                    <span class="badge bg-info">65+ Jobs</span>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="category-card">
-                    <i class="fas fa-headset category-icon"></i>
-                    <h5>Customer Service</h5>
-                    <span class="badge bg-warning">150+ Jobs</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Success Stories -->
-<section class="testimonials-section py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="section-title">Success Stories</h2>
-            <p class="lead text-muted">Hear from our community members</p>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="testimonial-card">
-                    <div class="testimonial-content">
-                        <div class="quote-icon">
-                            <i class="fas fa-quote-left"></i>
-                        </div>
-                        <p class="testimonial-text">
-                            "Thanks to PWD Employment Alaminos, I found a remote software development job that accommodates my mobility needs. The support team helped me with workplace setup and I've been thriving for over two years now."
-                        </p>
-                        <div class="testimonial-author">
-                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Maria Santos" class="author-image">
+            <!-- Job Applications Card -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-primary h-100 shadow-sm" role="group" aria-labelledby="applications-card-heading">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <h6 class="mb-0">Maria Santos</h6>
-                                <small class="text-muted">Software Developer</small>
+                                <h3 class="h5 card-title" id="applications-card-heading">My Applications</h3>
+                                <p class="card-text display-6" aria-live="polite">{{ $applicationCount }}</p>
+                                <small>Active: {{ method_exists(auth()->user(), 'jobApplications') ? auth()->user()->jobApplications()->where('status', 'pending')->count() : 0 }}</small>
+                            </div>
+                            <i class="fas fa-briefcase fa-2x opacity-75" aria-hidden="true"></i>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ route('applications.index') }}" class="btn btn-light btn-sm w-100" aria-describedby="applications-help">
+                                View Applications
+                            </a>
+                            <div id="applications-help" class="sr-only">Navigate to your job applications page</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Enrollments Card -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-success h-100 shadow-sm" role="group" aria-labelledby="trainings-card-heading">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="h5 card-title" id="trainings-card-heading">My Trainings</h3>
+                                <p class="card-text display-6" aria-live="polite">{{ $enrollmentCount }}</p>
+                                <small>Enrolled: {{ method_exists(auth()->user(), 'trainingEnrollments') ? auth()->user()->trainingEnrollments()->where('status', 'enrolled')->count() : 0 }}</small>
+                            </div>
+                            <i class="fas fa-graduation-cap fa-2x opacity-75" aria-hidden="true"></i>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ route('enrollments.index') }}" class="btn btn-light btn-sm w-100" aria-describedby="trainings-help">
+                                View Enrollments
+                            </a>
+                            <div id="trainings-help" class="sr-only">Navigate to your training enrollments page</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Card -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-info h-100 shadow-sm" role="group" aria-labelledby="documents-card-heading">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="h5 card-title" id="documents-card-heading">My Documents</h3>
+                                <p class="card-text display-6" aria-live="polite">{{ $documentCount }}</p>
+                                <small>Uploaded files</small>
+                            </div>
+                            <i class="fas fa-file-alt fa-2x opacity-75" aria-hidden="true"></i>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ route('documents.index') }}" class="btn btn-light btn-sm w-100" aria-describedby="documents-help">
+                                Manage Documents
+                            </a>
+                            <div id="documents-help" class="sr-only">Navigate to your documents management page</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Opportunities Card -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-warning h-100 shadow-sm" role="group" aria-labelledby="opportunities-card-heading">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="h5 card-title" id="opportunities-card-heading">Available</h3>
+                                <p class="card-text display-6" aria-live="polite">{{ ($jobPostings->count() ?? 0) + ($skillTrainings->count() ?? 0) }}</p>
+                                <small>Jobs & Trainings</small>
+                            </div>
+                            <i class="fas fa-bullseye fa-2x opacity-75" aria-hidden="true"></i>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ route('job-postings.public') }}" class="btn btn-light btn-sm w-100" aria-describedby="opportunities-help">
+                                Explore Opportunities
+                            </a>
+                            <div id="opportunities-help" class="sr-only">Navigate to available opportunities page</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4" role="navigation" aria-labelledby="quick-actions-heading">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h2 class="h5 mb-0" id="quick-actions-heading">
+                            <i class="fas fa-bolt me-2 text-primary"></i>Quick Actions
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-xl-3 col-md-6">
+                                <a href="{{ route('job-postings.public') }}" class="btn btn-primary w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="browse-jobs-help">
+                                    <i class="fas fa-search fa-2x mb-2" aria-hidden="true"></i>
+                                    <div class="fw-bold">Browse Jobs</div>
+                                    <small class="opacity-75 text-center">Find employment opportunities</small>
+                                </a>
+                                <div id="browse-jobs-help" class="sr-only">Open job listings page</div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <a href="{{ route('skill-trainings.public') }}" class="btn btn-success w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="find-training-help">
+                                    <i class="fas fa-graduation-cap fa-2x mb-2" aria-hidden="true"></i>
+                                    <div class="fw-bold">Find Training</div>
+                                    <small class="opacity-75 text-center">Skill development programs</small>
+                                </a>
+                                <div id="find-training-help" class="sr-only">Open training programs page</div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <a href="{{ route('documents.create') }}" class="btn btn-info w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="upload-documents-help">
+                                    <i class="fas fa-upload fa-2x mb-2" aria-hidden="true"></i>
+                                    <div class="fw-bold">Upload Documents</div>
+                                    <small class="opacity-75 text-center">Resume, certificates, IDs</small>
+                                </a>
+                                <div id="upload-documents-help" class="sr-only">Open documents upload page</div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <a href="{{ route('profile.edit') }}" class="btn btn-warning w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" aria-describedby="update-profile-help">
+                                    <i class="fas fa-user-edit fa-2x mb-2" aria-hidden="true"></i>
+                                    <div class="fw-bold">Update Profile</div>
+                                    <small class="opacity-75 text-center">Keep information current</small>
+                                </a>
+                                <div id="update-profile-help" class="sr-only">Open profile editing page</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-6">
-                <div class="testimonial-card">
-                    <div class="testimonial-content">
-                        <div class="quote-icon">
-                            <i class="fas fa-quote-left"></i>
-                        </div>
-                        <p class="testimonial-text">
-                            "As an employer, we've hired three amazing team members through this platform. The candidates are skilled, dedicated, and have brought incredible diversity to our company culture. The matching process was seamless."
-                        </p>
-                        <div class="testimonial-author">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="John Reyes" class="author-image">
-                            <div>
-                                <h6 class="mb-0">John Reyes</h6>
-                                <small class="text-muted">HR Manager, Tech Solutions Inc.</small>
+        <!-- Opportunities Section -->
+        <div class="row">
+            <!-- Available Job Postings -->
+            <div class="col-xl-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0" id="jobs-section-heading">
+                            <i class="fas fa-briefcase me-2 text-primary" aria-hidden="true"></i>
+                            Available Job Opportunities
+                        </h2>
+                        <a href="{{ route('job-postings.public') }}" class="btn btn-sm btn-primary">
+                            View All <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($jobPostings) && $jobPostings->count() > 0)
+                            <div class="list-group list-group-flush" role="list" aria-labelledby="jobs-section-heading">
+                                @foreach($jobPostings as $job)
+                                    <div class="list-group-item px-0 border-0 mb-2" role="listitem">
+                                        <div class="card card-hover border">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <h3 class="h6 mb-1">{{ $job->title }}</h3>
+                                                        <p class="mb-1 small text-muted">
+                                                            <i class="fas fa-building me-1" aria-hidden="true"></i>{{ $job->company ?? 'N/A' }}
+                                                        </p>
+                                                        <p class="mb-1 small text-muted">
+                                                            <i class="fas fa-map-marker-alt me-1" aria-hidden="true"></i>{{ $job->location ?? 'N/A' }}
+                                                        </p>
+                                                        <p class="mb-2 small text-muted">
+                                                            <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                            Apply by: {{ $job->application_deadline ? $job->application_deadline->format('M j, Y') : 'No deadline' }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="text-end ms-3">
+                                                        @if(in_array($job->id, $userJobApplications))
+                                                            <span class="badge bg-success mb-2" aria-label="Already applied">Applied</span>
+                                                        @else
+                                                            <span class="badge bg-primary mb-2" aria-label="Available for application">Available</span>
+                                                        @endif
+                                                        <br>
+                                                        <a href="{{ route('job-postings.public.show', $job) }}" class="btn btn-sm btn-outline-primary mt-1" aria-describedby="job-details-{{ $job->id }}">
+                                                            View Details
+                                                        </a>
+                                                        <div id="job-details-{{ $job->id }}" class="sr-only">
+                                                            View details for {{ $job->title }} at {{ $job->company ?? 'company' }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                        </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-briefcase fa-3x text-muted mb-3" aria-hidden="true"></i>
+                                <p class="text-muted mb-2">No available job postings at the moment.</p>
+                                <a href="{{ route('job-postings.public') }}" class="btn btn-primary">Browse All Jobs</a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Trainings -->
+            <div class="col-xl-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0" id="trainings-section-heading">
+                            <i class="fas fa-graduation-cap me-2 text-success" aria-hidden="true"></i>
+                            Available Training Programs
+                        </h2>
+                        <a href="{{ route('skill-trainings.public') }}" class="btn btn-sm btn-success">
+                            View All <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($skillTrainings) && $skillTrainings->count() > 0)
+                            <div class="list-group list-group-flush" role="list" aria-labelledby="trainings-section-heading">
+                                @foreach($skillTrainings as $training)
+                                    <div class="list-group-item px-0 border-0 mb-2" role="listitem">
+                                        <div class="card card-hover border">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <h3 class="h6 mb-1">{{ $training->title }}</h3>
+                                                        <p class="mb-1 small text-muted">
+                                                            <i class="fas fa-calendar me-1" aria-hidden="true"></i>
+                                                            Starts: {{ $training->start_date ? $training->start_date->format('M j, Y') : 'TBA' }}
+                                                        </p>
+                                                        <p class="mb-1 small text-muted">
+                                                            <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                            Duration: {{ $training->duration_days ?? 'N/A' }} days
+                                                        </p>
+                                                        <p class="mb-2 small text-muted">
+                                                            <i class="fas fa-users me-1" aria-hidden="true"></i>
+                                                            Slots: {{ $training->available_slots ?? 'N/A' }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="text-end ms-3">
+                                                        @if(in_array($training->id, $userTrainingEnrollments))
+                                                            <span class="badge bg-success mb-2" aria-label="Already enrolled">Enrolled</span>
+                                                        @else
+                                                            <span class="badge bg-primary mb-2" aria-label="Available for enrollment">Available</span>
+                                                        @endif
+                                                        <br>
+                                                        <a href="{{ route('skill-trainings.public.show', $training) }}" class="btn btn-sm btn-outline-success mt-1" aria-describedby="training-details-{{ $training->id }}">
+                                                            View Details
+                                                        </a>
+                                                        <div id="training-details-{{ $training->id }}" class="sr-only">
+                                                            View details for {{ $training->title }} training
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-graduation-cap fa-3x text-muted mb-3" aria-hidden="true"></i>
+                                <p class="text-muted mb-2">No available training programs at the moment.</p>
+                                <a href="{{ route('skill-trainings.public') }}" class="btn btn-success">Browse All Trainings</a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</section>
-
-<!-- CTA Section -->
-<section class="cta-section py-5 bg-primary text-white">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h3 class="mb-3">Ready to Start Your Journey?</h3>
-                <p class="mb-0">Join thousands of job seekers and employers creating inclusive workplaces in Alaminos City.</p>
-            </div>
-            <div class="col-lg-4 text-lg-end">
-                <div class="d-flex flex-column flex-sm-row gap-3">
-                    <a href="{{ route('register') }}" class="btn btn-warning btn-lg">
-                        <i class="fas fa-user-plus me-2"></i>Join Now
-                    </a>
-                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+</div>
 @endsection
 
-@push('styles')
-<style>
-    /* Hero Section */
-    .hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 100px 0;
-        position: relative;
-        overflow: hidden;
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-dismiss success alerts after 8 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.alert-success').forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 8000);
+
+    // Screen reader announcement for new opportunities
+    @if(isset($jobPostings) && isset($skillTrainings) && ($jobPostings->count() > 0 || $skillTrainings->count() > 0))
+    setTimeout(() => {
+        const message = "New job and training opportunities are available. Check the Available Opportunities section.";
+        const liveRegion = document.createElement('div');
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.setAttribute('aria-atomic', 'true');
+        liveRegion.className = 'sr-only';
+        liveRegion.textContent = message;
+        document.body.appendChild(liveRegion);
+
+        setTimeout(() => {
+            document.body.removeChild(liveRegion);
+        }, 3000);
+    }, 1000);
+    @endif
+
+    // Fix skip link functionality
+    const skipLink = document.querySelector('.sr-only-focusable');
+    if (skipLink) {
+        skipLink.addEventListener('focus', function() {
+            this.style.transform = 'translateY(0)';
+        });
+
+        skipLink.addEventListener('blur', function() {
+            this.style.transform = 'translateY(-100%)';
+        });
     }
-
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('https://images.unsplash.com/photo-1551836026-d5c88ac6d0aa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
-        background-size: cover;
-        background-position: center;
-        opacity: 0.1;
-    }
-
-    .min-vh-80 {
-        min-height: 80vh;
-    }
-
-    .hero-image-container {
-        position: relative;
-    }
-
-    .floating-badge {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        padding: 12px 20px;
-        border-radius: 50px;
-        color: white;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-
-    /* Animations */
-    .animate-fade-in {
-        animation: fadeIn 1s ease-in;
-    }
-
-    .animate-slide-up {
-        animation: slideUp 0.8s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Quick Stats */
-    .stat-card {
-        padding: 20px;
-    }
-
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        line-height: 1;
-    }
-
-    .stat-label {
-        color: #6c757d;
-        font-weight: 500;
-        margin: 0;
-    }
-
-    /* Feature Cards */
-    .feature-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-        height: 100%;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: 1px solid #f0f0f0;
-    }
-
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-    }
-
-    .feature-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-        color: white;
-        font-size: 1.8rem;
-    }
-
-    .feature-card h4 {
-        color: #2c3e50;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
-
-    .feature-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 1.5rem;
-    }
-
-    .feature-list li {
-        padding: 0.3rem 0;
-        position: relative;
-        padding-left: 1.5rem;
-    }
-
-    .feature-list li::before {
-        content: '✓';
-        position: absolute;
-        left: 0;
-        color: #28a745;
-        font-weight: bold;
-    }
-
-    /* Category Cards */
-    .category-card {
-        background: white;
-        padding: 2rem 1rem;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-
-    .category-card:hover {
-        border-color: #667eea;
-        transform: translateY(-3px);
-    }
-
-    .category-icon {
-        font-size: 2.5rem;
-        color: #667eea;
-        margin-bottom: 1rem;
-    }
-
-    .category-card h5 {
-        color: #2c3e50;
-        margin-bottom: 0.5rem;
-    }
-
-    /* Testimonials */
-    .testimonial-card {
-        background: white;
-        border-radius: 15px;
-        padding: 2rem;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-        height: 100%;
-        border-left: 4px solid #667eea;
-    }
-
-    .testimonial-content {
-        position: relative;
-    }
-
-    .quote-icon {
-        position: absolute;
-        top: -10px;
-        left: -10px;
-        background: #667eea;
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-    }
-
-    .testimonial-text {
-        font-style: italic;
-        color: #555;
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
-
-    .testimonial-author {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .author-image {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    /* Section Titles */
-    .section-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2c3e50;
-        position: relative;
-        display: inline-block;
-    }
-
-    .section-title::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 4px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 2px;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .hero-section {
-            padding: 60px 0;
-            text-align: center;
-        }
-
-        .display-4 {
-            font-size: 2rem;
-        }
-
-        .section-title {
-            font-size: 2rem;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-        }
-    }
-</style>
-@endpush
+});
+</script>
+@endsection

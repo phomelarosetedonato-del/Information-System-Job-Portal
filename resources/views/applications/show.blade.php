@@ -1,154 +1,281 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Details - PWD System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+@extends('layouts.app')
+
+@section('title', 'Application Details - PWD System')
+
+@section('content')
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="dashboard-header bg-white border-bottom py-4">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">PWD System - Alaminos City</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link text-white" href="{{ route('dashboard') }}">Dashboard</a>
-                <a class="nav-link text-white" href="{{ route('applications.index') }}">Applications</a>
-                <a class="nav-link text-white" href="{{ route('logout') }}"
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    Logout
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                    @csrf
-                </form>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2 text-dark">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>
+                        Application Details
+                    </h1>
+                    <p class="mb-0 text-muted">View your job application information and status</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Applications
+                    </a>
+                </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <div class="container mt-4">
+    <!-- Main Content -->
+    <div class="container py-4">
         <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Application Details</h4>
-                        @php
-                            $statusColors = [
-                                'pending' => 'warning',
-                                'approved' => 'success',
-                                'rejected' => 'danger'
-                            ];
-                        @endphp
-                        <span class="badge bg-{{ $statusColors[$application->status] }} fs-6">
-                            {{ ucfirst($application->status) }}
-                        </span>
+            <div class="col-lg-10">
+                <!-- Status Header -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0 text-dark">
+                                <i class="fas fa-briefcase me-2"></i>
+                                {{ $application->jobPosting->title }}
+                            </h4>
+                            @php
+                                $statusColors = [
+                                    'pending' => 'warning',
+                                    'approved' => 'success',
+                                    'rejected' => 'danger'
+                                ];
+                                $statusIcons = [
+                                    'pending' => 'clock',
+                                    'approved' => 'check-circle',
+                                    'rejected' => 'times-circle'
+                                ];
+                            @endphp
+                            <span class="badge bg-{{ $statusColors[$application->status] ?? 'secondary' }} fs-6">
+                                <i class="fas fa-{{ $statusIcons[$application->status] ?? 'circle' }} me-1"></i>
+                                {{ ucfirst($application->status) }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="card-body">
+                </div>
+
+                <div class="row">
+                    <!-- Left Column - Job & Application Info -->
+                    <div class="col-lg-6 mb-4">
                         <!-- Job Information -->
-                        <div class="mb-4">
-                            <h5 class="text-primary">Job Information</h5>
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <table class="table table-borderless">
-                                        <tr>
-                                            <td class="fw-bold" style="width: 30%">Position:</td>
-                                            <td>{{ $application->jobPosting->title }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Company:</td>
-                                            <td>{{ $application->jobPosting->company }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Location:</td>
-                                            <td>{{ $application->jobPosting->location }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Employment Type:</td>
-                                            <td>{{ $application->jobPosting->employment_type }}</td>
-                                        </tr>
-                                        @if($application->jobPosting->salary)
-                                        <tr>
-                                            <td class="fw-bold">Salary:</td>
-                                            <td>₱{{ number_format($application->jobPosting->salary, 2) }}</td>
-                                        </tr>
-                                        @endif
-                                    </table>
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-building me-2"></i>
+                                    Job Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Position Title</label>
+                                        <p class="fw-semibold text-dark mb-0">{{ $application->jobPosting->title }}</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Company</label>
+                                        <p class="mb-0">
+                                            <i class="fas fa-building text-muted me-2"></i>
+                                            {{ $application->jobPosting->company }}
+                                        </p>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Location</label>
+                                        <p class="mb-0">
+                                            <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                            {{ $application->jobPosting->location ?? 'Not specified' }}
+                                        </p>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Employment Type</label>
+                                        <p class="mb-0">
+                                            <i class="fas fa-briefcase text-muted me-2"></i>
+                                            {{ $application->jobPosting->employment_type ?? 'Not specified' }}
+                                        </p>
+                                    </div>
+                                    @if($application->jobPosting->salary)
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Salary</label>
+                                        <p class="mb-0">
+                                            <i class="fas fa-money-bill-wave text-muted me-2"></i>
+                                            ₱{{ number_format($application->jobPosting->salary, 2) }}
+                                        </p>
+                                    </div>
+                                    @endif
+                                    @if($application->jobPosting->application_deadline)
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Application Deadline</label>
+                                        <p class="mb-0">
+                                            <i class="fas fa-clock text-muted me-2"></i>
+                                            {{ $application->jobPosting->application_deadline->format('M j, Y') }}
+                                        </p>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Right Column - Application Details -->
+                    <div class="col-lg-6 mb-4">
                         <!-- Application Information -->
-                        <div class="mb-4">
-                            <h5 class="text-primary">Application Information</h5>
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <table class="table table-borderless">
-                                        <tr>
-                                            <td class="fw-bold" style="width: 30%">Applied Date:</td>
-                                            <td>{{ $application->created_at->format('F d, Y \a\t h:i A') }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Last Updated:</td>
-                                            <td>{{ $application->updated_at->format('F d, Y \a\t h:i A') }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Status:</td>
-                                            <td>
-                                                <span class="badge bg-{{ $statusColors[$application->status] }}">
-                                                    {{ ucfirst($application->status) }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </table>
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Application Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Applied Date</label>
+                                        <p class="mb-0">
+                                            <i class="fas fa-calendar-check text-muted me-2"></i>
+                                            {{ $application->created_at->format('F d, Y') }}
+                                        </p>
+                                        <small class="text-muted">{{ $application->created_at->format('h:i A') }}</small>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Last Updated</label>
+                                        <p class="mb-0">
+                                            <i class="fas fa-sync-alt text-muted me-2"></i>
+                                            {{ $application->updated_at->format('F d, Y') }}
+                                        </p>
+                                        <small class="text-muted">{{ $application->updated_at->format('h:i A') }}</small>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Application Status</label>
+                                        <div>
+                                            <span class="badge bg-{{ $statusColors[$application->status] ?? 'secondary' }}">
+                                                <i class="fas fa-{{ $statusIcons[$application->status] ?? 'circle' }} me-1"></i>
+                                                {{ ucfirst($application->status) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Application ID</label>
+                                        <p class="mb-0 text-muted">#{{ $application->id }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Job Description -->
-                        <div class="mb-4">
-                            <h5 class="text-primary">Job Description</h5>
-                            <div class="card">
-                                <div class="card-body">
-                                    <p class="mb-0">{{ $application->jobPosting->description }}</p>
+                <!-- Job Description & Requirements -->
+                <div class="row">
+                    <!-- Job Description -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-align-left me-2"></i>
+                                    Job Description
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                @if($application->jobPosting->description)
+                                    <div class="text-muted">
+                                        {!! nl2br(e($application->jobPosting->description)) !!}
+                                    </div>
+                                @else
+                                    <p class="text-muted mb-0">No description provided.</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requirements -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-list-check me-2"></i>
+                                    Requirements
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                @if($application->jobPosting->requirements)
+                                    <div class="text-muted">
+                                        {!! nl2br(e($application->jobPosting->requirements)) !!}
+                                    </div>
+                                @else
+                                    <p class="text-muted mb-0">No specific requirements listed.</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Notes -->
+                @if($application->admin_notes)
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="card shadow-sm border-info">
+                            <div class="card-header bg-info text-white border-bottom py-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-sticky-note me-2"></i>
+                                    Admin Notes
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-muted">
+                                    {!! nl2br(e($application->admin_notes)) !!}
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                @endif
 
-                        <!-- Requirements -->
-                        <div class="mb-4">
-                            <h5 class="text-primary">Requirements</h5>
-                            <div class="card">
-                                <div class="card-body">
-                                    <p class="mb-0">{{ $application->jobPosting->requirements }}</p>
+                <!-- Action Buttons -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body text-center py-4">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i> Back to Applications
+                                    </a>
+                                    <a href="{{ route('job-postings.public') }}" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i> Browse More Jobs
+                                    </a>
+                                    @if($application->status === 'pending')
+                                        <a href="{{ route('job-postings.public.show', $application->jobPosting) }}"
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-eye me-2"></i> View Job Posting
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Admin Notes (if any) -->
-                        @if($application->admin_notes)
-                        <div class="mb-4">
-                            <h5 class="text-primary">Admin Notes</h5>
-                            <div class="card border-info">
-                                <div class="card-body">
-                                    <p class="mb-0">{{ $application->admin_notes }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('applications.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Applications
-                            </a>
-                            <a href="{{ route('dashboard') }}" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Browse More Jobs
-                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+@endsection
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@section('styles')
+<style>
+    .card {
+        border-radius: 12px;
+    }
+
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .btn-group .btn {
+        border-radius: 8px;
+        margin: 0 4px;
+    }
+
+    .text-muted {
+        line-height: 1.6;
+    }
+</style>
+@endsection

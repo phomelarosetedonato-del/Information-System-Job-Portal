@@ -7,13 +7,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    @extends('layouts.app')
+    @extends('layouts.admin')
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{{ route('dashboard') }}">PWD System - Alaminos City</a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link text-white" href="{{ route('dashboard') }}">Dashboard</a>
-                <a class="nav-link text-white" href="{{ route('skill-trainings.index') }}">Skill Trainings</a>
+                <a class="nav-link text-white" href="{{ route('admin.skill-trainings.index') }}">Skill Trainings</a>
                 <a class="nav-link text-white" href="{{ route('logout') }}"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     Logout
@@ -33,7 +33,7 @@
                         <h4 class="mb-0">Create New Skill Training</h4>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('skill-trainings.store') }}">
+                        <form method="POST" action="{{ route('admin.skill-trainings.store') }}">
                             @csrf
 
                             <div class="mb-3">
@@ -116,7 +116,7 @@
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <a href="{{ route('skill-trainings.index') }}" class="btn btn-secondary">Cancel</a>
+                                <a href="{{ route('admin.skill-trainings.index') }}" class="btn btn-secondary">Cancel</a>
                                 <button type="submit" class="btn btn-primary">Create Training</button>
                             </div>
                         </form>

@@ -1,15 +1,13 @@
-<!-- resources/views/notifications/index.blade.php -->
-
 @extends('layouts.app')
 
-@section('title', 'My Notifications')
+@section('title', 'My Notifications - PWD System')
 
 @section('content')
-<div class="container">
+<div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">
                         <i class="fas fa-bell me-2"></i>My Notifications
                     </h4>
@@ -17,7 +15,7 @@
                         @if(auth()->user()->unreadNotifications->count() > 0)
                             <form action="{{ route('notifications.mark-all-read') }}" method="POST" class="me-2">
                                 @csrf
-                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                <button type="submit" class="btn btn-light btn-sm">
                                     <i class="fas fa-check-double me-1"></i>Mark All as Read
                                 </button>
                             </form>
@@ -26,7 +24,7 @@
                               onsubmit="return confirm('Are you sure you want to clear all notifications?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <button type="submit" class="btn btn-warning btn-sm">
                                 <i class="fas fa-trash me-1"></i>Clear All
                             </button>
                         </form>
@@ -51,7 +49,7 @@
                     @if($notifications->count() > 0)
                         <div class="list-group">
                             @foreach($notifications as $notification)
-                                <div class="list-group-item list-group-item-action {{ $notification->read() ? '' : 'list-group-item-primary' }}">
+                                <div class="list-group-item list-group-item-action {{ $notification->read() ? '' : 'unread-notification' }}">
                                     <div class="d-flex w-100 justify-content-between align-items-start">
                                         <div class="flex-grow-1 me-3">
                                             <div class="d-flex justify-content-between align-items-start mb-1">
@@ -108,13 +106,17 @@
                             @endforeach
                         </div>
 
-                        <div class="mt-4 d-flex justify-content-between align-items-center">
-                            <div class="text-muted">
-                                Showing {{ $notifications->firstItem() }} to {{ $notifications->lastItem() }}
-                                of {{ $notifications->total() }} notifications
-                            </div>
-                            <div>
-                                {{ $notifications->links() }}
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted">
+                                        Showing {{ $notifications->firstItem() }} to {{ $notifications->lastItem() }}
+                                        of {{ $notifications->total() }} notifications
+                                    </div>
+                                    <div>
+                                        {{ $notifications->links() }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @else
@@ -134,7 +136,7 @@
 </div>
 
 <style>
-.list-group-item.list-group-item-primary {
+.unread-notification {
     background-color: #e3f2fd;
     border-left: 4px solid #0d6efd;
 }
@@ -146,6 +148,18 @@
 
 .list-group-item:hover {
     background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 8px;
+}
+
+.card-header {
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.btn-group-sm > .btn, .btn-sm {
+    border-radius: 6px;
 }
 </style>
 @endsection

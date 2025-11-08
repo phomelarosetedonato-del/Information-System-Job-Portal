@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\JobApplication;
 
-class NewJobApplicationReceived extends Notification implements ShouldQueue
+class NewJobApplicationReceived extends Notification 
 {
     use Queueable;
 

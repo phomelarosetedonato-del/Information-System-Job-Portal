@@ -25,11 +25,19 @@ class AdminController extends Controller
             'admin_users' => User::admins()->count(),
             'regular_users' => User::regularUsers()->count(),
             'pending_applications' => JobApplication::where('status', 'pending')->count(),
+            'approved_applications' => JobApplication::where('status', 'approved')->count(),
             'active_trainings' => TrainingEnrollment::where('status', 'enrolled')->count(),
             'total_jobs' => JobPosting::count(),
             'total_trainings' => SkillTraining::count(),
             'locked_users' => User::locked()->count(),
             'users_needing_security' => User::needsSecurityAttention()->count(),
+
+            // Fixed the typos in these lines:
+            'job_postings' => JobPosting::count(),
+            'active_jobs' => JobPosting::where('status', 'active')->count(),
+            'skill_trainings' => SkillTraining::count(),
+            'active_trainings_count' => SkillTraining::where('status', 'active')->count(),
+            'total_documents' => 0, // You can add document count logic if needed
         ];
 
         // Get recent activity
@@ -54,7 +62,7 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact(
+        return view('dashboard.admin', compact(
             'stats',
             'recentApplications',
             'recentEnrollments',
@@ -209,5 +217,139 @@ class AdminController extends Controller
             'applicationStats',
             'trainingStats'
         ));
+    }
+
+    // ----------------------------
+    // Employer verification management
+    // ----------------------------
+
+    public function employerVerifications(Request $request)
+    {
+        auth()->user()->recordAdminAction();
+
+        $query = User::where('role', 'employer')
+                     ->with('pwdProfile');
+
+        if ($request->has('status') && $request->status) {
+            $query->where('employer_verification_status', $request->status);
+        }
+
+        $employers = $query->latest()->paginate(20);
+
+        return view('admin.employers.index', compact('employers'));
+    }
+
+    public function pendingEmployerVerifications()
+    {
+        auth()->user()->recordAdminAction();
+
+        $employers = User::where('role', 'employer')
+                         ->where('employer_verification_status', 'pending')
+                         ->with('pwdProfile')
+                         ->latest()
+                         ->paginate(20);
+
+        return view('admin.employers.pending', compact('employers'));
+    }
+
+    public function reviewEmployerVerification(User $employer)
+    {
+        auth()->user()->recordAdminAction();
+
+        $employer->load('pwdProfile', 'documents');
+
+        return view('admin.employers.review', compact('employer'));
+    }
+
+    public function approveEmployerVerification(Request $request, User $employer)
+    {
+        auth()->user()->recordAdminAction();
+
+        $note = $request->input('admin_note');
+
+        $employer->update([
+            'employer_verification_status' => 'verified',
+            'employer_verified_at' => now(),
+            'verification_rejected_reason' => null,
+            'verification_expires_at' => now()->addYear(),
+        ]);
+
+        // Notify employer
+        $employer->notifyVerificationStatusChanged('approved', $note);
+
+        return redirect()->back()->with('success', 'Employer verification approved and user notified.');
+    }
+
+    public function rejectEmployerVerification(Request $request, User $employer)
+    {
+        auth()->user()->recordAdminAction();
+
+        $request->validate(['rejection_reason' => 'nullable|string|max:1000']);
+
+        $reason = $request->input('rejection_reason');
+
+        $employer->update([
+            'employer_verification_status' => 'rejected',
+            'verification_rejected_reason' => $reason,
+            'can_resubmit_verification_at' => now()->addDays(7),
+        ]);
+
+        $employer->notifyVerificationStatusChanged('rejected', $reason);
+
+        return redirect()->back()->with('success', 'Employer verification rejected and user notified.');
+    }
+
+    public function requestMoreInfo(Request $request, User $employer)
+    {
+        auth()->user()->recordAdminAction();
+
+        $note = $request->input('note');
+
+        // Keep current status but send note to employer
+        $employer->update(['verification_notes' => $note]);
+        $employer->notifyVerificationStatusChanged('kept', $note);
+
+        return redirect()->back()->with('success', 'Requested more information from employer.');
+    }
+
+    public function viewEmployerDocuments(User $employer)
+    {
+        auth()->user()->recordAdminAction();
+
+        $employer->load('documents');
+
+        if (view()->exists('admin.employers.documents')) {
+            return view('admin.employers.documents', compact('employer'));
+        }
+
+        // Fallback: return a simple JSON response when view is missing
+        return response()->json(['documents' => $employer->documents]);
+    }
+
+    public function expiredEmployerVerifications()
+    {
+        auth()->user()->recordAdminAction();
+
+        $employers = User::where('role', 'employer')
+                         ->whereNotNull('verification_expires_at')
+                         ->where('verification_expires_at', '<', now())
+                         ->latest()
+                         ->paginate(20);
+
+        return view('admin.employers.expired', compact('employers'));
+    }
+
+    public function renewEmployerVerification(Request $request, User $employer)
+    {
+        auth()->user()->recordAdminAction();
+
+        $employer->update([
+            'verification_expires_at' => now()->addYear(),
+            'employer_verification_status' => 'verified'
+        ]);
+
+        $employer->notifyVerificationStatusChanged('approved', 'Your verification has been renewed.');
+
+        return redirect()->back()->with('success', 'Employer verification renewed and user notified.');
     }
 }

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobPosting;
+use App\Models\DisabilityType;
 use App\Models\JobApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 class JobPostingController extends Controller
 {
@@ -50,155 +52,78 @@ class JobPostingController extends Controller
     }
 
     /**
-     * Display a listing of job postings for public view with advanced filtration
+     * Display a listing of job postings for public view with simplified filtration
      */
     public function publicIndex(Request $request)
     {
-        $query = JobPosting::where('is_active', true)
+        $query = JobPosting::with(['suitableDisabilityTypes'])
+            ->where('is_active', true)
             ->where(function($query) {
                 $query->where('application_deadline', '>=', now())
                       ->orWhereNull('application_deadline');
             });
 
+        // ========== SIMPLIFIED FILTERS ==========
+        $filters = $request->validate([
+            'q' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'employment_type' => 'nullable|string|max:255',
+            'disability_type_id' => 'nullable|integer|exists:disability_types,id',
+            'sort_by' => 'nullable|string|in:newest,deadline',
+        ]);
+
         // ========== SEARCH FILTER ==========
-        if ($request->filled('search')) {
-            $search = $request->search;
+        if (!empty($filters['q'])) {
+            $search = $filters['q'];
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', '%' . $search . '%')
                   ->orWhere('company', 'like', '%' . $search . '%')
                   ->orWhere('location', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%')
-                  ->orWhere('employment_type', 'like', '%' . $search . '%');
+                  ->orWhere('description', 'like', '%' . $search . '%');
             });
         }
 
-        // ========== EMPLOYMENT TYPE FILTER ==========
-        if ($request->filled('employment_type')) {
-            $employmentTypes = (array) $request->employment_type;
-            $query->whereIn('employment_type', $employmentTypes);
-        }
-
         // ========== LOCATION FILTER ==========
-        if ($request->filled('location')) {
-            $query->where('location', 'like', '%' . $request->location . '%');
+        if (!empty($filters['location'])) {
+            $query->where('location', 'like', '%' . $filters['location'] . '%');
         }
 
-        // ========== SALARY RANGE FILTER ==========
-        if ($request->filled('salary_range')) {
-            $this->applySalaryFilter($query, $request->salary_range);
+        // ========== EMPLOYMENT TYPE FILTER ==========
+        if (!empty($filters['employment_type'])) {
+            $query->where('employment_type', $filters['employment_type']);
         }
 
-        // ========== DEADLINE FILTER ==========
-        if ($request->filled('deadline')) {
-            $this->applyDeadlineFilter($query, $request->deadline);
+        // ========== FILTER BY SUITABLE DISABILITY TYPES ==========
+        if (!empty($filters['disability_type_id'])) {
+            $query->whereHas('suitableDisabilityTypes', function($q) use ($filters) {
+                $q->where('disability_types.id', $filters['disability_type_id']);
+            });
         }
 
-        // ========== SORTING ==========
-        $this->applySorting($query, $request->get('sort', 'newest'));
-
-        // Get paginated results
-        $jobPostings = $query->paginate(12)->withQueryString();
-
-        return view('job-postings.public-index', compact('jobPostings'));
-    }
-
-    /**
-     * Apply salary range filter
-     */
-    private function applySalaryFilter($query, $salaryRange)
-    {
-        // Use numeric fields for filtering instead of string parsing
-        switch ($salaryRange) {
-            case '0-15000':
-                $query->where(function($q) {
-                    $q->where('salary_min', '<=', 15000)
-                      ->orWhere('salary_max', '<=', 15000);
-                });
-                break;
-
-            case '15000-30000':
-                $query->where(function($q) {
-                    $q->whereBetween('salary_min', [15000, 30000])
-                      ->orWhereBetween('salary_max', [15000, 30000])
-                      ->orWhere(function($innerQ) {
-                          $innerQ->where('salary_min', '<=', 15000)
-                                ->where('salary_max', '>=', 30000);
-                      });
-                });
-                break;
-
-            case '30000-50000':
-                $query->where(function($q) {
-                    $q->whereBetween('salary_min', [30000, 50000])
-                      ->orWhereBetween('salary_max', [30000, 50000])
-                      ->orWhere(function($innerQ) {
-                          $innerQ->where('salary_min', '<=', 30000)
-                                ->where('salary_max', '>=', 50000);
-                      });
-                });
-                break;
-
-            case '50000+':
-                $query->where(function($q) {
-                    $q->where('salary_min', '>=', 50000)
-                      ->orWhere('salary_max', '>=', 50000);
-                });
-                break;
-        }
-    }
-
-    /**
-     * Apply deadline filter
-     */
-    private function applyDeadlineFilter($query, $deadlineFilter)
-    {
-        switch ($deadlineFilter) {
-            case 'today':
-                $query->whereDate('application_deadline', today());
-                break;
-
-            case 'week':
-                $query->whereBetween('application_deadline', [now(), now()->addWeek()]);
-                break;
-
-            case 'month':
-                $query->whereBetween('application_deadline', [now(), now()->addMonth()]);
-                break;
-
-            case 'none':
-                $query->whereNull('application_deadline');
-                break;
-        }
-    }
-
-    /**
-     * Apply sorting
-     */
-    private function applySorting($query, $sort)
-    {
-        switch ($sort) {
+        // ========== SIMPLIFIED SORTING ==========
+        switch ($filters['sort_by'] ?? 'newest') {
             case 'deadline':
-                $query->orderByRaw('application_deadline IS NULL') // NULLs last
+                $query->orderByRaw('application_deadline IS NULL')
                       ->orderBy('application_deadline', 'asc')
                       ->orderBy('created_at', 'desc');
                 break;
-
-            case 'salary':
-                // Sort by maximum salary first, then minimum salary
-                $query->orderByRaw('
-                    CASE
-                        WHEN salary_max IS NOT NULL THEN salary_max
-                        WHEN salary_min IS NOT NULL THEN salary_min
-                        ELSE 0
-                    END DESC
-                ')->orderBy('created_at', 'desc');
-                break;
-
             case 'newest':
             default:
                 $query->orderBy('created_at', 'desc');
                 break;
         }
+
+        // Get paginated results
+        $jobPostings = $query->paginate(12)->withQueryString();
+
+        $disabilityTypes = \App\Models\DisabilityType::orderBy('type')->get();
+
+        // If request is AJAX, return only the job list partial (HTML fragment)
+        if ($request->ajax()) {
+            return view('job-postings.partials.list', compact('jobPostings'));
+        }
+
+        return view('job-postings.public-index', compact('jobPostings', 'disabilityTypes', 'filters'));
     }
 
     /**
@@ -216,8 +141,7 @@ class JobPostingController extends Controller
             'Contract' => 'Contract',
             'Temporary' => 'Temporary',
             'Internship' => 'Internship',
-            'Freelance' => 'Freelance',
-            'Remote' => 'Remote'
+            'Freelance' => 'Freelance'
         ];
 
         $experienceLevels = [
@@ -241,7 +165,9 @@ class JobPostingController extends Controller
             'General' => 'General'
         ];
 
-        return view('admin.job-postings.create', compact('employmentTypes', 'experienceLevels', 'jobCategories'));
+        $disabilityTypes = DisabilityType::orderBy('type')->get();
+
+        return view('admin.job-postings.create', compact('employmentTypes', 'experienceLevels', 'jobCategories', 'disabilityTypes'));
     }
 
     /**
@@ -268,9 +194,12 @@ class JobPostingController extends Controller
         $validated['job_category'] = $validated['job_category'] ?? 'General';
         $validated['experience_level'] = $validated['experience_level'] ?? 'Not Specified';
 
-        JobPosting::create($validated);
+        $job = JobPosting::create($validated);
 
-        return redirect()->route('job-postings.index')
+        // Sync suitable disability types pivot table
+        $job->suitableDisabilityTypes()->sync($request->input('disability_type_ids', []));
+
+        return redirect()->route('admin.job-postings.index')
             ->with('success', 'Job posting created successfully.');
     }
 
@@ -344,8 +273,7 @@ class JobPostingController extends Controller
             'Contract' => 'Contract',
             'Temporary' => 'Temporary',
             'Internship' => 'Internship',
-            'Freelance' => 'Freelance',
-            'Remote' => 'Remote'
+            'Freelance' => 'Freelance'
         ];
 
         $experienceLevels = [
@@ -369,7 +297,9 @@ class JobPostingController extends Controller
             'General' => 'General'
         ];
 
-        return view('admin.job-postings.edit', compact('jobPosting', 'employmentTypes', 'experienceLevels', 'jobCategories'));
+        $disabilityTypes = DisabilityType::orderBy('type')->get();
+
+        return view('admin.job-postings.edit', compact('jobPosting', 'employmentTypes', 'experienceLevels', 'jobCategories', 'disabilityTypes'));
     }
 
     /**
@@ -392,7 +322,10 @@ class JobPostingController extends Controller
 
         $jobPosting->update($validated);
 
-        return redirect()->route('job-postings.index')
+        // Sync disability types
+        $jobPosting->suitableDisabilityTypes()->sync($request->input('disability_type_ids', []));
+
+        return redirect()->route('admin.job-postings.index')
             ->with('success', 'Job posting updated successfully.');
     }
 
@@ -410,7 +343,7 @@ class JobPostingController extends Controller
 
         $jobPosting->delete();
 
-        return redirect()->route('job-postings.index')
+        return redirect()->route('admin.job-postings.index')
             ->with('success', 'Job posting deleted successfully.');
     }
 
@@ -425,14 +358,14 @@ class JobPostingController extends Controller
             'requirements' => 'required|string|min:50',
             'location' => 'required|string|max:255',
             'company' => 'required|string|max:255',
-            'salary_min' => 'nullable|numeric|min:0',
-            'salary_max' => 'nullable|numeric|min:0|gte:salary_min',
             'employment_type' => 'required|string|max:255',
             'application_deadline' => 'nullable|date|after_or_equal:today',
             'contact_email' => 'nullable|email|max:255',
             'contact_phone' => 'nullable|string|max:20',
             'job_category' => 'nullable|string|max:255',
             'experience_level' => 'nullable|string|max:255',
+            'disability_type_ids' => 'nullable|array',
+            'disability_type_ids.*' => 'integer|exists:disability_types,id',
         ];
 
         return $request->validate($rules);
@@ -457,21 +390,21 @@ class JobPostingController extends Controller
     }
 
     /**
-     * Display job posting statistics
-     */
-    public function statistics()
-    {
-        if (!Gate::allows('view-admin-panel')) {
-            abort(403, 'Unauthorized action.');
-        }
+ * Display job posting analytics
+ */
+public function analytics()  // Changed from statistics() to analytics()
+{
+    if (!Gate::allows('view-admin-panel')) {
+        abort(403, 'Unauthorized action.');
+    }
 
-        $totalJobs = JobPosting::count();
-        $activeJobs = JobPosting::where('is_active', true)->count();
-        $expiredJobs = JobPosting::where('application_deadline', '<', now())->count();
-        $totalApplications = JobApplication::count();
+    $totalJobs = JobPosting::count();
+    $activeJobs = JobPosting::where('is_active', true)->count();
+    $expiredJobs = JobPosting::where('application_deadline', '<', now())->count();
+    $totalApplications = JobApplication::count();
 
-        // Monthly job creation stats
-        $monthlyStats = JobPosting::select(
+    // Monthly job creation stats
+    $monthlyStats = JobPosting::select(
             DB::raw('MONTH(created_at) as month'),
             DB::raw('YEAR(created_at) as year'),
             DB::raw('COUNT(*) as count')
@@ -482,30 +415,30 @@ class JobPostingController extends Controller
         ->orderBy('month', 'desc')
         ->get();
 
-        // Top companies by job count
-        $topCompanies = JobPosting::select('company', DB::raw('COUNT(*) as job_count'))
-            ->groupBy('company')
-            ->orderBy('job_count', 'desc')
-            ->limit(10)
-            ->get();
+    // Top companies by job count
+    $topCompanies = JobPosting::select('company', DB::raw('COUNT(*) as job_count'))
+        ->groupBy('company')
+        ->orderBy('job_count', 'desc')
+        ->limit(10)
+        ->get();
 
-        // Job categories distribution
-        $categoryDistribution = JobPosting::select('job_category', DB::raw('COUNT(*) as count'))
-            ->whereNotNull('job_category')
-            ->groupBy('job_category')
-            ->orderBy('count', 'desc')
-            ->get();
+    // Job categories distribution
+    $categoryDistribution = JobPosting::select('job_category', DB::raw('COUNT(*) as count'))
+        ->whereNotNull('job_category')
+        ->groupBy('job_category')
+        ->orderBy('count', 'desc')
+        ->get();
 
-        return view('admin.job-postings.statistics', compact(
-            'totalJobs',
-            'activeJobs',
-            'expiredJobs',
-            'totalApplications',
-            'monthlyStats',
-            'topCompanies',
-            'categoryDistribution'
-        ));
-    }
+    return view('admin.job-postings.analytics', compact(
+        'totalJobs',
+        'activeJobs',
+        'expiredJobs',
+        'totalApplications',
+        'monthlyStats',
+        'topCompanies',
+        'categoryDistribution'
+    ));
+}
 
     /**
      * Bulk actions for job postings
@@ -576,7 +509,7 @@ class JobPostingController extends Controller
         $newJob->created_at = now();
         $newJob->save();
 
-        return redirect()->route('job-postings.edit', $newJob->id)
+        return redirect()->route('admin.job-postings.edit', $newJob->id)
             ->with('success', 'Job posting duplicated successfully. Please review and update the details.');
     }
 
@@ -622,7 +555,7 @@ class JobPostingController extends Controller
             // Add CSV headers
             fputcsv($file, [
                 'ID', 'Title', 'Company', 'Location', 'Employment Type',
-                'Salary Min', 'Salary Max', 'Formatted Salary', 'Application Deadline', 'Status', 'Views',
+                'Application Deadline', 'Status', 'Views',
                 'Applications', 'Created By', 'Created At'
             ]);
 
@@ -634,9 +567,6 @@ class JobPostingController extends Controller
                     $job->company,
                     $job->location,
                     $job->employment_type,
-                    $job->salary_min,
-                    $job->salary_max,
-                    $job->formatted_salary, // Use the accessor from the model
                     $job->application_deadline ? $job->application_deadline->format('Y-m-d') : 'No deadline',
                     $job->is_active ? 'Active' : 'Inactive',
                     $job->views,
