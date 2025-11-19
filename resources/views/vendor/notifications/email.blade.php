@@ -4,9 +4,9 @@
 # {{ $greeting }}
 @else
 @if ($level === 'error')
-# 🚨 @lang('Whoops!')
+# 🚨 {{ __('Whoops!') }}
 @else
-# 👋 @lang('Hello!')
+# 👋 {{ __('Hello!') }}
 @endif
 @endif
 
@@ -42,23 +42,25 @@
 
 {{-- Salutation --}}
 @if (! empty($salutation))
-{{ $salutation }}
+{!! $salutation !!}
 @else
-@lang('Best regards,')  
-**{{ config('app.name') }} Team**  
-*Alaminos City PWD Affairs Office*
+{{ __('Best regards,') }}
+
+{{ config('app.name') }} Team
+
+Alaminos City PWD Affairs Office
 @endif
 
 {{-- Subcopy --}}
 @isset($actionText)
 <x-slot:subcopy>
-@lang(
+{{ __(
     "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\n".
     'into your web browser:',
     [
         'actionText' => $actionText,
     ]
-) <span class="break-all">[{{ $displayableActionUrl }}]({{ $actionUrl }})</span>
+) }} <span class="break-all">[{{ $displayableActionUrl }}]({{ $actionUrl }})</span>
 </x-slot:subcopy>
 @endisset
 </x-mail::message>

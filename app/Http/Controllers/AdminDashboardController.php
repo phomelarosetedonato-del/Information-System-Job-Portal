@@ -11,13 +11,14 @@ use App\Models\JobApplication;
 use App\Models\TrainingEnrollment;
 use App\Models\Document;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class AdminDashboardController extends Controller
 {
     public function index()
     {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Security check
         if (!$user->isAdmin()) {

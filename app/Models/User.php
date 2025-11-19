@@ -12,7 +12,54 @@ use App\Traits\HasPasswordHistory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
 
-
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property string $role
+ * @property string|null $phone
+ * @property string|null $address
+ * @property string|null $resume
+ * @property string|null $avatar
+ * @property string|null $registration_ip
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property \Illuminate\Support\Carbon|null $profile_completed_at
+ * @property \Illuminate\Support\Carbon|null $last_login_at
+ * @property string|null $last_login_ip
+ * @property int $login_count
+ * @property int $failed_login_attempts
+ * @property \Illuminate\Support\Carbon|null $account_locked_until
+ * @property \Illuminate\Support\Carbon|null $password_changed_at
+ * @property \Illuminate\Support\Carbon|null $last_password_changed_at
+ * @property bool $password_meets_current_standards
+ * @property string|null $two_factor_secret
+ * @property string|null $two_factor_recovery_codes
+ * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
+ * @property bool $security_questions_set
+ * @property \Illuminate\Support\Carbon|null $last_security_activity
+ * @property \Illuminate\Support\Carbon|null $last_admin_action_at
+ * @property \Illuminate\Support\Carbon|null $employer_verified_at
+ * @property string|null $employer_verification_status
+ * @property string|null $company_name
+ * @property string|null $company_size
+ * @property string|null $company_type
+ * @property string|null $website
+ * @property string|null $description
+ * @property string|null $verification_documents
+ * @property \Illuminate\Support\Carbon|null $verification_submitted_at
+ * @property \Illuminate\Support\Carbon|null $can_resubmit_verification_at
+ * @property string|null $verification_rejected_reason
+ * @property string|null $verification_notes
+ * @property \Illuminate\Support\Carbon|null $verification_expires_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\PwdProfile|null $pwdProfile
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobApplication[] $jobApplications
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Document[] $documents
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Resume[] $resumes
+ */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasPasswordHistory;
@@ -1543,6 +1590,12 @@ public function getPasswordSecurityStatus()
      */
     public function hasResume(): bool
     {
+        // Check new resume system first
+        if ($this->resumes()->count() > 0) {
+            return true;
+        }
+
+        // Fallback to old resume file system
         return !empty($this->resume) && Storage::disk('public')->exists($this->resume);
     }
 
@@ -1642,6 +1695,11 @@ public function getPasswordSecurityStatus()
     public function documents()
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function resumes()
+    {
+        return $this->hasMany(Resume::class);
     }
 
     public function jobPostings()

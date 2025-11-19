@@ -143,10 +143,19 @@ class ProfileController extends Controller
                 } else {
                     $user->pwdProfile()->create($pwdValidated);
                 }
+
+                // Refresh the user model to get updated relationships
+                $user->refresh();
+
+                // Check if profile is now complete and update profile_completed_at
+                $completionPercentage = $user->getProfileCompletionPercentage();
+                if ($completionPercentage >= 80 && !$user->profile_completed_at) {
+                    $user->update(['profile_completed_at' => now()]);
+                }
             }
 
             return redirect()->route('profile.show')
-                ->with('success', 'Profile updated successfully!');
+                ->with('success', 'Profile updated successfully! Your profile is ' . $user->getProfileCompletionPercentage() . '% complete.');
 
         } catch (\Exception $e) {
             return redirect()->back()
@@ -369,7 +378,17 @@ class ProfileController extends Controller
             'is_verified' => false,
         ]);
 
-        return redirect()->back()->with('success', 'Resume uploaded successfully! You can view it in your Documents section.');
+        // Check if profile is complete
+        $profileCompletion = $user->getProfileCompletionPercentage();
+
+        if ($profileCompletion < 80 || !$user->hasCompletePwdProfile()) {
+            return redirect()->route('profile.pwd-complete-form')
+                ->with('success', 'Resume uploaded successfully! Please complete your profile to start applying for jobs.')
+                ->with('info', 'Complete all required fields to reach 80% profile completion.');
+        }
+
+        return redirect()->route('profile.show')
+            ->with('success', 'Resume uploaded successfully! You can now apply for jobs.');
 
     } catch (\Exception $e) {
         return redirect()->back()->with('error', 'Error uploading resume: ' . $e->getMessage());

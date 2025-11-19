@@ -78,7 +78,9 @@
                                             id="disability_type_id" name="disability_type_id" required>
                                         <option value="">Select Disability Type</option>
                                         @foreach(($disabilityTypes ?? []) as $dt)
+                                            @if($dt && is_object($dt))
                                             <option value="{{ $dt->id }}" {{ old('disability_type_id', $pwdProfile->disability_type_id ?? '') == $dt->id ? 'selected' : '' }}>{{ trim($dt->type) }}</option>
+                                            @endif
                                         @endforeach
                                     </select>
                                     @error('disability_type_id')

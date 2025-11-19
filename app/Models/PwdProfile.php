@@ -6,6 +6,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int|null $disability_type_id
+ * @property string|null $disability_type
+ * @property string|null $disability_severity
+ * @property array|null $assistive_devices
+ * @property string|null $skills
+ * @property string|null $qualifications
+ * @property string|null $phone
+ * @property string|null $address
+ * @property \Illuminate\Support\Carbon|null $birthdate
+ * @property string|null $gender
+ * @property string|null $special_needs
+ * @property bool|null $is_employed
+ * @property array|null $accessibility_needs
+ * @property string|null $emergency_contact_name
+ * @property string|null $emergency_contact_phone
+ * @property string|null $emergency_contact_relationship
+ * @property string|null $profile_photo
+ * @property string|null $pwd_id_number
+ * @property string|null $pwd_id_photo
+ * @property bool $profile_completed
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @property-read \App\Models\DisabilityType|null $disabilityType
+ */
 class PwdProfile extends Model
 {
     use HasFactory;

@@ -48,7 +48,7 @@ class DocumentController extends Controller
     public function show(Document $document)
     {
         // Ensure the document belongs to the current user or is accessible by admin
-        if ($document->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+        if ($document->user()->isNot(Auth::user()) && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -60,7 +60,7 @@ class DocumentController extends Controller
             // File is in public storage
             $filePath = storage_path('app/public/' . $document->file_path);
         }
-        
+
         // Check if file exists
         if (!file_exists($filePath)) {
             abort(404, 'File not found.');
@@ -72,7 +72,7 @@ class DocumentController extends Controller
     public function download(Document $document)
     {
         // Ensure the document belongs to the current user or is accessible by admin
-        if ($document->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+        if ($document->user()->isNot(Auth::user()) && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -101,7 +101,7 @@ class DocumentController extends Controller
     public function destroy(Document $document)
     {
         // Ensure the document belongs to the current user or is admin
-        if ($document->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+        if ($document->user()->isNot(Auth::user()) && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -118,7 +118,7 @@ class DocumentController extends Controller
             $document->delete();
 
             return redirect()->route('documents.index')->with('success', 'Document deleted successfully.');
-            
+
         } catch (\Exception $e) {
             return redirect()->route('documents.index')->with('error', 'Error deleting document: ' . $e->getMessage());
         }

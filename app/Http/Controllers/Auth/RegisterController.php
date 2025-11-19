@@ -147,6 +147,7 @@ class RegisterController extends Controller
         // Add reCAPTCHA validation if enabled
         if (config('services.recaptcha.enabled', false)) {
             $rules['g-recaptcha-response'] = ['required', 'captcha'];
+            $messages['g-recaptcha-response.captcha'] = 'reCAPTCHA verification failed. Please try again.';
         }
 
         $messages = [

@@ -11,13 +11,22 @@ use App\Models\SkillTraining;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('admin');
+    }
+
     public function dashboard()
     {
         // Record admin activity
-        auth()->user()->recordAdminAction();
+        if (method_exists(Auth::user(), 'recordAdminAction')) {
+            Auth::user()->recordAdminAction();
+        }
 
         $stats = [
             'total_users' => User::count(),
@@ -73,7 +82,7 @@ class AdminController extends Controller
 
     public function users(Request $request)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $query = User::with('pwdProfile');
 
@@ -111,14 +120,14 @@ class AdminController extends Controller
 
     public function createUser()
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         return view('admin.users.create');
     }
 
     public function storeUser(Request $request)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -141,7 +150,7 @@ class AdminController extends Controller
 
     public function userShow(User $user)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $user->load('pwdProfile', 'jobApplications.jobPosting', 'trainingEnrollments.skillTraining', 'documents');
 
@@ -193,10 +202,10 @@ class AdminController extends Controller
 
     public function deleteUser(User $user)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         // Prevent admin from deleting themselves
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return redirect()->back()->with('error', 'You cannot delete your own account.');
         }
 
@@ -230,7 +239,7 @@ class AdminController extends Controller
 
     public function userSecurityReport()
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         // Comprehensive security statistics
         $totalUsers = User::count();
@@ -358,7 +367,7 @@ class AdminController extends Controller
 
     public function systemStatistics()
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $userStats = User::getDashboardStatistics();
         $registrationTrends = User::getRegistrationTrends(30);
@@ -393,7 +402,7 @@ class AdminController extends Controller
 
     public function employerVerifications(Request $request)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $query = User::where('role', 'employer')
                      ->with('pwdProfile');
@@ -409,7 +418,7 @@ class AdminController extends Controller
 
     public function pendingEmployerVerifications()
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $employers = User::where('role', 'employer')
                          ->where('employer_verification_status', 'pending')
@@ -422,7 +431,7 @@ class AdminController extends Controller
 
     public function reviewEmployerVerification(User $employer)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $employer->load('pwdProfile', 'documents');
 
@@ -431,7 +440,7 @@ class AdminController extends Controller
 
     public function approveEmployerVerification(Request $request, User $employer)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $note = $request->input('admin_note');
 
@@ -450,7 +459,7 @@ class AdminController extends Controller
 
     public function rejectEmployerVerification(Request $request, User $employer)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $request->validate(['rejection_reason' => 'nullable|string|max:1000']);
 
@@ -469,7 +478,7 @@ class AdminController extends Controller
 
     public function requestMoreInfo(Request $request, User $employer)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $note = $request->input('note');
 
@@ -482,7 +491,7 @@ class AdminController extends Controller
 
     public function viewEmployerDocuments(User $employer)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $employer->load('documents');
 
@@ -496,7 +505,7 @@ class AdminController extends Controller
 
     public function expiredEmployerVerifications()
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $employers = User::where('role', 'employer')
                          ->whereNotNull('verification_expires_at')
@@ -509,7 +518,7 @@ class AdminController extends Controller
 
     public function renewEmployerVerification(Request $request, User $employer)
     {
-        auth()->user()->recordAdminAction();
+        Auth::user()->recordAdminAction();
 
         $employer->update([
             'verification_expires_at' => now()->addYear(),

@@ -135,7 +135,7 @@
     <!-- Quick Insights -->
     <div class="row g-3">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm border-start border-primary border-4">
+            <div class="card shadow-sm border-start border-primary border-4">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">
                         <i class="fas fa-lightbulb text-warning"></i> Peak Application Day
@@ -157,7 +157,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm border-start border-success border-4">
+            <div class="card shadow-sm border-start border-success border-4">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">
                         <i class="fas fa-chart-line text-success"></i> Average Daily Applications
@@ -174,7 +174,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm border-start border-info border-4">
+            <div class="card shadow-sm border-start border-info border-4">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">
                         <i class="fas fa-fire text-danger"></i> Most Popular Category

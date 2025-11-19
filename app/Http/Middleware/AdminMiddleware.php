@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
 {
@@ -13,16 +14,16 @@ class AdminMiddleware
     {
         // Log access attempt
         Log::info('AdminMiddleware: Checking access', [
-            'user_id' => auth()->id(),
-            'user_role' => auth()->user()->role ?? 'none',
-            'isAdmin' => auth()->user()->isAdmin() ? 'true' : 'false',
+            'user_id' => Auth::id() ?? 'guest',
+            'user_role' => Auth::check() ? Auth::user()->role : 'none',
+            'isAdmin' => Auth::check() && Auth::user()->isAdmin() ? 'true' : 'false',
             'path' => $request->path(),
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent()
         ]);
 
         // Check if user is authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             Log::warning('AdminMiddleware: Unauthenticated access attempt', [
                 'ip' => $request->ip(),
                 'path' => $request->path()
@@ -35,7 +36,7 @@ class AdminMiddleware
             return redirect()->route('login')->with('error', 'Please log in to access this page.');
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Check if user is admin
         if ($user->isAdmin()) {

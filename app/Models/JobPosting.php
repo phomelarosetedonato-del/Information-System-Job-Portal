@@ -9,6 +9,35 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str; // Fixed: Changed from App\Models\Str to Illuminate\Support\Str
 
+/**
+ * @property int $id
+ * @property string $title
+ * @property string $description
+ * @property string|null $requirements
+ * @property string $location
+ * @property string $company
+ * @property float|null $salary_min
+ * @property float|null $salary_max
+ * @property string|null $employment_type
+ * @property \Illuminate\Support\Carbon|null $application_deadline
+ * @property bool $is_active
+ * @property int|null $created_by
+ * @property string|null $contact_email
+ * @property string|null $contact_phone
+ * @property string|null $job_category
+ * @property string|null $experience_level
+ * @property int $views
+ * @property bool $is_remote
+ * @property bool $provides_accommodations
+ * @property string|null $accessibility_features
+ * @property string|null $assistive_technology
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\User|null $creator
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\DisabilityType[] $suitableDisabilityTypes
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobApplication[] $jobApplications
+ */
 class JobPosting extends Model
 {
     use HasFactory, SoftDeletes;
@@ -165,7 +194,7 @@ public function employer()
 
         // Ensure it's a Carbon instance before formatting
         $deadline = $this->application_deadline;
-        if ($deadline instanceof \Carbon\Carbon) {
+        if ($deadline instanceof Carbon) {
             return $deadline->format('F j, Y');
         }
 
@@ -183,7 +212,7 @@ public function employer()
         }
 
         $deadline = $this->application_deadline;
-        if ($deadline instanceof \Carbon\Carbon) {
+        if ($deadline instanceof Carbon) {
             return $deadline->isPast();
         }
 
@@ -200,7 +229,7 @@ public function employer()
         }
 
         $deadline = $this->application_deadline;
-        if ($deadline instanceof \Carbon\Carbon) {
+        if ($deadline instanceof Carbon) {
             return $deadline->isFuture();
         }
 
@@ -217,7 +246,7 @@ public function employer()
         }
 
         $deadline = $this->application_deadline;
-        if (!$deadline instanceof \Carbon\Carbon) {
+        if (!$deadline instanceof Carbon) {
             $deadline = Carbon::parse($deadline);
         }
 
@@ -250,7 +279,7 @@ public function employer()
         }
 
         $deadline = $this->application_deadline;
-        if (!$deadline instanceof \Carbon\Carbon) {
+        if (!$deadline instanceof Carbon) {
             $deadline = Carbon::parse($deadline);
         }
 
@@ -283,7 +312,7 @@ public function employer()
         }
 
         $deadline = $this->application_deadline;
-        if (!$deadline instanceof \Carbon\Carbon) {
+        if (!$deadline instanceof Carbon) {
             $deadline = Carbon::parse($deadline);
         }
 

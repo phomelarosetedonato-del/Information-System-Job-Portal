@@ -9,6 +9,37 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $job_posting_id
+ * @property string $status
+ * @property string|null $cover_letter
+ * @property string|null $admin_notes
+ * @property \Illuminate\Support\Carbon|null $applied_at
+ * @property \Illuminate\Support\Carbon|null $status_updated_at
+ * @property int|null $reviewed_by
+ * @property \Illuminate\Support\Carbon|null $reviewed_at
+ * @property string|null $rejection_reason
+ * @property string|null $next_steps
+ * @property int|null $rating
+ * @property string|null $resume_path
+ * @property string|null $applied_via
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property \Illuminate\Support\Carbon|null $interview_scheduled_at
+ * @property string|null $interview_location
+ * @property string|null $interview_notes
+ * @property \Illuminate\Support\Carbon|null $viewed_at
+ * @property \Illuminate\Support\Carbon|null $withdrawn_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @property-read \App\Models\JobPosting $jobPosting
+ * @property-read \App\Models\User|null $reviewer
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ApplicationNote[] $notes
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ApplicationInterview[] $interviews
+ */
 class JobApplication extends Model
 {
     use HasFactory;

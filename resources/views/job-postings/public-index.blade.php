@@ -35,11 +35,13 @@
                                 <select id="disability_type_id" name="disability_type_id" class="form-select form-select-sm">
                                     <option value="">Any disability type</option>
                                     @foreach($disabilityTypes ?? [] as $dt)
-                                        @php $label = trim($dt->type ?? ''); @endphp
-                                        @if($label !== '')
-                                            <option value="{{ $dt->id }}" {{ request('disability_type_id') == $dt->id ? 'selected' : '' }}>
-                                                {{ $label }}
-                                            </option>
+                                        @if(is_object($dt) && isset($dt->id))
+                                            @php $label = trim($dt->type ?? ''); @endphp
+                                            @if($label !== '')
+                                                <option value="{{ $dt->id }}" {{ request('disability_type_id') == $dt->id ? 'selected' : '' }}>
+                                                    {{ $label }}
+                                                </option>
+                                            @endif
                                         @endif
                                     @endforeach
                                 </select>

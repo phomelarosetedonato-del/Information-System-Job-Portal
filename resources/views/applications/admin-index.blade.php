@@ -198,10 +198,10 @@
                                                 <td>
                                                     <span class="badge
                                                         @if($application->status == 'pending') bg-warning text-dark
-                                                        @elseif($application->status == 'shortlisted') bg-info text-white
-                                                        @elseif($application->status == 'approved') bg-success text-white
-                                                        @elseif($application->status == 'rejected') bg-danger text-white
-                                                        @else bg-secondary text-white @endif">
+                                                        @elseif($application->status == 'shortlisted') bg-info
+                                                        @elseif($application->status == 'approved') bg-success
+                                                        @elseif($application->status == 'rejected') bg-danger
+                                                        @else bg-secondary @endif">
                                                         {{ ucfirst($application->status) }}
                                                     </span>
                                                     @if($application->reviewed_at)
@@ -388,7 +388,7 @@
                     `Reject application from "${applicantName}" for "${jobTitle}"?`;
 
                 // Set the form action
-                currentApplicationUrl = "{{ route('admin.applications.update-status', ':id') }}".replace(':id', applicationId);
+                currentApplicationUrl = "{{ url('admin/applications') }}/" + applicationId + "/update-status";
                 document.getElementById('rejectionForm').action = currentApplicationUrl;
 
                 // Show the modal

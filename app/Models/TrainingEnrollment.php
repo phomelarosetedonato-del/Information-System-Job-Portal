@@ -9,6 +9,21 @@ use App\Notifications\TrainingEnrollmentSubmitted;
 use App\Notifications\TrainingEnrollmentStatusUpdated;
 use App\Notifications\NewTrainingEnrollmentAdminNotification;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $skill_training_id
+ * @property string $status
+ * @property string|null $notes
+ * @property \Illuminate\Support\Carbon|null $enrolled_at
+ * @property \Illuminate\Support\Carbon|null $reviewed_at
+ * @property int|null $reviewed_by
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @property-read \App\Models\SkillTraining $skillTraining
+ * @property-read \App\Models\User|null $reviewer
+ */
 class TrainingEnrollment extends Model
 {
     use HasFactory;
@@ -81,7 +96,7 @@ class TrainingEnrollment extends Model
                     $newStatus = $enrollment->status;
 
                     // Notify the user about status change
-                    $enrollment->user->notify(new TrainingEnrollmentStatusUpdated($enrollment, $oldStatus, $newStatus));
+                    $enrollment->user->notify(new TrainingEnrollmentStatusUpdated($enrollment, $newStatus));
                 }
             } catch (\Exception $e) {
                 // Log error but don't break the application

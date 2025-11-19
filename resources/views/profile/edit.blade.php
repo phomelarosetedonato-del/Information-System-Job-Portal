@@ -45,7 +45,39 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+                <!-- Profile Completion Progress -->
+                @if($user->isPwd())
+                @php
+                    $completionPercentage = $user->getProfileCompletionPercentage();
+                    $progressColor = $completionPercentage >= 80 ? 'success' : ($completionPercentage >= 50 ? 'warning' : 'danger');
+                @endphp
+                <div class="alert alert-{{ $progressColor }} alert-dismissible fade show mb-4" role="alert">
+                    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
+                        <div class="flex-grow-1">
+                            <h6 class="alert-heading mb-2">
+                                <i class="fas fa-chart-line me-2"></i>Profile Completion: {{ $completionPercentage }}%
+                            </h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-{{ $progressColor }}" role="progressbar"
+                                     style="width: {{ $completionPercentage }}%;"
+                                     aria-valuenow="{{ $completionPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                                    <strong>{{ $completionPercentage }}%</strong>
+                                </div>
+                            </div>
+                            <p class="mb-0 small">
+                                @if($completionPercentage >= 80)
+                                    <i class="fas fa-check-circle me-1"></i>Your profile is complete! You can apply for jobs.
+                                @else
+                                    <i class="fas fa-info-circle me-1"></i>Complete at least 80% to apply for jobs. Fill in more details below.
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @endif
+
+                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" id="profileUpdateForm">
                     @csrf
                     @method('PUT')
 
@@ -123,57 +155,94 @@
         </h5>
     </div>
     <div class="card-body">
-        @if($user->hasResume())
-            <!-- Current Resume -->
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <p class="mb-1"><strong>Current Resume:</strong> {{ $user->resume_file_name }}</p>
-                    <p class="mb-1 text-muted"><small>Size: {{ $user->resume_file_size }} • Type: {{ $user->resume_file_type }}</small></p>
-                    <p class="mb-0">
-                        <span class="badge bg-success">
-                            <i class="fas fa-check-circle me-1"></i> Resume Uploaded
-                        </span>
-                    </p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <a href="{{ route('profile.downloadResume') }}" class="btn btn-primary btn-sm me-2">
-                        <i class="fas fa-download me-1"></i> Download
-                    </a>
-                    <a href="{{ route('profile.deleteResume') }}"
-                       class="btn btn-outline-danger btn-sm"
-                       onclick="return confirm('Are you sure you want to delete your resume?')">
-                        <i class="fas fa-trash me-1"></i> Delete
-                    </a>
+        @php
+            $hasPdfResume = !empty($user->resume) && Storage::disk('public')->exists($user->resume);
+            $hasDbResume = $user->resumes()->count() > 0;
+        @endphp
+
+        @if($hasPdfResume || $hasDbResume)
+            <!-- PDF Resume Section -->
+            @if($hasPdfResume)
+            <div class="alert alert-success mb-3">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <p class="mb-1"><i class="fas fa-file-pdf me-2"></i><strong>PDF Resume:</strong> {{ $user->resume_file_name }}</p>
+                        <p class="mb-0 text-muted"><small>Size: {{ $user->resume_file_size }} • Type: {{ $user->resume_file_type }}</small></p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                        <a href="{{ route('profile.downloadResume') }}" class="btn btn-primary btn-sm me-2">
+                            <i class="fas fa-download me-1"></i> Download
+                        </a>
+                        <form action="{{ route('profile.deleteResume') }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('Are you sure you want to delete your PDF resume?')">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        @else
-            <!-- No Resume - Upload Form -->
-            <div class="text-center py-3">
-                <i class="fas fa-file-upload fa-3x text-muted mb-3"></i>
-                <p class="text-muted mb-3">No resume uploaded yet.</p>
+            @endif
 
-                <!-- Upload Resume Form -->
-                <form action="{{ route('profile.uploadResume') }}" method="POST" enctype="multipart/form-data" class="d-inline">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="resume" class="form-label">Upload Resume</label>
-                        <input type="file"
-                               class="form-control @error('resume') is-invalid @enderror"
-                               id="resume"
-                               name="resume"
-                               accept=".pdf,.doc,.docx,.txt">
-                        @error('resume')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <div class="form-text">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Accepted formats: PDF, DOC, DOCX, TXT. Maximum file size: 5MB.
+            <!-- Database Resume Section -->
+            @if($hasDbResume)
+            @php $dbResume = $user->resumes()->latest()->first(); @endphp
+            <div class="alert alert-info mb-0">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <p class="mb-1"><i class="fas fa-file-alt me-2"></i><strong>Online Resume:</strong> {{ $dbResume->full_name }}</p>
+                        <p class="mb-0">
+                            <small>
+                                Completion: {{ $dbResume->completion_percentage }}% |
+                                Status: <span class="badge bg-{{ $dbResume->is_published ? 'success' : 'warning' }}">
+                                    {{ $dbResume->is_published ? 'Published' : 'Draft' }}
+                                </span>
+                            </small>
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                        <a href="{{ route('resumes.show', $dbResume) }}" class="btn btn-info btn-sm me-2">
+                            <i class="fas fa-eye me-1"></i> View
+                        </a>
+                        <a href="{{ route('resumes.edit', $dbResume) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+        @else
+            <!-- No Resume - Show Two Options -->
+            <div class="text-center py-4">
+                <i class="fas fa-file-upload fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-4">Choose how to add your resume:</p>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <div class="card border">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-upload me-2"></i>Upload PDF</h6>
+                                <p class="card-text small text-muted">Upload an existing resume file</p>
+                                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#quickUploadModal">
+                                    Upload PDF Resume
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-upload me-1"></i> Upload Resume
-                    </button>
-                </form>
+                    <div class="col-md-5">
+                        <div class="card border">
+                            <div class="card-body">
+                                <h6 class="card-title"><i class="fas fa-edit me-2"></i>Build Online</h6>
+                                <p class="card-text small text-muted">Create a resume step-by-step</p>
+                                <a href="{{ route('resumes.create') }}" class="btn btn-primary btn-sm">
+                                    Build Resume
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         @endif
     </div>
@@ -294,7 +363,7 @@
                                     <label class="form-label">Employment Status</label>
                                     <div class="form-check mt-2">
                                         @php
-                                            $isEmployed = old('is_employed', $pwdProfile->is_employed ?? false);
+                                            $isEmployed = old('is_employed', $pwdProfile && $pwdProfile->is_employed ? true : false);
                                         @endphp
                                         <input class="form-check-input" type="checkbox" id="is_employed" name="is_employed"
                                                value="1" {{ $isEmployed ? 'checked' : '' }}>
@@ -402,18 +471,24 @@
                     @endif
 
                     <!-- Form Actions -->
-                    <div class="card shadow-sm border-0">
+                    <div class="card shadow-sm border-0 sticky-bottom-mobile">
                         <div class="card-body p-3 p-md-4">
-                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3">
-                                <a href="{{ route('profile.show') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-left me-2"></i> Back to Profile
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2 gap-md-3">
+                                <a href="{{ route('profile.show') }}" class="btn btn-outline-secondary order-3 order-md-1">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    <span class="d-none d-sm-inline">Back to Profile</span>
+                                    <span class="d-inline d-sm-none">Back</span>
                                 </a>
-                                <div class="d-flex flex-column flex-sm-row gap-2">
+                                <div class="d-flex flex-column flex-sm-row gap-2 order-1 order-md-2">
                                     <button type="reset" class="btn btn-outline-danger">
-                                        <i class="fas fa-undo me-2"></i> Reset
+                                        <i class="fas fa-undo me-2"></i>
+                                        <span class="d-none d-sm-inline">Reset Changes</span>
+                                        <span class="d-inline d-sm-none">Reset</span>
                                     </button>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save me-2"></i> Update Profile
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                                        <i class="fas fa-save me-2"></i>
+                                        <span class="d-none d-sm-inline">Update Profile</span>
+                                        <span class="d-inline d-sm-none">Update</span>
                                     </button>
                                 </div>
                             </div>
@@ -479,18 +554,52 @@
         }
     }
 
+    /* Sticky bottom form actions on mobile */
+    @media (max-width: 767px) {
+        .sticky-bottom-mobile {
+            position: sticky;
+            bottom: 0;
+            z-index: 1020;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0 !important;
+        }
+
+        .sticky-bottom-mobile .card-body {
+            padding: 0.75rem !important;
+        }
+    }
+
     /* Improve button tap targets on mobile */
     @media (max-width: 767px) {
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1rem;
             font-size: 0.9rem;
+            min-height: 44px; /* iOS touch target minimum */
         }
         .form-label {
             font-size: 0.9rem;
+            font-weight: 600;
         }
         .form-select, .form-control {
-            font-size: 0.9rem;
-            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
+            padding: 0.6rem 0.75rem;
+            min-height: 44px;
+        }
+        .form-control:focus, .form-select:focus {
+            font-size: 16px; /* Prevent zoom on iOS */
+        }
+    }
+
+    /* Better mobile spacing */
+    @media (max-width: 576px) {
+        .card {
+            margin-bottom: 1rem !important;
+        }
+        .card-body {
+            padding: 1rem !important;
+        }
+        .card-header {
+            padding: 0.75rem 1rem !important;
         }
     }
 
@@ -532,19 +641,39 @@
             margin-bottom: 0.5rem;
         }
     }
+
+    /* CRITICAL: Ensure submit button is always clickable */
+    #submitBtn {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        opacity: 1 !important;
+        position: relative;
+        z-index: 10;
+    }
+
+    #submitBtn:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    #submitBtn:not(:disabled):active {
+        transform: translateY(0);
+    }
 </style>
 @endsection
 
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Profile Edit Page');
+
     // Handle Skills dropdown "Others" option
     const skillsSelect = document.getElementById('skills');
     const skillsOtherContainer = document.getElementById('skills_other_container');
     const skillsOtherInput = document.getElementById('skills_other');
 
     function toggleSkillsOther() {
-        if (skillsSelect.value === 'Others') {
+        if (skillsSelect && skillsSelect.value === 'Others') {
             skillsOtherContainer.style.opacity = '0';
             skillsOtherContainer.style.display = 'block';
             setTimeout(() => {
@@ -563,12 +692,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Check on page load
-    if (skillsSelect.value === 'Others') {
-        skillsOtherContainer.style.display = 'block';
-        skillsOtherContainer.style.opacity = '1';
-        skillsOtherInput.required = true;
+    if (skillsSelect) {
+        if (skillsSelect.value === 'Others') {
+            skillsOtherContainer.style.display = 'block';
+            skillsOtherContainer.style.opacity = '1';
+            skillsOtherInput.required = true;
+        }
+        skillsSelect.addEventListener('change', toggleSkillsOther);
     }
-    skillsSelect.addEventListener('change', toggleSkillsOther);
 
     // Handle Qualifications dropdown "Others" option
     const qualificationsSelect = document.getElementById('qualifications');
@@ -576,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const qualificationsOtherInput = document.getElementById('qualifications_other');
 
     function toggleQualificationsOther() {
-        if (qualificationsSelect.value === 'Others') {
+        if (qualificationsSelect && qualificationsSelect.value === 'Others') {
             qualificationsOtherContainer.style.opacity = '0';
             qualificationsOtherContainer.style.display = 'block';
             setTimeout(() => {
@@ -595,12 +726,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Check on page load
-    if (qualificationsSelect.value === 'Others') {
-        qualificationsOtherContainer.style.display = 'block';
-        qualificationsOtherContainer.style.opacity = '1';
-        qualificationsOtherInput.required = true;
+    if (qualificationsSelect) {
+        if (qualificationsSelect.value === 'Others') {
+            qualificationsOtherContainer.style.display = 'block';
+            qualificationsOtherContainer.style.opacity = '1';
+            qualificationsOtherInput.required = true;
+        }
+        qualificationsSelect.addEventListener('change', toggleQualificationsOther);
     }
-    qualificationsSelect.addEventListener('change', toggleQualificationsOther);
 
     // Handle Special Needs dropdown "Others" option
     const specialNeedsSelect = document.getElementById('special_needs');
@@ -608,7 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const specialNeedsOtherInput = document.getElementById('special_needs_other');
 
     function toggleSpecialNeedsOther() {
-        if (specialNeedsSelect.value === 'Others') {
+        if (specialNeedsSelect && specialNeedsSelect.value === 'Others') {
             specialNeedsOtherContainer.style.opacity = '0';
             specialNeedsOtherContainer.style.display = 'block';
             setTimeout(() => {
@@ -627,12 +760,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Check on page load
-    if (specialNeedsSelect.value === 'Others') {
-        specialNeedsOtherContainer.style.display = 'block';
-        specialNeedsOtherContainer.style.opacity = '1';
-        specialNeedsOtherInput.required = true;
+    if (specialNeedsSelect) {
+        if (specialNeedsSelect.value === 'Others') {
+            specialNeedsOtherContainer.style.display = 'block';
+            specialNeedsOtherContainer.style.opacity = '1';
+            specialNeedsOtherInput.required = true;
+        }
+        specialNeedsSelect.addEventListener('change', toggleSpecialNeedsOther);
     }
-    specialNeedsSelect.addEventListener('change', toggleSpecialNeedsOther);
 
     // Image preview functionality
     const profilePhotoInput = document.getElementById('profile_photo');
@@ -695,13 +830,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Form submission with loading state
-    const form = document.querySelector('form');
-    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const form = document.getElementById('profileUpdateForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    console.log('Form found:', !!form);
+    console.log('Submit button found:', !!submitBtn);
 
     if (form && submitBtn) {
+        // CRITICAL: Ensure button is always clickable and visible
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('disabled');
+        submitBtn.style.pointerEvents = 'auto';
+        submitBtn.style.cursor = 'pointer';
+        submitBtn.style.opacity = '1';
+
+        console.log('✓ Submit button initialized and ready');
+
         form.addEventListener('submit', function(e) {
-            // If "Others" is selected for skills, use the other input value
-            if (skillsSelect.value === 'Others' && skillsOtherInput.value.trim()) {
+            console.log('✓ Form submit event triggered');
+
+            // Handle "Others" options for skills
+            if (skillsSelect && skillsSelect.value === 'Others' && skillsOtherInput && skillsOtherInput.value.trim()) {
                 const hiddenInput = document.createElement('input');
                 hiddenInput.type = 'hidden';
                 hiddenInput.name = 'skills';
@@ -710,8 +859,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 skillsSelect.disabled = true;
             }
 
-            // If "Others" is selected for qualifications, use the other input value
-            if (qualificationsSelect.value === 'Others' && qualificationsOtherInput.value.trim()) {
+            // Handle "Others" options for qualifications
+            if (qualificationsSelect && qualificationsSelect.value === 'Others' && qualificationsOtherInput && qualificationsOtherInput.value.trim()) {
                 const hiddenInput = document.createElement('input');
                 hiddenInput.type = 'hidden';
                 hiddenInput.name = 'qualifications';
@@ -720,8 +869,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 qualificationsSelect.disabled = true;
             }
 
-            // If "Others" is selected for special needs, use the other input value
-            if (specialNeedsSelect.value === 'Others' && specialNeedsOtherInput.value.trim()) {
+            // Handle "Others" options for special needs
+            if (specialNeedsSelect && specialNeedsSelect.value === 'Others' && specialNeedsOtherInput && specialNeedsOtherInput.value.trim()) {
                 const hiddenInput = document.createElement('input');
                 hiddenInput.type = 'hidden';
                 hiddenInput.name = 'special_needs';
@@ -730,14 +879,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 specialNeedsSelect.disabled = true;
             }
 
-            // Validate required fields
+            // Validate only VISIBLE required fields
             const requiredFields = form.querySelectorAll('[required]');
             let isValid = true;
+            let firstInvalidField = null;
+            let invalidFields = [];
 
             requiredFields.forEach(field => {
-                if (!field.value || !field.value.trim()) {
+                // Skip if field is hidden, disabled, or inside hidden container
+                if (field.type === 'hidden' || field.disabled) {
+                    return;
+                }
+
+                // Check if field or its container is hidden
+                const container = field.closest('.col-12, .col-md-6, div[id$="_container"]');
+                if (container && window.getComputedStyle(container).display === 'none') {
+                    return;
+                }
+
+                if (field.offsetParent === null) {
+                    return;
+                }
+
+                // Validate field value
+                const value = field.value ? field.value.trim() : '';
+                if (!value) {
                     field.classList.add('is-invalid');
                     isValid = false;
+                    invalidFields.push(field.name || field.id);
+                    if (!firstInvalidField) {
+                        firstInvalidField = field;
+                    }
                 } else {
                     field.classList.remove('is-invalid');
                 }
@@ -745,19 +917,63 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!isValid) {
                 e.preventDefault();
-                alert('Please fill in all required fields marked with *.');
+                console.warn('✗ Validation failed - missing required fields:', invalidFields);
+
+                // Focus first invalid field
+                if (firstInvalidField) {
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => firstInvalidField.focus(), 300);
+                }
+
+                // Show error message with field names
+                alert('Please fill in all required fields marked with *\n\nMissing fields: ' + invalidFields.join(', '));
+
+                // Re-enable disabled selects
+                if (skillsSelect) skillsSelect.disabled = false;
+                if (qualificationsSelect) qualificationsSelect.disabled = false;
+                if (specialNeedsSelect) specialNeedsSelect.disabled = false;
+
                 return false;
             }
 
+            console.log('✓ Validation passed - submitting form');
+
             // Show loading state
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Updating Profile...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> <span class="d-none d-sm-inline">Updating Profile...</span><span class="d-inline d-sm-none">Updating...</span>';
+
+            // Disable other buttons
+            const allButtons = form.querySelectorAll('button');
+            allButtons.forEach(btn => {
+                if (btn !== submitBtn) btn.disabled = true;
+            });
 
             return true;
         });
+
+        // Remove validation errors on input change
+        const allInputs = form.querySelectorAll('input, select, textarea');
+        allInputs.forEach(input => {
+            ['input', 'change'].forEach(event => {
+                input.addEventListener(event, function() {
+                    this.classList.remove('is-invalid');
+                });
+            });
+        });
+
+        // Add additional click handler to ensure button works
+        submitBtn.addEventListener('click', function(e) {
+            console.log('✓ Submit button clicked');
+        });
+
+        console.log('✓ Form validation and submission handlers attached');
+    } else {
+        console.error('✗ Form or submit button not found!');
+        if (!form) console.error('Form with id "profileUpdateForm" not found');
+        if (!submitBtn) console.error('Button with id "submitBtn" not found');
     }
 
-    console.log('Profile edit form loaded successfully');
+    console.log('✓ Profile edit form initialization complete');
 });
 </script>
 @endsection

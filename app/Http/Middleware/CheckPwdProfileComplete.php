@@ -24,16 +24,29 @@ class CheckPwdProfileComplete
             return redirect()->route('login');
         }
 
-        // Require a reasonably-complete profile and a resume before allowing protected actions.
-        // Use the User model's profile completion logic (calculated percentage) and resume presence.
+        // Check profile completion percentage
         $completion = 0;
         if (method_exists($user, 'getProfileCompletionPercentage')) {
             $completion = $user->getProfileCompletionPercentage();
         }
 
-        if ($completion < 80 || !method_exists($user, 'hasResume') || !$user->hasResume()) {
+        // Check if user has resume (either PDF upload or database resume)
+        $hasResume = method_exists($user, 'hasResume') && $user->hasResume();
+
+        // If profile is incomplete (< 80%) OR no resume exists, redirect to complete profile
+        if ($completion < 80 || !$hasResume) {
+            $missingItems = [];
+            if ($completion < 80) {
+                $missingItems[] = 'complete your PWD profile (currently ' . $completion . '%)';
+            }
+            if (!$hasResume) {
+                $missingItems[] = 'upload a resume';
+            }
+
+            $message = 'Please ' . implode(' and ', $missingItems) . ' before applying for jobs.';
+
             return redirect()->route('profile.pwd-complete-form')
-                ->with('warning', 'Please complete your PWD profile and upload your resume before accessing this feature.');
+                ->with('warning', $message);
         }
 
         return $next($request);

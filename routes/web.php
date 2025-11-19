@@ -299,6 +299,12 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
         });
 
+        // Resume Management (Protected)
+        Route::resource('resumes', \App\Http\Controllers\ResumeController::class);
+        Route::post('/resumes/{resume}/toggle-publish', [\App\Http\Controllers\ResumeController::class, 'togglePublish'])->name('resumes.toggle-publish');
+        Route::delete('/resumes/{resume}/document', [\App\Http\Controllers\ResumeController::class, 'deleteDocument'])->name('resumes.delete-document');
+        Route::get('/resumes/{resume}/download', [\App\Http\Controllers\ResumeController::class, 'download'])->name('resumes.download');
+
         // Skill Training Enrollment (Protected - requires complete profile)
         Route::post('/skill-trainings/{skill_training}/enroll', [SkillTrainingController::class, 'enroll'])->name('skill-trainings.enroll');
         // REMOVED DUPLICATE ROUTE: Route::get('/skill-trainings/{skill_training}', [SkillTrainingController::class, 'show'])->name('skill-trainings.show');

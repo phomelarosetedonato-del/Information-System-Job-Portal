@@ -368,7 +368,13 @@
                             <!-- reCAPTCHA -->
                             @if(config('services.recaptcha.enabled'))
                             <div class="mb-4 security-section">
-                                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                                <label class="form-label fw-semibold text-dark mb-3">
+                                    <i class="fas fa-robot me-2 text-primary"></i>
+                                    Security Verification
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {!! app('captcha')->renderJs() !!}
+                                {!! app('captcha')->display(['data-theme' => 'light']) !!}
                                 @error('g-recaptcha-response')
                                     <div class="text-danger small mt-2 security-error" role="alert">
                                         <i class="fas fa-shield-alt me-1"></i> {{ $message }}
@@ -823,10 +829,5 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: rgba(0, 0, 0, 0.2) !important;
 }
 </style>
-
-<!-- reCAPTCHA Script -->
-@if(config('services.recaptcha.enabled'))
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-@endif
 @endsection
 @endsection

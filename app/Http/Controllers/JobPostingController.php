@@ -117,7 +117,7 @@ class JobPostingController extends Controller
         // Get paginated results
         $jobPostings = $query->paginate(12)->withQueryString();
 
-        $disabilityTypes = \App\Models\DisabilityType::orderBy('type')->get();
+        $disabilityTypes = DisabilityType::orderBy('type')->get();
 
         // If request is AJAX, return only the job list partial (HTML fragment)
         if ($request->ajax()) {
