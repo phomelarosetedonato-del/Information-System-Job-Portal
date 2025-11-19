@@ -6,8 +6,8 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+            <div class="card" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
+                <div class="card-header text-white" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%) !important;">
                     <h4 class="mb-0">
                         <i class="fas fa-chalkboard-teacher"></i>
                         {{ $skillTraining->title }}
@@ -32,11 +32,11 @@
                         <div class="col-md-8">
                             <!-- Training Details -->
                             <div class="mb-4">
-                                <h5 class="text-primary mb-3">
+                                <h5 class="mb-3" style="color: #2E8B57;">
                                     <i class="fas fa-info-circle"></i>
                                     Training Details
                                 </h5>
-                                <div class="card">
+                                <div class="card" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                                     <div class="card-body">
                                         <table class="table table-borderless">
                                             <tr>
@@ -99,11 +99,11 @@
 
                             <!-- Training Description -->
                             <div class="mb-4">
-                                <h5 class="text-primary mb-3">
+                                <h5 class="mb-3" style="color: #2E8B57;">
                                     <i class="fas fa-align-left"></i>
                                     Training Description
                                 </h5>
-                                <div class="card">
+                                <div class="card" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                                     <div class="card-body">
                                         <div class="training-description">
                                             {!! nl2br(e($skillTraining->description)) !!}
@@ -114,11 +114,11 @@
 
                             <!-- Learning Objectives -->
                             <div class="mb-4">
-                                <h5 class="text-primary mb-3">
+                                <h5 class="mb-3" style="color: #2E8B57;">
                                     <i class="fas fa-bullseye"></i>
                                     Learning Objectives
                                 </h5>
-                                <div class="card">
+                                <div class="card" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                                     <div class="card-body">
                                         <div class="training-objectives">
                                             {!! nl2br(e($skillTraining->objectives)) !!}
@@ -129,11 +129,11 @@
 
                             <!-- Enrollment Progress -->
                             <div class="mb-4">
-                                <h5 class="text-primary mb-3">
+                                <h5 class="mb-3" style="color: #2E8B57;">
                                     <i class="fas fa-chart-bar"></i>
                                     Enrollment Status
                                 </h5>
-                                <div class="card">
+                                <div class="card" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                                     <div class="card-body">
                                         @php
                                             $enrollmentPercentage = min(100, ($enrollmentCount / $skillTraining->max_participants) * 100);
@@ -172,8 +172,8 @@
 
                         <div class="col-md-4">
                             <!-- Enrollment Box -->
-                            <div class="card sticky-top shadow-sm border-0" style="top: 20px;">
-                                <div class="card-header bg-primary text-white">
+                            <div class="card sticky-top border-0" style="top: 20px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
+                                <div class="card-header text-white" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%) !important;">
                                     <h5 class="mb-0">
                                         <i class="fas fa-user-plus me-2"></i>
                                         Enroll in this Training
@@ -285,7 +285,7 @@
                                                 <p class="mb-0 mt-2">Training enrollment feature is available for PWD users only.</p>
                                             </div>
                                             <div class="d-grid">
-                                                <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-outline-primary">
+                                                <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-outline-success" style="border-color: #2E8B57; color: #2E8B57;">
                                                     <i class="fas fa-chalkboard-teacher"></i> Browse Trainings
                                                 </a>
                                             </div>
@@ -297,10 +297,10 @@
                                             <p class="mb-0 mt-2">You need to be logged in as a PWD user to enroll in this training.</p>
                                         </div>
                                         <div class="d-grid gap-2">
-                                            <a href="{{ route('login') }}" class="btn btn-primary">
+                                            <a href="{{ route('login') }}" class="btn" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                                 <i class="fas fa-sign-in-alt"></i> Login to Enroll
                                             </a>
-                                            <a href="{{ route('register') }}" class="btn btn-outline-primary">
+                                            <a href="{{ route('register') }}" class="btn btn-outline-success" style="border-color: #2E8B57; color: #2E8B57;">
                                                 <i class="fas fa-user-plus"></i> Register as PWD
                                             </a>
                                         </div>
@@ -309,7 +309,7 @@
                             </div>
 
                             <!-- Quick Actions -->
-                            <div class="card mt-3 shadow-sm border-0">
+                            <div class="card mt-3 border-0" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                                 <div class="card-header bg-white border-bottom">
                                     <h5 class="mb-0 text-dark">
                                         <i class="fas fa-bolt me-2"></i>
@@ -318,16 +318,16 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
-                                        <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-outline-primary">
+                                        <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-outline-success" style="border-color: #2E8B57; color: #2E8B57;">
                                             <i class="fas fa-arrow-left me-2"></i> Back to Trainings
                                         </a>
-                                        <a href="{{ route('dashboard') }}" class="btn btn-outline-success">
+                                        <a href="{{ route('dashboard') }}" class="btn btn-outline-success" style="border-color: #2E8B57; color: #2E8B57;">
                                             <i class="fas fa-home me-2"></i> Dashboard
                                         </a>
-                                        <a href="{{ route('job-postings.public') }}" class="btn btn-outline-warning">
+                                        <a href="{{ route('job-postings.public') }}" class="btn btn-outline-success" style="border-color: #2E8B57; color: #2E8B57;">
                                             <i class="fas fa-briefcase me-2"></i> Browse Jobs
                                         </a>
-                                        <a href="{{ route('documents.index') }}" class="btn btn-outline-secondary">
+                                        <a href="{{ route('documents.index') }}" class="btn btn-outline-success" style="border-color: #2E8B57; color: #2E8B57;">
                                             <i class="fas fa-file-upload me-2"></i> Upload Documents
                                         </a>
                                     </div>
@@ -335,7 +335,7 @@
                             </div>
 
                             <!-- Training Information -->
-                            <div class="card mt-3 shadow-sm border-0">
+                            <div class="card mt-3 border-0" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                                 <div class="card-header bg-white border-bottom">
                                     <h5 class="mb-0 text-dark">
                                         <i class="fas fa-info-circle me-2"></i>
@@ -368,7 +368,7 @@
                             </div>
 
                             <!-- Contact Information -->
-                            <div class="card mt-3 shadow-sm border-0">
+                            <div class="card mt-3 border-0" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                                 <div class="card-header bg-white border-bottom">
                                     <h5 class="mb-0 text-dark">
                                         <i class="fas fa-headset me-2"></i>
@@ -407,12 +407,80 @@
 }
 
 .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;
     border: 1px solid #e3e6f0;
 }
 
 .card-header {
     border-bottom: 1px solid #e3e6f0;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 992px) {
+    .sticky-top {
+        position: relative !important;
+        top: 0 !important;
+    }
+
+    .container-fluid {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header h4 {
+        font-size: 1.25rem;
+    }
+
+    .card-header h5 {
+        font-size: 1.1rem;
+    }
+
+    h5.mb-3 {
+        font-size: 1.1rem;
+    }
+
+    .table td {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .alert {
+        font-size: 0.9rem;
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+
+    .table {
+        font-size: 0.85rem;
+    }
+
+    .table td:first-child {
+        width: 40%;
+    }
+
+    .btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .progress {
+        height: 16px !important;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+    }
 }
 
 .sticky-top {

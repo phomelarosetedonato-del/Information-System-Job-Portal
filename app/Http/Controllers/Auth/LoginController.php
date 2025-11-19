@@ -178,7 +178,7 @@ class LoginController extends Controller
      * The user has been authenticated.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  mixed  $user
+     * @param  \App\Models\User  $user
      * @return mixed
      */
    protected function authenticated(Request $request, $user)
@@ -347,7 +347,16 @@ class LoginController extends Controller
     protected function sendFailedLoginResponse(Request $request)
     {
         // Increment failed login attempts for the user
-        $user = User::where('email', $request->email)->first();
+        $login = $request->input('login');
+
+        // Try to find user by email or username
+        $user = null;
+        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            $user = User::where('email', $login)->first();
+        } else {
+            $user = User::where('username', $login)->orWhere('email', $login)->first();
+        }
+
         if ($user) {
             $user->recordFailedLoginAttempt();
 

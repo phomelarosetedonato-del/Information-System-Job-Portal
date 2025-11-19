@@ -72,7 +72,7 @@ class RegisterController extends Controller
                     if (in_array(strtolower($domain), $disposableDomains)) {
                         $fail('Disposable email addresses are not allowed for security reasons.');
                     }
-                    
+
                     // Check for suspicious email patterns
                     $localPart = explode('@', $value)[0] ?? '';
                     if (preg_match('/^(test|admin|spam|fake|dummy|trash)/i', $localPart)) {
@@ -96,7 +96,7 @@ class RegisterController extends Controller
                     if (in_array(strtolower($value), array_map('strtolower', $commonPasswords))) {
                         $fail('This password is too common. Please choose a more unique password.');
                     }
-                    
+
                     // Check for sequential characters
                     if (preg_match('/(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|012|123|234|345|456|567|678|789)/i', $value)) {
                         $fail('Password should not contain sequential characters.');
@@ -182,12 +182,14 @@ class RegisterController extends Controller
             // Check for suspicious registration patterns
             $this->checkSuspiciousRegistration($data);
 
+            $normalizedPhone = $this->normalizePhone($data['phone']);
+
             $user = User::create([
                 'name' => strip_tags(trim($data['name'])),
                 'email' => strtolower(trim($data['email'])),
                 'password' => Hash::make($data['password']),
                 'role' => $data['user_type'],
-                'phone' => $this->normalizePhone($data['phone']),
+                'phone' => $normalizedPhone,
                 'address' => strip_tags(trim($data['address'])),
                 'registration_ip' => request()->ip(),
                 'is_active' => true,
@@ -201,26 +203,28 @@ class RegisterController extends Controller
                 'registration_user_agent' => request()->userAgent(),
             ]);
 
-          // Create PWD profile if user registered as PWD
-           // In your RegisterController, update the PWD profile creation to:
-if ($data['user_type'] === 'pwd') {
-    PwdProfile::create([
-        'user_id' => $user->id,
-        'disability_type' => 'Not Specified',
-        'disability_severity' => 'moderate', // MUST be: 'mild', 'moderate', or 'severe'
-        'assistive_devices' => null,
-        'accessibility_needs' => null,
-        'skills' => null,
-        'qualifications' => null,
-        'phone' => $user->phone,
-        'address' => $user->address,
-        'birthdate' => null,
-        'gender' => null,
-        'special_needs' => null,
-        'profile_completed' => false,
-        'is_employed' => false,
-    ]);
-}
+            // Ensure user is fully persisted before accessing ID
+            $user->refresh();
+
+            // Create PWD profile if user registered as PWD
+            if ($data['user_type'] === 'pwd') {
+                PwdProfile::create([
+                    'user_id' => $user->id,
+                    'disability_type' => 'Not Specified',
+                    'disability_severity' => 'moderate',
+                    'assistive_devices' => null,
+                    'accessibility_needs' => null,
+                    'skills' => null,
+                    'qualifications' => null,
+                    'phone' => $normalizedPhone,
+                    'address' => strip_tags(trim($data['address'])),
+                    'birthdate' => null,
+                    'gender' => null,
+                    'special_needs' => null,
+                    'profile_completed' => false,
+                    'is_employed' => false,
+                ]);
+            }
 
 
           // Log successful registration

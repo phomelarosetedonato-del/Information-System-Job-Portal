@@ -4,18 +4,20 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class VerifiedEmployer
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')
                 ->with('warning', 'Please log in to access this page.');
         }
 
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         // Check if user is an employer
         if (!$user->isEmployer()) {
@@ -42,7 +44,7 @@ class VerifiedEmployer
 
         // Check employer verification status
         if (!$user->isEmployerVerified()) {
-            $verificationStatus = $user->getEmployerVerificationStatus();
+            $verificationStatus = $user->getEmployerVerificationStatusText();
             $message = $this->getVerificationMessage($verificationStatus, $user);
 
             if ($request->expectsJson()) {

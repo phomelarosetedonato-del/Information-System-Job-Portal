@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="PWD System for Alaminos City - Helping Persons with Disabilities find jobs and training opportunities">
     <title>@yield('title', 'PWD System - Alaminos City')</title>
 
@@ -113,21 +114,21 @@
 }
         /* Footer Styles */
         .footer-custom {
-            background-color: #2c3e50 !important;
-            color: #ecf0f1;
+            background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%) !important;
+            color: #ffffff;
             padding-top: 2rem;
             padding-bottom: 2rem;
             margin-top: 3rem;
         }
 
         .footer-custom h5 {
-            color: #3498db;
+            color: #ffffff;
             font-weight: 600;
             margin-bottom: 1rem;
         }
 
         .footer-custom p {
-            color: #bdc3c7;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         /* Accessibility Toggle Button */
@@ -414,7 +415,7 @@
             </ul>
 
             <!-- Right Side - Register/Login -->
-            <ul class="navbar-nav ms-auto flex flex-row space-x-3">
+            <ul class="navbar-nav ms-auto flex flex-row space-x-3 align-items-center">
                 <li class="nav-item">
                     <a class="btn btn-sm btn-nude-outline px-4 py-2"
                        href="{{ route('register') }}">
@@ -502,7 +503,7 @@
                 includedLanguages: 'en,tl',
                 layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
                 autoDisplay: false
-            }, 'google_translate-element');
+            }, 'google_translate_element');
         }
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -515,5 +516,300 @@
     @endif
 
     @yield('scripts')
+
+    {{-- Navigation Language Switcher Script --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Page loaded - Initializing language switcher');
+
+        // Get current language from localStorage or default to 'en'
+        let currentLang = localStorage.getItem('site-language') || 'en';
+        console.log('📌 Current language from localStorage:', currentLang);
+
+        updateLanguageDisplay(currentLang);
+
+        // Handle language switch clicks
+        const languageButtons = document.querySelectorAll('.language-switch-btn');
+        console.log('🔍 Found', languageButtons.length, 'language switch buttons');
+
+        languageButtons.forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const targetLang = this.dataset.lang;
+
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('🖱️ LANGUAGE BUTTON CLICKED');
+                console.log('   Target:', targetLang);
+                console.log('   Current:', currentLang);
+
+                if (targetLang === currentLang) {
+                    console.log('📌 Already in', targetLang, '- skipping');
+                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                    return;
+                }
+
+                console.log('🌐 Starting language switch from', currentLang, 'to', targetLang);
+
+                // Show loading state
+                const navLangText = document.getElementById('currentLanguageNav');
+                const originalText = navLangText ? navLangText.textContent : '';
+                if (navLangText) {
+                    navLangText.textContent = targetLang === 'tl' ? 'Lumilipat...' : 'Switching...';
+                    console.log('⏳ Loading indicator shown');
+                }
+
+                try {
+                    // Save preference via API
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    console.log('🔐 CSRF Token:', csrfToken ? csrfToken.substring(0, 15) + '...' : '❌ NOT FOUND');
+
+                    if (csrfToken) {
+                        console.log('📤 Saving language preference to server...');
+                        const saveResponse = await fetch('/accessibility/quick-tool', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ language: targetLang })
+                        });
+                        console.log('📥 Save response:', saveResponse.status, saveResponse.ok ? '✅' : '❌');
+
+                        // Check if response was successful
+                        if (saveResponse.ok) {
+                            const saveData = await saveResponse.json();
+                            console.log('💾 Server save data:', saveData);
+                        } else {
+                            const errorText = await saveResponse.text();
+                            console.error('❌ Server save failed:', errorText);
+                        }
+                    } else {
+                        console.warn('⚠️ No CSRF token - skipping server save');
+                    }
+
+                    // Update localStorage
+                    localStorage.setItem('site-language', targetLang);
+                    console.log('💾 Language saved to localStorage');
+                    currentLang = targetLang;
+
+                    // Update display
+                    updateLanguageDisplay(targetLang);
+                    console.log('🎨 Display updated');
+
+                    // Translate all elements with data-translate attribute
+                    console.log('🔄 Starting translation process...');
+                    await translatePage(targetLang);
+
+                    console.log('✅✅✅ LANGUAGE SWITCH COMPLETE ✅✅✅');
+                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+                } catch (error) {
+                    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                    console.error('❌❌❌ ERROR SWITCHING LANGUAGE ❌❌❌');
+                    console.error('Error:', error.message);
+                    console.error('Stack:', error.stack);
+                    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                    if (navLangText) {
+                        navLangText.textContent = originalText;
+                    }
+                    alert('Failed to switch language. Please check console and try again.');
+                }
+            });
+        });
+
+        // Function to update language display
+        function updateLanguageDisplay(lang) {
+            console.log('🎨 updateLanguageDisplay called with:', lang);
+            const navLangText = document.getElementById('currentLanguageNav');
+            if (navLangText) {
+                navLangText.textContent = lang === 'tl' ? 'Tagalog' : 'English';
+                console.log('✅ Display text set to:', navLangText.textContent);
+            } else {
+                console.error('❌ Element #currentLanguageNav not found!');
+            }
+        }
+
+        // Function to translate all page content
+        async function translatePage(targetLang) {
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('🔍 translatePage() STARTED');
+            console.log('   Target Language:', targetLang);
+            console.log('   Page URL:', window.location.href);
+
+            const elementsToTranslate = document.querySelectorAll('[data-translate]');
+
+            console.log('🔎 Searching for [data-translate] elements...');
+            console.log('   Found:', elementsToTranslate.length, 'elements');
+
+            if (elementsToTranslate.length === 0) {
+                console.warn('⚠️⚠️⚠️ NO TRANSLATABLE ELEMENTS FOUND!');
+                console.warn('� Add data-translate="key" to HTML elements');
+                console.warn('Example: <span data-translate="home">Home</span>');
+                return;
+            }
+
+            // Log each element found
+            console.log('� Translatable elements list:');
+            elementsToTranslate.forEach((el, i) => {
+                const key = el.dataset.translate;
+                const text = el.textContent.trim().substring(0, 30);
+                console.log(`   ${i+1}. [${key}] = "${text}${text.length === 30 ? '...' : ''}"`);
+            });
+
+            // Store original English text and collect translation keys
+            const textsToTranslate = [];
+            const translationMap = {};
+
+            elementsToTranslate.forEach(el => {
+                // Store original English text first time only
+                if (!el.dataset.originalText) {
+                    el.dataset.originalText = el.textContent.trim();
+                    console.log('💾 Stored original:', el.dataset.originalText.substring(0, 20) + '...');
+                }
+
+                const key = el.dataset.translate;
+                if (key) {
+                    if (!translationMap[key]) {
+                        translationMap[key] = [];
+                        textsToTranslate.push(key);
+                    }
+                    translationMap[key].push(el);
+                }
+            });
+
+            console.log('🔑 Unique translation keys:', textsToTranslate);
+            console.log('📊 Total unique keys:', textsToTranslate.length);
+
+            if (targetLang === 'en') {
+                // Restore original English
+                console.log('🔙 Restoring to English...');
+                let restoredCount = 0;
+                elementsToTranslate.forEach(el => {
+                    if (el.dataset.originalText) {
+                        const oldText = el.textContent;
+                        el.textContent = el.dataset.originalText;
+                        console.log(`   ✅ "${oldText.substring(0,20)}..." → "${el.textContent.substring(0,20)}..."`);
+                        restoredCount++;
+                    }
+                });
+                console.log('✅ Restored', restoredCount, 'elements to English');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                return;
+            }
+
+            // Fetch translations from API
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('🔐 CSRF Token check:', csrfToken ? '✅ Found' : '❌ NOT FOUND');
+                if (csrfToken) {
+                    console.log('   Token preview:', csrfToken.substring(0, 15) + '...');
+                }
+
+                if (!csrfToken) {
+                    console.error('❌ CRITICAL: No CSRF token found!');
+                    console.error('💡 Solution: Add <meta name="csrf-token" content="{{ csrf_token() }}"> to <head>');
+                    alert('Error: CSRF token not found. Please refresh the page.');
+                    return;
+                }
+
+                console.log('📤 Preparing API request...');
+                console.log('   Endpoint: /accessibility/translate-batch');
+                console.log('   Method: POST');
+                console.log('   Keys to translate:', textsToTranslate.length);
+
+                const requestBody = {
+                    texts: textsToTranslate,
+                    target_lang: targetLang
+                };
+                console.log('   Request body:', JSON.stringify(requestBody, null, 2));
+
+                const response = await fetch('/accessibility/translate-batch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log('📥 API Response received:');
+                console.log('   Status:', response.status, response.statusText);
+                console.log('   OK:', response.ok ? '✅' : '❌');
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ API Error Response:', errorText);
+                    throw new Error(`API returned ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('📦 Translation data:', JSON.stringify(data, null, 2));
+
+                if (data.success && data.translations) {
+                    console.log('✅ Valid response format');
+                    console.log('📝 Applying translations...');
+
+                    let successCount = 0;
+                    let failCount = 0;
+                    Object.keys(translationMap).forEach(key => {
+                        const translated = data.translations[key];
+                        if (translated && translated !== key) {
+                            console.log(`   ✅ [${key}] → "${translated}"`);
+                            translationMap[key].forEach(el => {
+                                const oldText = el.textContent.trim();
+                                el.textContent = translated;
+                                successCount++;
+                                console.log(`      📝 Element updated: "${oldText.substring(0,20)}..." → "${translated.substring(0,20)}..."`);
+                            });
+                        } else {
+                            console.warn(`   ⚠️ [${key}] - NO TRANSLATION or SAME AS KEY`);
+                            failCount++;
+                        }
+                    });
+
+                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                    console.log('✅✅✅ TRANSLATION COMPLETE ✅✅✅');
+                    console.log('   ✅ Successful:', successCount, 'elements');
+                    if (failCount > 0) {
+                        console.warn('   ⚠️ Missing:', failCount, 'translations');
+                    }
+                    console.log('   📊 Total:', successCount + failCount, 'keys processed');
+                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+                } else {
+                    console.error('❌ Invalid API response format!');
+                    console.error('   Expected: {success: true, translations: {...}}');
+                    console.error('   Received:', data);
+                    throw new Error('Invalid response format from API');
+                }
+            } catch (error) {
+                console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.error('❌❌❌ TRANSLATION ERROR ❌❌❌');
+                console.error('   Message:', error.message);
+                console.error('   Stack:', error.stack);
+                console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                alert('❌ Translation failed!\n\nError: ' + error.message + '\n\nPlease check browser console (F12) for details.');
+            }
+        }
+
+        // On page load, apply saved language preference
+        console.log('🔄 Checking for saved language preference...');
+        if (currentLang === 'tl') {
+            console.log('   📌 Tagalog preference found - auto-translating...');
+            setTimeout(() => translatePage('tl'), 500); // Small delay to ensure DOM is ready
+        } else {
+            console.log('   📌 English (default) - no translation needed');
+        }
+
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('🎉 Language Switcher Ready!');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    });
+    </script>
+
+    {{-- Include Modern Accessibility Widget --}}
+    @include('partials.accessibility-widget')
 </body>
 </html>

@@ -13,20 +13,18 @@
                 <div class="mb-4">
                     <span class="badge bg-success bg-opacity-10 text-success px-4 py-2 rounded-pill border border-success border-opacity-25">
                         <i class="fas fa-universal-access me-2"></i>
-                        Empowering PWD Professionals
+                        <span>Empowering PWD Professionals</span>
                     </span>
                 </div>
-                
+
                 <!-- Main Heading -->
                 <h1 class="display-3 fw-bold mb-4 text-gray-900" style="line-height: 1.2;">
-                    Your Abilities,<br>
+                    <span>Your Abilities</span>,<br>
                     <span class="text-success">Our Priority</span>
                 </h1>
-                
+
                 <p class="lead mb-4 text-gray-700" style="font-size: 1.25rem; line-height: 1.8;">
-                    Connect with <strong>inclusive employers</strong> who value your unique talents. 
-                    Access <strong>specialized training</strong> and find meaningful employment opportunities 
-                    designed specifically for Persons with Disabilities.
+                    <span>Connect with inclusive employers who value your unique talents. Access specialized training and find meaningful employment opportunities designed specifically for Persons with Disabilities.</span>
                 </p>
 
                 <!-- Key Features -->
@@ -35,31 +33,31 @@
                         <div class="feature-icon-sm bg-success bg-opacity-10 rounded-circle p-2 me-3">
                             <i class="fas fa-wheelchair text-success"></i>
                         </div>
-                        <span class="text-gray-700"><strong>Fully Accessible Platform</strong> - Screen reader compatible, keyboard navigation</span>
+                        <span class="text-gray-700"><strong><span>Fully Accessible Platform</span></strong> - <span>Screen reader compatible, keyboard navigation</span></span>
                     </div>
                     <div class="d-flex align-items-center mb-3">
                         <div class="feature-icon-sm bg-success bg-opacity-10 rounded-circle p-2 me-3">
                             <i class="fas fa-handshake text-success"></i>
                         </div>
-                        <span class="text-gray-700"><strong>PWD-Friendly Employers</strong> - Pre-vetted inclusive companies</span>
+                        <span class="text-gray-700"><strong><span>PWD-Friendly Employers</span></strong> - <span>Pre-vetted inclusive companies</span></span>
                     </div>
                     <div class="d-flex align-items-center mb-3">
                         <div class="feature-icon-sm bg-success bg-opacity-10 rounded-circle p-2 me-3">
                             <i class="fas fa-graduation-cap text-success"></i>
                         </div>
-                        <span class="text-gray-700"><strong>Free Skills Training</strong> - Enhance your employability</span>
+                        <span class="text-gray-700"><strong><span>Free Skills Training</span></strong> - <span>Enhance your employability</span></span>
                     </div>
                 </div>
 
                 <!-- CTA Buttons -->
                 <div class="hero-buttons d-flex flex-wrap gap-3 mb-4">
-                    <a href="{{ route('register') }}" class="btn btn-success btn-lg px-5 py-3 shadow-lg" 
+                    <a href="{{ route('register') }}" class="btn btn-success btn-lg px-5 py-3 shadow-lg"
                        style="border-radius: 50px; font-weight: 600; font-size: 1.1rem;">
-                        <i class="fas fa-rocket me-2"></i>Start Your Journey
+                        <i class="fas fa-rocket me-2"></i><span>Start Your Journey</span>
                     </a>
-                    <a href="#featured-jobs" class="btn btn-outline-success btn-lg px-5 py-3" 
+                    <a href="#featured-jobs" class="btn btn-outline-success btn-lg px-5 py-3"
                        style="border-radius: 50px; font-weight: 600; font-size: 1.1rem; border-width: 2px;">
-                        <i class="fas fa-briefcase me-2"></i>View Jobs
+                        <i class="fas fa-briefcase me-2"></i><span>View Jobs</span>
                     </a>
                 </div>
 
@@ -69,19 +67,19 @@
                         <div class="col-auto">
                             <small class="text-gray-600 d-flex align-items-center">
                                 <i class="fas fa-check-circle text-success me-2"></i>
-                                <strong>100% Free</strong> for Job Seekers
+                                <strong><span>100% Free</span></strong> <span>for Job Seekers</span>
                             </small>
                         </div>
                         <div class="col-auto">
                             <small class="text-gray-600 d-flex align-items-center">
                                 <i class="fas fa-shield-alt text-success me-2"></i>
-                                <strong>Data Protected</strong> & Secure
+                                <strong><span>Data Protected</span></strong> <span>& Secure</span>
                             </small>
                         </div>
                         <div class="col-auto">
                             <small class="text-gray-600 d-flex align-items-center">
                                 <i class="fas fa-heart text-success me-2"></i>
-                                <strong>1000+</strong> Success Stories
+                                <strong><span>1000+</span></strong> <span>Success Stories</span>
                             </small>
                         </div>
                     </div>
@@ -95,8 +93,8 @@
                     <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 30px;">
                         <div class="card-body p-5 bg-white">
                             <div class="text-center mb-4">
-                                <div class="hero-icon-large mb-4 mx-auto" 
-                                     style="width: 200px; height: 200px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                                <div class="hero-icon-large mb-4 mx-auto"
+                                     style="width: 200px; height: 200px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                                             border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                     <i class="fas fa-universal-access" style="font-size: 5rem; color: white;"></i>
                                 </div>
@@ -111,13 +109,13 @@
                                 <div class="col-6">
                                     <div class="p-3 bg-success bg-opacity-10 rounded-3">
                                         <h4 class="text-success fw-bold mb-1">{{ $featuredJobs->count() }}+</h4>
-                                        <small class="text-gray-600">Active Jobs</small>
+                                        <small class="text-gray-600"><span>Active Jobs</span></small>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="p-3 bg-success bg-opacity-10 rounded-3">
                                         <h4 class="text-success fw-bold mb-1">{{ $upcomingTrainings->count() }}+</h4>
-                                        <small class="text-gray-600">Training Programs</small>
+                                        <small class="text-gray-600"><span>Training Programs</span></small>
                                     </div>
                                 </div>
                             </div>
@@ -125,16 +123,16 @@
                     </div>
 
                     <!-- Floating Badges -->
-                    <div class="floating-badge badge bg-white shadow-lg position-absolute" 
+                    <div class="floating-badge badge bg-white shadow-lg position-absolute"
                          style="top: 20px; right: -20px; padding: 15px 20px; animation: float 3s ease-in-out infinite;">
                         <i class="fas fa-check-circle text-success me-2"></i>
-                        <strong>Verified Employers</strong>
+                        <strong><span>Verified Employers</span></strong>
                     </div>
 
-                    <div class="floating-badge badge bg-white shadow-lg position-absolute" 
+                    <div class="floating-badge badge bg-white shadow-lg position-absolute"
                          style="bottom: 40px; left: -20px; padding: 15px 20px; animation: float 3s ease-in-out infinite 1.5s;">
                         <i class="fas fa-award text-warning me-2"></i>
-                        <strong>Government Recognized</strong>
+                        <strong><span>Government Recognized</span></strong>
                     </div>
                 </div>
             </div>
@@ -149,34 +147,34 @@
             <div class="col-lg-3 text-center text-lg-start">
                 <h3 class="h5 fw-bold text-gray-800 mb-2">
                     <i class="fas fa-universal-access text-success me-2"></i>
-                    Accessibility First
+                    <span>Accessibility First</span>
                 </h3>
-                <p class="text-gray-600 small mb-0">Built with PWD needs in mind</p>
+                <p class="text-gray-600 small mb-0"><span>Built with PWD needs in mind</span></p>
             </div>
             <div class="col-lg-9">
                 <div class="row g-3">
                     <div class="col-md-3 col-6">
                         <div class="text-center p-3 bg-light rounded-3">
                             <i class="fas fa-keyboard text-success mb-2" style="font-size: 2rem;"></i>
-                            <p class="small mb-0 fw-semibold">Keyboard Navigation</p>
+                            <p class="small mb-0 fw-semibold"><span>Keyboard Navigation</span></p>
                         </div>
                     </div>
                     <div class="col-md-3 col-6">
                         <div class="text-center p-3 bg-light rounded-3">
                             <i class="fas fa-volume-up text-success mb-2" style="font-size: 2rem;"></i>
-                            <p class="small mb-0 fw-semibold">Screen Reader</p>
+                            <p class="small mb-0 fw-semibold"><span>Screen Reader</span></p>
                         </div>
                     </div>
                     <div class="col-md-3 col-6">
                         <div class="text-center p-3 bg-light rounded-3">
                             <i class="fas fa-text-height text-success mb-2" style="font-size: 2rem;"></i>
-                            <p class="small mb-0 fw-semibold">Adjustable Text</p>
+                            <p class="small mb-0 fw-semibold"><span>Adjustable Text</span></p>
                         </div>
                     </div>
                     <div class="col-md-3 col-6">
                         <div class="text-center p-3 bg-light rounded-3">
                             <i class="fas fa-adjust text-success mb-2" style="font-size: 2rem;"></i>
-                            <p class="small mb-0 fw-semibold">High Contrast</p>
+                            <p class="small mb-0 fw-semibold"><span>High Contrast</span></p>
                         </div>
                     </div>
                 </div>
@@ -196,8 +194,8 @@
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100 text-center p-4 step-card">
-                    <div class="step-number mx-auto mb-4" 
-                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); 
+                    <div class="step-number mx-auto mb-4"
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669);
                                 border-radius: 50%; display: flex; align-items: center; justify-content: center;
                                 font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         1
@@ -207,7 +205,7 @@
                     </div>
                     <h3 class="h4 fw-bold mb-3">Create Your Profile</h3>
                     <p class="text-gray-600">
-                        Sign up for free and complete your PWD profile with your skills, qualifications, 
+                        Sign up for free and complete your PWD profile with your skills, qualifications,
                         and accommodation needs. Your information is secure and private.
                     </p>
                 </div>
@@ -215,8 +213,8 @@
 
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100 text-center p-4 step-card">
-                    <div class="step-number mx-auto mb-4" 
-                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); 
+                    <div class="step-number mx-auto mb-4"
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669);
                                 border-radius: 50%; display: flex; align-items: center; justify-content: center;
                                 font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         2
@@ -226,7 +224,7 @@
                     </div>
                     <h3 class="h4 fw-bold mb-3">Browse & Apply</h3>
                     <p class="text-gray-600">
-                        Explore PWD-friendly job opportunities from verified inclusive employers. 
+                        Explore PWD-friendly job opportunities from verified inclusive employers.
                         Filter by disability type, accommodation available, and work arrangement.
                     </p>
                 </div>
@@ -234,8 +232,8 @@
 
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100 text-center p-4 step-card">
-                    <div class="step-number mx-auto mb-4" 
-                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); 
+                    <div class="step-number mx-auto mb-4"
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669);
                                 border-radius: 50%; display: flex; align-items: center; justify-content: center;
                                 font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         3
@@ -245,7 +243,7 @@
                     </div>
                     <h3 class="h4 fw-bold mb-3">Get Hired</h3>
                     <p class="text-gray-600">
-                        Connect with employers who value diversity. Receive interview invitations, 
+                        Connect with employers who value diversity. Receive interview invitations,
                         access training programs, and start your meaningful career journey.
                     </p>
                 </div>
@@ -532,13 +530,13 @@
 </section>
 
 <!-- CTA Section -->
-<section class="py-5 position-relative overflow-hidden" 
+<section class="py-5 position-relative overflow-hidden"
          style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
     <!-- Background Pattern -->
     <div class="position-absolute w-100 h-100 top-0 start-0" style="opacity: 0.1;">
-        <div class="position-absolute" style="top: -50px; right: -50px; width: 300px; height: 300px; 
+        <div class="position-absolute" style="top: -50px; right: -50px; width: 300px; height: 300px;
              background: white; border-radius: 50%;"></div>
-        <div class="position-absolute" style="bottom: -100px; left: -100px; width: 400px; height: 400px; 
+        <div class="position-absolute" style="bottom: -100px; left: -100px; width: 400px; height: 400px;
              background: white; border-radius: 50%;"></div>
     </div>
 
@@ -546,28 +544,28 @@
         <div class="row text-center">
             <div class="col-lg-10 mx-auto">
                 <div class="mb-4">
-                    <span class="badge bg-white text-success px-4 py-2 rounded-pill mb-3" 
+                    <span class="badge bg-white text-success px-4 py-2 rounded-pill mb-3"
                           style="font-size: 1rem;">
                         <i class="fas fa-rocket me-2"></i>Join Us Today
                     </span>
                 </div>
-                
+
                 <h2 class="display-4 fw-bold text-white mb-4">
                     Ready to Start Your Career Journey?
                 </h2>
                 <p class="lead text-white mb-5" style="font-size: 1.3rem; opacity: 0.95;">
-                    Join <strong>1,000+ PWD professionals</strong> who have found meaningful employment 
+                    Join <strong>1,000+ PWD professionals</strong> who have found meaningful employment
                     through our platform. Your dream job is waiting!
                 </p>
 
                 <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
-                    <a href="{{ route('register') }}" 
-                       class="btn btn-light btn-lg px-5 py-3 shadow-lg" 
+                    <a href="{{ route('register') }}"
+                       class="btn btn-light btn-lg px-5 py-3 shadow-lg"
                        style="border-radius: 50px; font-weight: 600; font-size: 1.1rem;">
                         <i class="fas fa-user-plus me-2"></i>Create Free Account
                     </a>
-                    <a href="{{ route('about') }}" 
-                       class="btn btn-outline-light btn-lg px-5 py-3" 
+                    <a href="{{ route('about') }}"
+                       class="btn btn-outline-light btn-lg px-5 py-3"
                        style="border-radius: 50px; font-weight: 600; font-size: 1.1rem; border-width: 2px;">
                         <i class="fas fa-info-circle me-2"></i>Learn More
                     </a>
@@ -847,24 +845,24 @@ h1, h2, h3, h4, h5, h6 {
     .display-3 {
         font-size: 2.5rem;
     }
-    
+
     .display-4 {
         font-size: 2rem;
     }
-    
+
     .display-5 {
         font-size: 1.75rem;
     }
-    
+
     .lead {
         font-size: 1.1rem;
     }
-    
+
     .hero-section {
         min-height: auto !important;
         padding: 3rem 0 !important;
     }
-    
+
     .floating-badge {
         display: none;
     }

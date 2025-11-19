@@ -5,18 +5,18 @@
 @section('content')
 <div class="container-fluid px-0">
     <!-- Page Header -->
-    <div class="dashboard-header bg-white border-bottom py-4">
+    <div class="dashboard-header bg-white border-bottom py-3 py-md-4">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h3 mb-2 text-dark">
+            <div class="row align-items-center g-3">
+                <div class="col-12 col-md-8">
+                    <h1 class="h4 h3-md mb-2 text-dark">
                         <i class="fas fa-user-edit me-2 text-primary"></i>
                         Edit Profile
                     </h1>
-                    <p class="mb-0 text-muted">Update your personal information and PWD details</p>
+                    <p class="mb-0 text-muted small">Update your personal information and PWD details</p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <a href="{{ route('profile.show') }}" class="btn btn-outline-secondary">
+                <div class="col-12 col-md-4 text-md-end">
+                    <a href="{{ route('profile.show') }}" class="btn btn-outline-secondary w-100 w-md-auto">
                         <i class="fas fa-arrow-left me-2"></i> Back to Profile
                     </a>
                 </div>
@@ -237,46 +237,33 @@
 
                     <!-- PWD Information Section -->
                     @if($user->isPwd())
-                    <div class="card shadow-sm border-0 mb-4">
+                    <div class="card shadow-sm border-0 mb-3 mb-md-4">
                         <div class="card-header bg-white border-bottom py-3">
-                            <h5 class="mb-0 text-dark">
+                            <h5 class="mb-0 text-dark h6 h5-md">
                                 <i class="fas fa-universal-access me-2 text-primary"></i>
                                 PWD Information
                             </h5>
                         </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="disability_type" class="form-label">Disability Type <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('disability_type') is-invalid @enderror"
-                                            id="disability_type" name="disability_type" required>
+                        <div class="card-body p-3 p-md-4">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label for="disability_type_id" class="form-label">Disability Type <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('disability_type_id') is-invalid @enderror"
+                                            id="disability_type_id" name="disability_type_id" required>
                                         <option value="">Select Disability Type</option>
-                                        @php
-                                            $disabilityTypes = [
-                                                'Physical Disability',
-                                                'Visual Impairment',
-                                                'Hearing Impairment',
-                                                'Speech Impairment',
-                                                'Intellectual Disability',
-                                                'Psychosocial Disability',
-                                                'Chronic Illness',
-                                                'Multiple Disabilities',
-                                                'Other'
-                                            ];
-                                            $currentDisabilityType = old('disability_type', $pwdProfile->disability_type ?? '');
-                                        @endphp
                                         @foreach($disabilityTypes as $type)
-                                            <option value="{{ $type }}" {{ $currentDisabilityType == $type ? 'selected' : '' }}>
-                                                {{ $type }}
+                                            <option value="{{ $type->id }}"
+                                                {{ old('disability_type_id', $pwdProfile->disability_type_id ?? '') == $type->id ? 'selected' : '' }}>
+                                                {{ $type->type }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('disability_type')
+                                    @error('disability_type_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-12 col-md-6">
                                     <label for="gender" class="form-label">Gender</label>
                                     <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender">
                                         <option value="">Select Gender</option>
@@ -292,7 +279,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-12 col-md-6">
                                     <label for="birthdate" class="form-label">Birthdate</label>
                                     <input type="date" class="form-control @error('birthdate') is-invalid @enderror"
                                            id="birthdate" name="birthdate"
@@ -303,7 +290,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Employment Status</label>
                                     <div class="form-check mt-2">
                                         @php
@@ -317,36 +304,97 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 mb-3">
+                                <div class="col-12 col-md-6">
                                     <label for="skills" class="form-label">Skills & Abilities</label>
-                                    <textarea class="form-control @error('skills') is-invalid @enderror"
-                                              id="skills" name="skills" rows="3"
-                                              placeholder="List your skills, talents, and abilities...">{{ old('skills', $pwdProfile->skills ?? '') }}</textarea>
+                                    <select class="form-select @error('skills') is-invalid @enderror"
+                                            id="skills" name="skills">
+                                        <option value="">-- Select Skill --</option>
+                                        @foreach($skillOptions as $option)
+                                            <option value="{{ $option->name }}"
+                                                {{ old('skills', $pwdProfile->skills ?? '') == $option->name ? 'selected' : '' }}>
+                                                {{ $option->name }}
+                                            </option>
+                                        @endforeach
+                                        <option value="Others"
+                                            {{ old('skills', $pwdProfile->skills ?? '') != '' && !$skillOptions->pluck('name')->contains(old('skills', $pwdProfile->skills ?? '')) && old('skills', $pwdProfile->skills ?? '') != '' ? 'selected' : '' }}>
+                                            Others (Please Specify)
+                                        </option>
+                                    </select>
                                     @error('skills')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text text-muted">Separate different skills with commas or list them on new lines.</div>
+                                    <div class="form-text text-muted">Select your primary skill or choose "Others" to specify.</div>
                                 </div>
 
-                                <div class="col-12 mb-3">
+                                <!-- Skills Others Input -->
+                                <div class="col-12 col-md-6" id="skills_other_container" style="display: none;">
+                                    <label for="skills_other" class="form-label">Please Specify Your Skill</label>
+                                    <input type="text" class="form-control" id="skills_other" name="skills_other"
+                                           placeholder="Enter your specific skill..."
+                                           value="{{ old('skills_other', (!$skillOptions->pluck('name')->contains($pwdProfile->skills ?? '') && $pwdProfile->skills) ? $pwdProfile->skills : '') }}">
+                                    <div class="form-text text-muted">Describe your specific skill or ability.</div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
                                     <label for="qualifications" class="form-label">Educational Background & Qualifications</label>
-                                    <textarea class="form-control @error('qualifications') is-invalid @enderror"
-                                              id="qualifications" name="qualifications" rows="3"
-                                              placeholder="List your educational background, training, certifications...">{{ old('qualifications', $pwdProfile->qualifications ?? '') }}</textarea>
+                                    <select class="form-select @error('qualifications') is-invalid @enderror"
+                                            id="qualifications" name="qualifications">
+                                        <option value="">-- Select Educational Background --</option>
+                                        @foreach($qualificationOptions as $option)
+                                            <option value="{{ $option->name }}"
+                                                {{ old('qualifications', $pwdProfile->qualifications ?? '') == $option->name ? 'selected' : '' }}>
+                                                {{ $option->name }}
+                                            </option>
+                                        @endforeach
+                                        <option value="Others"
+                                            {{ old('qualifications', $pwdProfile->qualifications ?? '') != '' && !$qualificationOptions->pluck('name')->contains(old('qualifications', $pwdProfile->qualifications ?? '')) && old('qualifications', $pwdProfile->qualifications ?? '') != '' ? 'selected' : '' }}>
+                                            Others (Please Specify)
+                                        </option>
+                                    </select>
                                     @error('qualifications')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text text-muted">Select your highest educational attainment.</div>
                                 </div>
 
-                                <div class="col-12 mb-3">
+                                <!-- Qualifications Others Input -->
+                                <div class="col-12 col-md-6" id="qualifications_other_container" style="display: none;">
+                                    <label for="qualifications_other" class="form-label">Please Specify Your Educational Background</label>
+                                    <input type="text" class="form-control" id="qualifications_other" name="qualifications_other"
+                                           placeholder="Enter your educational background..."
+                                           value="{{ old('qualifications_other', (!$qualificationOptions->pluck('name')->contains($pwdProfile->qualifications ?? '') && $pwdProfile->qualifications) ? $pwdProfile->qualifications : '') }}">
+                                    <div class="form-text text-muted">Describe your educational background or qualifications.</div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
                                     <label for="special_needs" class="form-label">Special Needs & Accommodations</label>
-                                    <textarea class="form-control @error('special_needs') is-invalid @enderror"
-                                              id="special_needs" name="special_needs" rows="3"
-                                              placeholder="Describe any special accommodations or support you may need...">{{ old('special_needs', $pwdProfile->special_needs ?? '') }}</textarea>
+                                    <select class="form-select @error('special_needs') is-invalid @enderror"
+                                            id="special_needs" name="special_needs">
+                                        <option value="">-- Select Accommodation Need --</option>
+                                        @foreach($accommodationOptions as $option)
+                                            <option value="{{ $option->name }}"
+                                                {{ old('special_needs', $pwdProfile->special_needs ?? '') == $option->name ? 'selected' : '' }}>
+                                                {{ $option->name }}
+                                            </option>
+                                        @endforeach
+                                        <option value="Others"
+                                            {{ old('special_needs', $pwdProfile->special_needs ?? '') != '' && !$accommodationOptions->pluck('name')->contains(old('special_needs', $pwdProfile->special_needs ?? '')) && old('special_needs', $pwdProfile->special_needs ?? '') != '' ? 'selected' : '' }}>
+                                            Others (Please Specify)
+                                        </option>
+                                    </select>
                                     @error('special_needs')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <div class="form-text text-muted">This helps employers provide appropriate workplace accommodations.</div>
+                                </div>
+
+                                <!-- Special Needs Others Input -->
+                                <div class="col-12 col-md-6" id="special_needs_other_container" style="display: none;">
+                                    <label for="special_needs_other" class="form-label">Please Specify Your Accommodation Needs</label>
+                                    <input type="text" class="form-control" id="special_needs_other" name="special_needs_other"
+                                           placeholder="Enter your specific accommodation needs..."
+                                           value="{{ old('special_needs_other', (!$accommodationOptions->pluck('name')->contains($pwdProfile->special_needs ?? '') && $pwdProfile->special_needs) ? $pwdProfile->special_needs : '') }}">
+                                    <div class="form-text text-muted">Describe the specific accommodations or support you need.</div>
                                 </div>
                             </div>
                         </div>
@@ -355,13 +403,13 @@
 
                     <!-- Form Actions -->
                     <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
+                        <div class="card-body p-3 p-md-4">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3">
                                 <a href="{{ route('profile.show') }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-arrow-left me-2"></i> Back to Profile
                                 </a>
-                                <div>
-                                    <button type="reset" class="btn btn-outline-danger me-2">
+                                <div class="d-flex flex-column flex-sm-row gap-2">
+                                    <button type="reset" class="btn btn-outline-danger">
                                         <i class="fas fa-undo me-2"></i> Reset
                                     </button>
                                     <button type="submit" class="btn btn-primary">
@@ -409,8 +457,80 @@
         transition: transform 0.3s ease;
     }
 
-    .rounded-circle:hover {
-        transform: scale(1.05);
+    @media (min-width: 768px) {
+        .rounded-circle:hover {
+            transform: scale(1.05);
+        }
+    }
+
+    /* Responsive heading sizes */
+    .h3-md {
+        font-size: 1.5rem;
+    }
+    .h5-md {
+        font-size: 1.125rem;
+    }
+    @media (min-width: 768px) {
+        .h3-md {
+            font-size: 1.75rem;
+        }
+        .h5-md {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Improve button tap targets on mobile */
+    @media (max-width: 767px) {
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .form-label {
+            font-size: 0.9rem;
+        }
+        .form-select, .form-control {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+
+    /* Ensure proper spacing on mobile */
+    @media (max-width: 767px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
+    /* Better dropdown appearance */
+    .form-select {
+        cursor: pointer;
+        background-position: right 0.75rem center;
+    }
+
+    .form-select:focus {
+        background-color: #fff;
+    }
+
+    /* Smooth transitions for showing/hiding fields */
+    #skills_other_container,
+    #qualifications_other_container,
+    #special_needs_other_container {
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Form text smaller on mobile */
+    @media (max-width: 767px) {
+        .form-text {
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Better spacing between form groups */
+    @media (min-width: 768px) {
+        .row.g-3 > * {
+            margin-bottom: 0.5rem;
+        }
     }
 </style>
 @endsection
@@ -418,87 +538,224 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle Skills dropdown "Others" option
+    const skillsSelect = document.getElementById('skills');
+    const skillsOtherContainer = document.getElementById('skills_other_container');
+    const skillsOtherInput = document.getElementById('skills_other');
+
+    function toggleSkillsOther() {
+        if (skillsSelect.value === 'Others') {
+            skillsOtherContainer.style.opacity = '0';
+            skillsOtherContainer.style.display = 'block';
+            setTimeout(() => {
+                skillsOtherContainer.style.opacity = '1';
+            }, 10);
+            skillsOtherInput.required = true;
+            skillsOtherInput.focus();
+        } else {
+            skillsOtherContainer.style.opacity = '0';
+            setTimeout(() => {
+                skillsOtherContainer.style.display = 'none';
+            }, 300);
+            skillsOtherInput.required = false;
+            skillsOtherInput.value = '';
+        }
+    }
+
+    // Check on page load
+    if (skillsSelect.value === 'Others') {
+        skillsOtherContainer.style.display = 'block';
+        skillsOtherContainer.style.opacity = '1';
+        skillsOtherInput.required = true;
+    }
+    skillsSelect.addEventListener('change', toggleSkillsOther);
+
+    // Handle Qualifications dropdown "Others" option
+    const qualificationsSelect = document.getElementById('qualifications');
+    const qualificationsOtherContainer = document.getElementById('qualifications_other_container');
+    const qualificationsOtherInput = document.getElementById('qualifications_other');
+
+    function toggleQualificationsOther() {
+        if (qualificationsSelect.value === 'Others') {
+            qualificationsOtherContainer.style.opacity = '0';
+            qualificationsOtherContainer.style.display = 'block';
+            setTimeout(() => {
+                qualificationsOtherContainer.style.opacity = '1';
+            }, 10);
+            qualificationsOtherInput.required = true;
+            qualificationsOtherInput.focus();
+        } else {
+            qualificationsOtherContainer.style.opacity = '0';
+            setTimeout(() => {
+                qualificationsOtherContainer.style.display = 'none';
+            }, 300);
+            qualificationsOtherInput.required = false;
+            qualificationsOtherInput.value = '';
+        }
+    }
+
+    // Check on page load
+    if (qualificationsSelect.value === 'Others') {
+        qualificationsOtherContainer.style.display = 'block';
+        qualificationsOtherContainer.style.opacity = '1';
+        qualificationsOtherInput.required = true;
+    }
+    qualificationsSelect.addEventListener('change', toggleQualificationsOther);
+
+    // Handle Special Needs dropdown "Others" option
+    const specialNeedsSelect = document.getElementById('special_needs');
+    const specialNeedsOtherContainer = document.getElementById('special_needs_other_container');
+    const specialNeedsOtherInput = document.getElementById('special_needs_other');
+
+    function toggleSpecialNeedsOther() {
+        if (specialNeedsSelect.value === 'Others') {
+            specialNeedsOtherContainer.style.opacity = '0';
+            specialNeedsOtherContainer.style.display = 'block';
+            setTimeout(() => {
+                specialNeedsOtherContainer.style.opacity = '1';
+            }, 10);
+            specialNeedsOtherInput.required = true;
+            specialNeedsOtherInput.focus();
+        } else {
+            specialNeedsOtherContainer.style.opacity = '0';
+            setTimeout(() => {
+                specialNeedsOtherContainer.style.display = 'none';
+            }, 300);
+            specialNeedsOtherInput.required = false;
+            specialNeedsOtherInput.value = '';
+        }
+    }
+
+    // Check on page load
+    if (specialNeedsSelect.value === 'Others') {
+        specialNeedsOtherContainer.style.display = 'block';
+        specialNeedsOtherContainer.style.opacity = '1';
+        specialNeedsOtherInput.required = true;
+    }
+    specialNeedsSelect.addEventListener('change', toggleSpecialNeedsOther);
+
     // Image preview functionality
     const profilePhotoInput = document.getElementById('profile_photo');
-    let currentProfilePhoto = document.querySelector('.rounded-circle');
 
     if (profilePhotoInput) {
         profilePhotoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Validate file first
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.size > maxSize) {
+                    alert('File size must be less than 5MB. Please choose a smaller file.');
+                    this.value = '';
+                    return;
+                }
+
+                const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPEG, PNG, JPG, GIF, or WebP).');
+                    this.value = '';
+                    return;
+                }
+
+                // Show preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Create a new image element for preview
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.alt = 'Profile Photo Preview';
-                    img.className = 'rounded-circle border shadow-sm mb-3';
-                    img.style.width = '150px';
-                    img.style.height = '150px';
-                    img.style.objectFit = 'cover';
-                    img.style.border = '4px solid #e9ecef';
+                    const currentPhoto = document.querySelector('.rounded-circle') || document.querySelector('[width="150"]');
+                    if (currentPhoto) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Profile Photo Preview';
+                        img.className = 'rounded-circle border shadow-sm mb-3';
+                        img.style.width = '150px';
+                        img.style.height = '150px';
+                        img.style.objectFit = 'cover';
+                        img.style.border = '4px solid #e9ecef';
 
-                    // Replace the current preview
-                    const photoContainer = currentProfilePhoto.parentNode;
-                    photoContainer.replaceChild(img, currentProfilePhoto);
-                    currentProfilePhoto = img;
+                        currentPhoto.parentNode.replaceChild(img, currentPhoto);
+                    }
                 };
                 reader.readAsDataURL(file);
             }
         });
     }
 
-    // Form validation enhancements
-    const form = document.querySelector('form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const fileInput = document.getElementById('profile_photo');
-            if (fileInput && fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const maxSize = 2 * 1024 * 1024; // 2MB in bytes
-
+    // Resume file validation
+    const resumeInput = document.getElementById('resume');
+    if (resumeInput) {
+        resumeInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const maxSize = 5 * 1024 * 1024; // 5MB
                 if (file.size > maxSize) {
-                    e.preventDefault();
-                    alert('File size must be less than 2MB. Please choose a smaller file.');
-                    fileInput.focus();
-                    return false;
-                }
-
-                const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-                if (!validTypes.includes(file.type)) {
-                    e.preventDefault();
-                    alert('Please select a valid image file (JPEG, PNG, JPG, or GIF).');
-                    fileInput.focus();
-                    return false;
+                    alert('Resume file size must be less than 5MB.');
+                    this.value = '';
+                    return;
                 }
             }
         });
     }
 
-    // Character counters for textareas
-    const textareas = document.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-        const counter = document.createElement('div');
-        counter.className = 'form-text text-end mt-1';
-        counter.textContent = `${textarea.value.length} characters`;
-        textarea.parentNode.appendChild(counter);
+    // Form submission with loading state
+    const form = document.querySelector('form');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
 
-        textarea.addEventListener('input', function() {
-            counter.textContent = `${this.value.length} characters`;
-        });
-    });
-
-    // Real-time validation for required fields
-    const requiredFields = document.querySelectorAll('input[required], select[required]');
-    requiredFields.forEach(field => {
-        field.addEventListener('blur', function() {
-            if (!this.value.trim()) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            // If "Others" is selected for skills, use the other input value
+            if (skillsSelect.value === 'Others' && skillsOtherInput.value.trim()) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'skills';
+                hiddenInput.value = skillsOtherInput.value.trim();
+                form.appendChild(hiddenInput);
+                skillsSelect.disabled = true;
             }
+
+            // If "Others" is selected for qualifications, use the other input value
+            if (qualificationsSelect.value === 'Others' && qualificationsOtherInput.value.trim()) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'qualifications';
+                hiddenInput.value = qualificationsOtherInput.value.trim();
+                form.appendChild(hiddenInput);
+                qualificationsSelect.disabled = true;
+            }
+
+            // If "Others" is selected for special needs, use the other input value
+            if (specialNeedsSelect.value === 'Others' && specialNeedsOtherInput.value.trim()) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'special_needs';
+                hiddenInput.value = specialNeedsOtherInput.value.trim();
+                form.appendChild(hiddenInput);
+                specialNeedsSelect.disabled = true;
+            }
+
+            // Validate required fields
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value || !field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill in all required fields marked with *.');
+                return false;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Updating Profile...';
+
+            return true;
         });
-    });
+    }
 
     console.log('Profile edit form loaded successfully');
 });

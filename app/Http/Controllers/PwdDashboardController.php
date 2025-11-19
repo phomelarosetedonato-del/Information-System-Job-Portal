@@ -10,6 +10,7 @@ use App\Models\JobApplication;
 use App\Models\TrainingEnrollment;
 use App\Models\Document;
 use App\Models\DisabilityType;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ class PwdDashboardController extends Controller
     public function index(Request $request)
     {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Security check - this should work with your User model
         if (!$user->isPwd()) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
@@ -10,7 +11,7 @@ class DashboardController extends Controller
     public function index()
     {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = Auth::user();
 
         if (!$user) {
             Log::warning('Dashboard accessed without authenticated user');
@@ -50,14 +51,13 @@ class DashboardController extends Controller
 
         return $this->defaultDashboard();
     }
-
     private function defaultDashboard()
     {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         Log::info('Loading default dashboard', [
-            'user_id' => $user->id,
             'role' => $user->role
         ]);
 

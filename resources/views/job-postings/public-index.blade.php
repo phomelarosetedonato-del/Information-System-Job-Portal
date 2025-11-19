@@ -6,8 +6,8 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+            <div class="card" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
+                <div class="card-header text-white" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%);">,
                     <h4 class="mb-0">
                         <i class="fas fa-briefcase"></i>
                         Available Job Opportunities
@@ -99,7 +99,7 @@
                             {{-- Action Buttons --}}
                             <div class="col-md-6">
                                 <div class="d-flex gap-2 mt-3">
-                                    <button type="submit" class="btn btn-primary btn-sm">
+                                    <button type="submit" class="btn btn-sm" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                         <i class="fas fa-filter me-1"></i>Apply Filters
                                     </button>
                                     <a href="{{ route('job-postings.public') }}" class="btn btn-outline-secondary btn-sm">
@@ -135,7 +135,7 @@
                                             <div>
                                                 <small class="fw-semibold"><i class="fas fa-filter me-1"></i>Active Filters:</small>
                                                 @foreach($activeFilters as $filterName => $filterValue)
-                                                    <span class="badge bg-primary ms-2">{{ $filterName }}: {{ $filterValue }}</span>
+                                                    <span class="badge ms-2" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%);">{{ $filterName }}: {{ $filterValue }}</span>
                                                 @endforeach
                                             </div>
                                             <a href="{{ route('job-postings.public') }}" class="btn btn-sm btn-outline-danger">
@@ -172,7 +172,7 @@
                                         <strong>{{ $jobPostings->total() }}</strong>
                                         job{{ $jobPostings->total() !== 1 ? 's' : '' }} found
                                         @if(!empty($activeFilters))
-                                            <span class="text-primary">(filtered)</span>
+                                            <span style="color: #2E8B57;">(filtered)</span>
                                         @endif
                                     </p>
 
@@ -199,11 +199,11 @@
                                     $isActive = $job->is_active && !$isExpired;
                                 @endphp
 
-                                <div class="col-12">
+                                <div class="col-lg-4 col-md-6 col-sm-12">
                                     <div class="card job-card h-100 {{ !$isActive ? 'border-warning' : '' }}">
                                         <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-8">
+                                                <div class="col-12">
                                                     <!-- Job Header -->
                                                     <div class="d-flex align-items-start mb-3">
                                                         <div class="flex-grow-1">
@@ -215,7 +215,7 @@
                                                             </h4>
                                                             <div class="company-info mb-2">
                                                                 <i class="fas fa-building text-muted me-1"></i>
-                                                                <strong class="text-primary">{{ $job->company }}</strong>
+                                                                <strong style="color: #2E8B57;">{{ $job->company }}</strong>
                                                                 <span class="text-muted mx-2">•</span>
                                                                 <i class="fas fa-map-marker-alt text-muted me-1"></i>
                                                                 <span>{{ $job->location }}</span>
@@ -249,7 +249,7 @@
 
                                                     <!-- Job Details -->
                                                     <div class="job-meta mb-3">
-                                                        <span class="badge bg-primary employment-type">
+                                                        <span class="badge employment-type" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%);">
                                                             {{ $job->employment_type }}
                                                         </span>
                                                         @if($job->salary)
@@ -302,47 +302,45 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-4">
+                                                <div class="col-12 mt-3">
                                                     <!-- Action Buttons -->
-                                                    <div class="job-actions h-100 d-flex flex-column justify-content-between">
-                                                        <div class="text-end">
-                                                            <a href="{{ route('job-postings.public.show', $job) }}"
-                                                               class="btn btn-outline-primary btn-sm w-100 mb-2">
-                                                                <i class="fas fa-eye me-1"></i>View Details
-                                                            </a>
+                                                    <div class="job-actions d-flex flex-column gap-2">
+                                                        <a href="{{ route('job-postings.public.show', $job) }}"
+                                                           class="btn btn-sm w-100" style="border: 1px solid #2E8B57; color: #2E8B57;">
+                                                            <i class="fas fa-eye me-1"></i>View Details
+                                                        </a>
 
-                                                            @if(auth()->user() && auth()->user()->role === 'pwd')
-                                                                @if($hasApplied)
-                                                                    <button class="btn btn-success btn-sm w-100" disabled>
-                                                                        <i class="fas fa-check me-1"></i>Already Applied
+                                                        @if(auth()->user() && auth()->user()->role === 'pwd')
+                                                            @if($hasApplied)
+                                                                <button class="btn btn-success btn-sm w-100" disabled>
+                                                                    <i class="fas fa-check me-1"></i>Already Applied
+                                                                </button>
+                                                            @elseif($isActive)
+                                                                <form action="{{ route('job.apply', $job) }}" method="POST" class="w-100">
+                                                                    @csrf
+                                                                    <button type="submit" class="btn btn-sm w-100 apply-btn" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;"
+                                                                            data-job-title="{{ $job->title }}"
+                                                                            data-job-company="{{ $job->company }}">
+                                                                        <i class="fas fa-paper-plane me-1"></i>Apply Now
                                                                     </button>
-                                                                @elseif($isActive)
-                                                                    <form action="{{ route('job.apply', $job) }}" method="POST" class="d-inline w-100">
-                                                                        @csrf
-                                                                        <button type="submit" class="btn btn-primary btn-sm w-100 apply-btn"
-                                                                                data-job-title="{{ $job->title }}"
-                                                                                data-job-company="{{ $job->company }}">
-                                                                            <i class="fas fa-paper-plane me-1"></i>Apply Now
-                                                                        </button>
-                                                                    </form>
-                                                                @else
-                                                                    <button class="btn btn-secondary btn-sm w-100" disabled>
-                                                                        <i class="fas fa-times me-1"></i>Application Closed
-                                                                    </button>
-                                                                @endif
-                                                            @elseif(!auth()->user())
-                                                                <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm w-100">
-                                                                    <i class="fas fa-sign-in-alt me-1"></i>Login to Apply
-                                                                </a>
-                                                            @elseif(auth()->user()->role !== 'pwd')
+                                                                </form>
+                                                            @else
                                                                 <button class="btn btn-secondary btn-sm w-100" disabled>
-                                                                    <i class="fas fa-info-circle me-1"></i>PWD Users Only
+                                                                    <i class="fas fa-times me-1"></i>Application Closed
                                                                 </button>
                                                             @endif
-                                                        </div>
+                                                        @elseif(!auth()->user())
+                                                            <a href="{{ route('login') }}" class="btn btn-sm w-100" style="border: 1px solid #2E8B57; color: #2E8B57;">
+                                                                <i class="fas fa-sign-in-alt me-1"></i>Login to Apply
+                                                            </a>
+                                                        @elseif(auth()->user()->role !== 'pwd')
+                                                            <button class="btn btn-secondary btn-sm w-100" disabled>
+                                                                <i class="fas fa-info-circle me-1"></i>PWD Users Only
+                                                            </button>
+                                                        @endif
 
                                                         @if($job->application_deadline && !$isExpired && $job->is_active)
-                                                            <div class="deadline-countdown text-center">
+                                                            <div class="deadline-countdown text-center mt-2">
                                                                 <small class="text-muted">
                                                                     <i class="fas fa-hourglass-half me-1"></i>
                                                                     {{ $job->application_deadline->diffForHumans() }} left
@@ -363,7 +361,7 @@
                             <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
                             <h3 class="text-muted">No Job Opportunities Found</h3>
                             <p class="text-muted mb-4">We couldn't find any jobs matching your criteria. Try adjusting your filters.</p>
-                            <a href="{{ route('job-postings.public') }}" class="btn btn-primary">
+                            <a href="{{ route('job-postings.public') }}" class="btn" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white;">
                                 <i class="fas fa-refresh me-1"></i>Clear All Filters
                             </a>
                         </div>
@@ -402,7 +400,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Later</button>
-                <a href="{{ route('profile.pwd-complete-form') }}" class="btn btn-primary">
+                <a href="{{ route('profile.pwd-complete-form') }}" class="btn" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white;">
                     <i class="fas fa-user-edit me-1"></i>Complete Profile Now
                 </a>
             </div>
@@ -415,7 +413,7 @@
 <div class="modal fade" id="applicationConfirmModal" tabindex="-1" aria-labelledby="applicationConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header text-white" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%);">
                 <h5 class="modal-title" id="applicationConfirmModalLabel">
                     <i class="fas fa-paper-plane me-2"></i>Confirm Application
                 </h5>
@@ -432,7 +430,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmApply">Yes, Apply Now</button>
+                <button type="button" class="btn" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white;" id="confirmApply">Yes, Apply Now</button>
             </div>
         </div>
     </div>
@@ -446,7 +444,7 @@
 .job-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border-color: #007bff;
+    border-color: #2E8B57;
 }
 .job-description {
     max-height: 80px;
@@ -493,8 +491,8 @@
 }
 
 .pagination-compact-wrapper .page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: #2E8B57;
+    border-color: #2E8B57;
     color: white;
     font-weight: 600;
 }
@@ -506,8 +504,8 @@
 
 .pagination-compact-wrapper .page-link:hover {
     background-color: #f8f9fa;
-    border-color: #007bff;
-    color: #007bff;
+    border-color: #2E8B57;
+    color: #2E8B57;
 }
 
 /* Make pagination responsive */
@@ -524,6 +522,170 @@
 
     .pagination-compact-wrapper .page-link {
         margin: 0 1px;
+    }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 992px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Filter form responsive */
+    .col-md-3, .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+    }
+
+    .form-control-sm, .form-select-sm {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    /* Job cards responsive */
+    .job-card {
+        margin-bottom: 1rem;
+    }
+
+    .job-title {
+        font-size: 1rem;
+    }
+
+    .company-info {
+        font-size: 0.875rem;
+        flex-wrap: wrap;
+    }
+
+    .job-meta .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .job-description {
+        font-size: 0.875rem;
+        max-height: 60px;
+    }
+
+    .job-footer {
+        font-size: 0.75rem;
+    }
+
+    /* Action buttons responsive */
+    .job-actions .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem;
+    }
+
+    /* Active filters responsive */
+    .alert.py-2 {
+        padding: 0.75rem !important;
+    }
+
+    .alert .badge {
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+    }
+
+    .alert .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .alert .btn-sm {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .card-header h4 {
+        font-size: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Filter buttons stacked */
+    .d-flex.gap-2 {
+        flex-direction: column;
+    }
+
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+
+    /* Job card compact view */
+    .job-title {
+        font-size: 0.95rem;
+    }
+
+    .company-info {
+        font-size: 0.8rem;
+    }
+
+    .job-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .job-footer small {
+        display: block;
+        line-height: 1.6;
+    }
+
+    /* Results count responsive */
+    .text-muted.small {
+        font-size: 0.75rem;
+    }
+
+    /* Empty state responsive */
+    .text-center.py-5 {
+        padding: 2rem 1rem !important;
+    }
+
+    .text-center.py-5 i {
+        font-size: 2.5rem !important;
+    }
+
+    .text-center.py-5 h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+    .job-card {
+        transition: none;
+    }
+
+    .btn, .badge, a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-control, .form-select {
+        min-height: 44px;
     }
 }
 </style>

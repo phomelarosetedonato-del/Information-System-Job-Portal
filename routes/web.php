@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\PwdDashboardController;
@@ -44,6 +48,15 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
+// Test routes for public translation
+Route::get('/test-translation-public', function () {
+    return view('test-translation-public');
+})->name('test-translation-public');
+
+Route::get('/test-translation-fix', function () {
+    return view('test-translation-fix');
+})->name('test-translation-fix');
+
 // Authentication Routes
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
@@ -80,6 +93,15 @@ Route::get('/home', function () {
         return redirect('/dashboard');
     }
     return redirect('/');
+});
+
+// =========================================================================
+// PUBLIC ACCESSIBILITY ROUTES (No authentication required)
+// =========================================================================
+Route::prefix('accessibility')->group(function () {
+    Route::post('/translate', [AccessibilityController::class, 'translateText'])->name('accessibility.translate.public');
+    Route::post('/translate-batch', [AccessibilityController::class, 'translateBatch'])->name('accessibility.translate-batch.public');
+    Route::post('/quick-tool', [AccessibilityController::class, 'quickTool'])->name('accessibility.quick-tool.public');
 });
 
 // =========================================================================
@@ -202,14 +224,14 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // =========================================================================
-    // ACCESSIBILITY ROUTES (All authenticated users)
+    // ACCESSIBILITY ROUTES (Authenticated users only - settings and preferences)
     // =========================================================================
     Route::prefix('accessibility')->group(function () {
         Route::get('/settings', [AccessibilityController::class, 'settings'])->name('accessibility.settings');
         Route::post('/preferences', [AccessibilityController::class, 'updatePreferences'])->name('accessibility.update-preferences');
         Route::get('/reset', [AccessibilityController::class, 'resetPreferences'])->name('accessibility.reset-preferences');
-        Route::post('/quick-tool', [AccessibilityController::class, 'quickTool'])->name('accessibility.quick-tool');
         Route::post('/toggle-language', [AccessibilityController::class, 'toggleLanguage'])->name('accessibility.toggle-language');
+        // Note: translate, translate-batch, and quick-tool routes are now public (see above)
     });
 
     // =========================================================================
@@ -438,7 +460,7 @@ Route::get('/test-email-simple', function () {
     try {
         $yourEmail = 'phomelarosetedonato@gmail.com';
 
-        \Mail::raw('This is a test email from your PWD System. If you receive this, your email configuration is working!', function ($message) use ($yourEmail) {
+        Mail::raw('This is a test email from your PWD System. If you receive this, your email configuration is working!', function ($message) use ($yourEmail) {
             $message->to($yourEmail)
                     ->subject('✅ PWD System - Email Test Successful');
         });
@@ -459,7 +481,7 @@ Route::get('/test-email-html', function () {
     try {
         $yourEmail = 'phomelarosetedonato@gmail.com';
 
-        \Mail::send([], [], function ($message) use ($yourEmail) {
+        Mail::send([], [], function ($message) use ($yourEmail) {
             $message->to($yourEmail)
                     ->subject('✅ PWD System - HTML Email Test')
                     ->html('
@@ -488,21 +510,21 @@ Route::get('/debug-notification', function () {
 
         $user = $application->user;
 
-        \Log::info("Testing notification for application: " . $application->id);
-        \Log::info("User email: " . $user->email);
-        \Log::info("Job: " . ($application->jobPosting->title ?? 'No job posting'));
+        Log::info("Testing notification for application: " . $application->id);
+        Log::info("User email: " . $user->email);
+        Log::info("Job: " . ($application->jobPosting->title ?? 'No job posting'));
 
         // Test the notification directly - NOW WITH ONLY 1 ARGUMENT
         $user->notify(new App\Notifications\ApplicationApproved($application));
 
-        \Log::info("Notification sent successfully");
+        Log::info("Notification sent successfully");
 
         return 'Debug: Notification sent to ' . $user->email .
                '<br>Job: ' . ($application->jobPosting->title ?? 'Unknown') .
                '<br>Check storage/logs/laravel.log for details';
 
     } catch (\Exception $e) {
-        \Log::error('Debug notification failed: ' . $e->getMessage());
+        Log::error('Debug notification failed: ' . $e->getMessage());
         return 'Error: ' . $e->getMessage() .
                '<br>File: ' . $e->getFile() .
                '<br>Line: ' . $e->getLine();
@@ -510,8 +532,8 @@ Route::get('/debug-notification', function () {
 });
 // Check queue status
 Route::get('/queue-status', function () {
-    $pendingJobs = \DB::table('jobs')->count();
-    $failedJobs = \DB::table('failed_jobs')->count();
+    $pendingJobs = DB::table('jobs')->count();
+    $failedJobs = DB::table('failed_jobs')->count();
 
     return 'Pending jobs: ' . $pendingJobs . '<br>' .
            'Failed jobs: ' . $failedJobs . '<br>' .
@@ -522,7 +544,7 @@ Route::get('/queue-status', function () {
 // Process queue manually
 Route::get('/process-queue', function () {
     try {
-        $exitCode = \Artisan::call('queue:work', [
+        $exitCode = Artisan::call('queue:work', [
             '--once' => true,
             '--queue' => 'default'
         ]);
@@ -543,27 +565,27 @@ Route::get('/test-notification-enhanced', function () {
 
         $user = $application->user;
 
-        \Log::info("🎯 ENHANCED NOTIFICATION TEST STARTED");
-        \Log::info("📧 User Email: " . $user->email);
-        \Log::info("👤 User Name: " . $user->name);
-        \Log::info("💼 Job: " . ($application->jobPosting->title ?? 'No job'));
+        Log::info("🎯 ENHANCED NOTIFICATION TEST STARTED");
+        Log::info("📧 User Email: " . $user->email);
+        Log::info("👤 User Name: " . $user->name);
+        Log::info("💼 Job: " . ($application->jobPosting->title ?? 'No job'));
 
         // Test if basic email works first
-        \Mail::raw('Basic email test', function ($message) use ($user) {
+        Mail::raw('Basic email test', function ($message) use ($user) {
             $message->to($user->email)
                     ->subject('Basic Email Test');
         });
-        \Log::info("✅ Basic email sent");
+        Log::info("✅ Basic email sent");
 
         // Test notification
         $user->notify(new App\Notifications\ApplicationApproved($application));
-        \Log::info("✅ Notification queued");
+        Log::info("✅ Notification queued");
 
         return 'Enhanced test completed for: ' . $user->email .
                '<br>Check logs for details.';
 
     } catch (\Exception $e) {
-        \Log::error('❌ Enhanced test failed: ' . $e->getMessage());
+        Log::error('❌ Enhanced test failed: ' . $e->getMessage());
         return 'Error: ' . $e->getMessage();
     }
 });

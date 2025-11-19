@@ -11,7 +11,7 @@ class DocumentController extends Controller
 {
     public function index()
     {
-        $documents = auth()->user()->documents()->latest()->get();
+        $documents = Auth::user()->documents()->latest()->get();
         return view('documents.index', compact('documents'));
     }
 
@@ -30,10 +30,10 @@ class DocumentController extends Controller
         ]);
 
         $file = $request->file('document');
-        $filePath = $file->store('documents/' . auth()->id(), 'public');
+        $filePath = $file->store('documents/' . Auth::id(), 'public');
 
         Document::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'type' => $request->type,
             'name' => $request->name,
             'file_path' => $filePath,
@@ -48,7 +48,7 @@ class DocumentController extends Controller
     public function show(Document $document)
     {
         // Ensure the document belongs to the current user or is accessible by admin
-        if ($document->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if ($document->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -72,7 +72,7 @@ class DocumentController extends Controller
     public function download(Document $document)
     {
         // Ensure the document belongs to the current user or is accessible by admin
-        if ($document->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if ($document->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -101,7 +101,7 @@ class DocumentController extends Controller
     public function destroy(Document $document)
     {
         // Ensure the document belongs to the current user or is admin
-        if ($document->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if ($document->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 

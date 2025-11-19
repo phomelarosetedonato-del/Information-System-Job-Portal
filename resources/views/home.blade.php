@@ -414,4 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+{{-- Include Accessibility Widget --}}
+@include('partials.accessibility-widget')
 @endsection

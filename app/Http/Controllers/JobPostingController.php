@@ -7,6 +7,7 @@ use App\Models\DisabilityType;
 use App\Models\JobApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -185,8 +186,9 @@ class JobPostingController extends Controller
         if (empty($validated['application_deadline'])) {
             $validated['application_deadline'] = null;
         }
-
-        $validated['created_by'] = auth()->id();
+        // Safely get authenticated user's ID; use optional() to avoid calling methods on unexpected types
+        $validated['created_by'] = optional(Auth::user())->id;
+        $validated['is_active'] = $request->has('is_active');
         $validated['is_active'] = $request->has('is_active');
 
         // Set default values if not provided

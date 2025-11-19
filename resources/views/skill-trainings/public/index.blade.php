@@ -6,7 +6,7 @@
     <div class="container-fluid py-4">
         <!-- Header Section -->
         <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-primary text-white py-3">
+            <div class="card-header bg-white py-3" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%) !important; color: white;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h4 class="mb-0">
@@ -61,7 +61,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="d-grid gap-2 d-md-flex">
-                                <button type="submit" class="btn btn-primary btn-sm flex-fill">
+                                <button type="submit" class="btn btn-sm flex-fill" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                     <i class="fas fa-search me-1"></i>Search
                                 </button>
                                 @if(request()->anyFilled(['status', 'location', 'trainer']))
@@ -80,7 +80,7 @@
         <div class="row">
             @forelse($skillTrainings as $training)
                 <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                    <div class="card h-100 border-0 bg-white" style="box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;">
                         <div class="card-header bg-white border-bottom">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h5 class="card-title mb-0">{{ $training->title }}</h5>
@@ -127,7 +127,7 @@
                             @php
                                 $enrollmentCount = $training->enrollments_count ?? $training->enrollments->count();
                                 $enrollmentPercentage = min(100, ($enrollmentCount / $training->max_participants) * 100);
-                                $progressColor = $enrollmentPercentage >= 90 ? 'bg-danger' : ($enrollmentPercentage >= 75 ? 'bg-warning' : 'bg-primary');
+                                $progressColor = $enrollmentPercentage >= 90 ? 'bg-danger' : ($enrollmentPercentage >= 75 ? 'bg-warning' : 'bg-success');
                             @endphp
                             <div class="progress mb-3" style="height: 6px;">
                                 <div class="progress-bar {{ $progressColor }}"
@@ -171,7 +171,7 @@
                                             <form action="{{ route('enrollments.store') }}" method="POST">
                                                 @csrf
                                                 <input type="hidden" name="skill_training_id" value="{{ $training->id }}">
-                                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                                <button type="submit" class="btn btn-sm w-100" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                                     <i class="fas fa-user-plus me-1"></i>Enroll Now
                                                 </button>
                                             </form>
@@ -182,13 +182,13 @@
                                         </button>
                                     @endif
                                 @else
-                                    <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm">
+                                    <a href="{{ route('login') }}" class="btn btn-outline-success btn-sm" style="border-color: #2E8B57; color: #2E8B57;">
                                         <i class="fas fa-sign-in-alt me-1"></i>Login to Enroll
                                     </a>
                                 @endauth
 
                                 <a href="{{ route('skill-trainings.public.show', $training->id) }}"
-                                   class="btn btn-outline-primary btn-sm">
+                                   class="btn btn-outline-success btn-sm" style="border-color: #2E8B57; color: #2E8B57;">
                                     <i class="fas fa-eye me-1"></i>View Details
                                 </a>
                             </div>
@@ -208,7 +208,7 @@
                             @endif
                         </p>
                         @if(request()->anyFilled(['status', 'location', 'trainer']))
-                            <a href="{{ route('skill-trainings.public.index') }}" class="btn btn-primary mt-2">
+                            <a href="{{ route('skill-trainings.public.index') }}" class="btn mt-2" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                 <i class="fas fa-refresh me-2"></i>Clear Filters
                             </a>
                         @endif

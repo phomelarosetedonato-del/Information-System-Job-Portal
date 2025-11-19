@@ -17,6 +17,7 @@ class EmployerController extends Controller
      */
     public function settings()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -31,12 +32,14 @@ class EmployerController extends Controller
      */
     public function profile()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
             abort(403, 'Access denied. Employer account required.');
         }
 
+        // Get employer statistics from User model
         $stats = $user->getEmployerStats();
         $verificationStatus = $user->getEmployerVerificationStatus();
 
@@ -48,6 +51,7 @@ class EmployerController extends Controller
      */
     public function editProfile()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -62,6 +66,7 @@ class EmployerController extends Controller
      */
     public function updateProfile(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -96,6 +101,7 @@ class EmployerController extends Controller
      */
     public function uploadResume(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -148,6 +154,7 @@ class EmployerController extends Controller
      */
     public function deleteResume()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -174,6 +181,7 @@ class EmployerController extends Controller
      */
     public function getStats()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -190,6 +198,7 @@ class EmployerController extends Controller
      */
     public function analyticsOverview()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer() || !$user->isEmployerVerified()) {
@@ -210,6 +219,7 @@ class EmployerController extends Controller
      */
     public function performanceMetrics()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer() || !$user->isEmployerVerified()) {
@@ -229,6 +239,7 @@ class EmployerController extends Controller
      */
     public function applicationTrends()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer() || !$user->isEmployerVerified()) {
@@ -249,6 +260,7 @@ class EmployerController extends Controller
      */
     public function jobsPerformance()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer() || !$user->isEmployerVerified()) {
@@ -304,6 +316,7 @@ class EmployerController extends Controller
      */
     public function getApplicationTrends()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -650,6 +663,7 @@ class EmployerController extends Controller
      */
     public function getPerformanceMetrics()
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {

@@ -19,10 +19,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-/**
- * @method \App\Models\User user()
- * @property int $id
- */
 class JobApplicationController extends Controller
 {
     /**
@@ -30,7 +26,8 @@ class JobApplicationController extends Controller
      */
     public function apply(JobPosting $job, Request $request)
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         // Enhanced validation checks
         $validation = $this->validateApplicationEligibility($user, $job);
@@ -162,7 +159,7 @@ class JobApplicationController extends Controller
                 $message .= ' Missing: ' . implode(', ', $eligibility['reasons']);
             }
 
-            return redirect()->route('pwd.profile.create')->with([
+            return redirect()->route('profile.edit')->with([
                 'error' => $message,
                 'incomplete_requirements' => $eligibility['reasons']
             ]);
@@ -221,7 +218,7 @@ class JobApplicationController extends Controller
      */
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $query = $user->jobApplications()
             ->with(['jobPosting' => function($query) {
@@ -312,7 +309,7 @@ class JobApplicationController extends Controller
     public function show(JobApplication $application)
     {
         // Ensure the application belongs to the current user or user is admin
-        if ($application->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if ($application->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -329,7 +326,7 @@ class JobApplicationController extends Controller
      */
     public function updateStatus(JobApplication $application, Request $request)
     {
-        if (!auth()->user()->isAdmin() && !auth()->user()->isEmployer()) {
+        if (!Auth::user()->isAdmin() && !Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -345,7 +342,7 @@ class JobApplicationController extends Controller
             'status' => $request->status,
             'admin_notes' => $request->admin_notes,
             'rejection_reason' => $request->rejection_reason,
-            'reviewed_by' => auth()->id(),
+            'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
             'status_updated_at' => now(),
         ]);
@@ -418,7 +415,7 @@ class JobApplicationController extends Controller
      */
     public function shortlist(JobApplication $application, Request $request)
     {
-        if (!auth()->user()->isAdmin() && !auth()->user()->isEmployer()) {
+        if (!Auth::user()->isAdmin() && !Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -426,7 +423,7 @@ class JobApplicationController extends Controller
 
         $application->update([
             'status' => 'shortlisted',
-            'reviewed_by' => auth()->id(),
+            'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
             'status_updated_at' => now(),
         ]);
@@ -444,7 +441,7 @@ class JobApplicationController extends Controller
      */
     public function reject(JobApplication $application, Request $request)
     {
-        if (!auth()->user()->isAdmin() && !auth()->user()->isEmployer()) {
+        if (!Auth::user()->isAdmin() && !Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -457,7 +454,7 @@ class JobApplicationController extends Controller
         $application->update([
             'status' => 'rejected',
             'rejection_reason' => $request->rejection_reason,
-            'reviewed_by' => auth()->id(),
+            'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
             'status_updated_at' => now(),
         ]);
@@ -475,7 +472,7 @@ class JobApplicationController extends Controller
      */
     public function scheduleInterview(JobApplication $application, Request $request)
     {
-        if (!auth()->user()->isAdmin() && !auth()->user()->isEmployer()) {
+        if (!Auth::user()->isAdmin() && !Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -508,7 +505,7 @@ class JobApplicationController extends Controller
      */
     public function bulkUpdate(Request $request)
     {
-        if (!auth()->user()->isAdmin() && !auth()->user()->isEmployer()) {
+        if (!Auth::user()->isAdmin() && !Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -529,7 +526,7 @@ class JobApplicationController extends Controller
             $application->update([
                 'status' => $request->status,
                 'rejection_reason' => $request->rejection_reason,
-                'reviewed_by' => auth()->id(),
+                'reviewed_by' => Auth::id(),
                 'reviewed_at' => now(),
                 'status_updated_at' => now(),
             ]);
@@ -551,7 +548,7 @@ class JobApplicationController extends Controller
     public function withdraw(JobApplication $application)
     {
         // Ensure the application belongs to the current user
-        if ($application->user_id !== auth()->id()) {
+        if ($application->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -583,7 +580,7 @@ class JobApplicationController extends Controller
      */
     public function adminIndex(Request $request)
     {
-        if (!auth()->user()->isAdmin()) {
+        if (!Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -639,11 +636,11 @@ class JobApplicationController extends Controller
      */
     public function employerIndex(Request $request)
     {
-        if (!auth()->user()->isEmployer()) {
+        if (!Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $employerId = auth()->id();
+        $employerId = Auth::id();
 
         $query = JobApplication::with(['user', 'user.pwdProfile', 'jobPosting'])
             ->whereHas('jobPosting', function($q) use ($employerId) {
@@ -696,7 +693,7 @@ class JobApplicationController extends Controller
      */
     public function statistics()
     {
-        if (!auth()->user()->isAdmin()) {
+        if (!Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -736,11 +733,11 @@ class JobApplicationController extends Controller
      */
     public function employerStatistics()
     {
-        if (!auth()->user()->isEmployer()) {
+        if (!Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $employerId = auth()->id();
+        $employerId = Auth::id();
 
         $totalApplications = JobApplication::whereHas('jobPosting', function($q) use ($employerId) {
             $q->where('created_by', $employerId);
@@ -774,7 +771,7 @@ class JobApplicationController extends Controller
      */
     public function canApply(JobPosting $job)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $canApply = true;
         $reasons = [];
 
@@ -790,7 +787,8 @@ class JobApplicationController extends Controller
         }
 
         // Check user eligibility
-        if (!$user->hasResume()) {
+        $hasResume = !empty($user->resume_path) || !empty($user->resume);
+        if (!$hasResume) {
             $canApply = false;
             $reasons[] = 'Please upload your resume before applying.';
         }
@@ -813,7 +811,7 @@ class JobApplicationController extends Controller
         return [
             'can_apply' => $canApply,
             'reasons' => $reasons,
-            'missing_resume' => !$user->hasResume(),
+            'missing_resume' => !$hasResume,
             'incomplete_profile' => !$user->pwdProfile || empty($user->pwdProfile->disability_type),
         ];
     }
@@ -823,11 +821,11 @@ class JobApplicationController extends Controller
      */
     public function exportEmployerApplications(Request $request)
     {
-        if (!auth()->user()->isEmployer()) {
+        if (!Auth::user()->isEmployer()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $employerId = auth()->id();
+        $employerId = Auth::id();
 
         $applications = JobApplication::with(['user', 'user.pwdProfile', 'jobPosting'])
             ->whereHas('jobPosting', function($q) use ($employerId) {

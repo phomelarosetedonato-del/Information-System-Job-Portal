@@ -1,5 +1,6 @@
 <?php
 use App\Http\Middleware\Localization;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\PwdMiddleware;
 use App\Http\Middleware\EmployerMiddleware;
@@ -25,12 +26,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified.employer' => VerifiedEmployer::class,
             'pending.employer.verification' => PendingEmployerVerification::class,
             'localization' => Localization::class,
+            'setlocale' => SetLocale::class,
             'pwd.profile.complete' => CheckPwdProfileComplete::class,
         ]);
 
         // Add localization to web middleware group
         $middleware->web(append: [
             Localization::class,
+            SetLocale::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

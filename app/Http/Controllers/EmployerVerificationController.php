@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class EmployerVerificationController extends Controller
 {
     public function showApplicationForm()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -39,6 +41,7 @@ class EmployerVerificationController extends Controller
 
     public function submitApplication(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -140,7 +143,7 @@ class EmployerVerificationController extends Controller
                 ->with('success', 'Verification request submitted successfully! We will review your application within 2-3 business days.');
 
         } catch (\Exception $e) {
-            \Log::error('Employer verification submission failed: ' . $e->getMessage());
+            Log::error('Employer verification submission failed: ' . $e->getMessage());
 
             return back()->with('error', 'Failed to submit verification request. Please try again.')
                 ->withInput();
@@ -149,6 +152,7 @@ class EmployerVerificationController extends Controller
 
     public function status()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer()) {
@@ -171,6 +175,7 @@ class EmployerVerificationController extends Controller
 
     public function showRenewalForm()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer() || !$user->isVerificationExpired()) {
@@ -182,6 +187,7 @@ class EmployerVerificationController extends Controller
 
     public function submitRenewal(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (!$user->isEmployer() || !$user->isVerificationExpired()) {
@@ -222,7 +228,7 @@ class EmployerVerificationController extends Controller
                 ->with('success', 'Renewal request submitted successfully! We will review your application within 2-3 business days.');
 
         } catch (\Exception $e) {
-            \Log::error('Employer verification renewal failed: ' . $e->getMessage());
+            Log::error('Employer verification renewal failed: ' . $e->getMessage());
 
             return back()->with('error', 'Failed to submit renewal request. Please try again.')
                 ->withInput();

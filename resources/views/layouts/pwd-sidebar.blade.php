@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Job Portal Navigation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -60,7 +61,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: rgba(255,255,255,0.8);
+            color: white;
             text-decoration: none;
             padding: 8px 12px;
             border-radius: 5px;
@@ -76,11 +77,13 @@
         .nav-link i {
             font-size: 1.2rem;
             margin-bottom: 4px;
+            color: white;
         }
 
         .nav-text {
             font-size: 0.75rem;
             text-align: center;
+            color: white;
         }
 
         .badge {
@@ -198,29 +201,298 @@
             transform: translateY(-5px);
         }
 
+        /* Hamburger Menu Styles */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1070;
+        }
+
+        .hamburger-btn span {
+            width: 30px;
+            height: 3px;
+            background: white;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        /* Mobile Menu Drawer */
+        .mobile-menu {
+            position: fixed;
+            top: 60px;
+            left: -100%;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1050;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            padding: 20px 0;
+        }
+
+        .mobile-menu.show {
+            left: 0;
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            background: rgba(0,0,0,0.5);
+            z-index: 1040;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-overlay.show {
+            display: block;
+        }
+
+        .mobile-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: var(--dark-color);
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .mobile-menu-item:hover,
+        .mobile-menu-item.active {
+            background: var(--light-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .mobile-menu-item i {
+            width: 30px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .mobile-menu-item span {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .mobile-menu-item .badge {
+            position: static;
+            margin-left: auto;
+        }
+
+        .mobile-menu-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 10px 0;
+        }
+
+        .mobile-menu-header {
+            padding: 10px 20px 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .nav-text {
-                display: none;
+        @media (max-width: 992px) {
+            body {
+                padding-top: 60px;
             }
 
-            .nav-link {
-                min-width: 50px;
-                padding: 8px 5px;
+            .top-navbar {
+                height: 60px;
+                padding: 0 15px;
+                justify-content: space-between;
             }
 
             .nav-brand {
-                font-size: 1.2rem;
-                margin-right: 15px;
+                font-size: 1.1rem;
+                margin-right: 10px;
+            }
+
+            .hamburger-btn {
+                display: flex;
+            }
+
+            .nav-main {
+                display: none;
+            }
+
+            .nav-right {
+                display: flex;
+                gap: 5px;
+                margin-left: auto;
+                margin-right: 10px;
             }
 
             .nav-icon {
-                width: 50px;
-                height: 50px;
+                width: 45px;
+                height: 45px;
+                margin-left: 0;
+            }
+
+            .nav-icon i {
+                font-size: 1.1rem;
+                margin-bottom: 0;
+            }
+
+            .nav-icon img {
+                width: 26px !important;
+                height: 26px !important;
             }
 
             .nav-icon-text {
-                font-size: 0.6rem;
+                display: none;
+            }
+
+            .badge {
+                font-size: 0.55rem;
+                padding: 2px 4px;
+            }
+
+            .profile-dropdown {
+                right: 0;
+                width: 220px;
+                max-height: calc(100vh - 70px);
+                overflow-y: auto;
+            }
+
+            .dropdown-item {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+
+            .dropdown-item i {
+                font-size: 1rem;
+            }
+
+            .content-area {
+                padding: 15px 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding-top: 55px;
+            }
+
+            .top-navbar {
+                height: 55px;
+                padding: 0 8px;
+            }
+
+            .nav-brand {
+                font-size: 0.9rem;
+                margin-right: 8px;
+            }
+
+            .nav-link {
+                min-width: 40px;
+                padding: 5px 6px;
+            }
+
+            .nav-link i {
+                font-size: 1rem;
+            }
+
+            .badge {
+                font-size: 0.5rem;
+                padding: 1px 3px;
+                min-width: 14px;
+            }
+
+            .nav-icon {
+                width: 40px;
+                height: 40px;
+                margin-left: 1px;
+            }
+
+            .nav-icon i {
+                font-size: 1rem;
+            }
+
+            .nav-icon img {
+                width: 24px !important;
+                height: 24px !important;
+            }
+
+            .profile-dropdown {
+                width: calc(100vw - 20px);
+                right: 10px;
+                left: 10px;
+                margin: 0 auto;
+            }
+
+            .content-area {
+                padding: 10px 5px;
+            }
+
+            .card {
+                margin-bottom: 15px;
+            }
+        }
+
+        /* Landscape phone optimization */
+        @media (max-width: 768px) and (orientation: landscape) {
+            body {
+                padding-top: 50px;
+            }
+
+            .top-navbar {
+                height: 50px;
+            }
+
+            .nav-link,
+            .nav-icon {
+                height: auto;
+                padding: 4px 6px;
+            }
+        }
+
+        /* Touch device improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .nav-link,
+            .nav-icon,
+            .dropdown-item {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-link:active,
+            .nav-icon:active {
+                background: rgba(255,255,255,0.25);
+            }
+
+            .dropdown-item:active {
+                background: var(--light-color);
             }
         }
 
@@ -247,6 +519,13 @@
     <a href="#main-content" class="sr-only sr-only-focusable" style="z-index:9999">Skip to main content</a>
     <!-- Top Navigation Bar -->
     <nav class="top-navbar">
+        <!-- Hamburger Menu Button (Mobile Only) -->
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
         <div class="nav-brand">PWD Portal</div>
 
     <div class="nav-main" role="navigation" aria-label="Primary navigation">
@@ -312,6 +591,15 @@
                     </span>
                 </a>
             </div>
+
+            <!-- My Enrollments -->
+            <div class="nav-item">
+                <a href="{{ route('enrollments.index') }}" class="nav-link {{ request()->routeIs('enrollments.*') ? 'active' : '' }}" title="My Enrollments">
+                    <i class="fas fa-bookmark"></i>
+                    <span class="nav-text">Enrollments</span>
+                    <span class="badge bg-warning">{{ auth()->user()->trainingEnrollments->count() }}</span>
+                </a>
+            </div>
         </div>
 
             <!-- Right side icons (accessibility toggles + user tools) -->
@@ -340,16 +628,6 @@
                     <span class="nav-icon-text">Documents</span>
                     <span class="badge bg-secondary" aria-hidden="true">{{ auth()->user()->documents->count() }}</span>
                     <span class="sr-only">{{ auth()->user()->documents->count() }} documents</span>
-                </a>
-            </div>
-
-            <!-- My Enrollments -->
-            <div class="nav-item">
-                <a href="{{ route('enrollments.index') }}" class="nav-icon" title="My Enrollments">
-                    <i class="fas fa-bookmark"></i>
-                    <span class="nav-icon-text">Enrollments</span>
-                    <span class="badge bg-warning">{{ auth()->user()->trainingEnrollments->count() }}</span>
-                    <span class="sr-only">Enrollments</span>
                 </a>
             </div>
 
@@ -408,7 +686,135 @@
         </div>
     </nav>
 
+    <!-- Mobile Menu Drawer -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">Main Menu</div>
 
+        <!-- Dashboard -->
+        <a href="{{ route('dashboard') }}" class="mobile-menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <!-- Browse Jobs -->
+        <a href="{{ route('job-postings.public') }}" class="mobile-menu-item {{ request()->routeIs('job-postings.public*') ? 'active' : '' }}">
+            <i class="fas fa-briefcase"></i>
+            <span>Browse Jobs</span>
+            <span class="badge bg-primary">
+                @php
+                    try {
+                        if (method_exists(app(\App\Models\JobPosting::class), 'scopeActive')) {
+                            $activeJobsCount = \App\Models\JobPosting::active()->count();
+                        } else {
+                            $activeJobsCount = \App\Models\JobPosting::where('is_active', true)
+                                ->where('application_deadline', '>=', now())
+                                ->orWhereNull('application_deadline')
+                                ->count();
+                        }
+                    } catch (Exception $e) {
+                        $activeJobsCount = 0;
+                    }
+                @endphp
+                {{ $activeJobsCount }}
+            </span>
+        </a>
+
+        <!-- My Applications -->
+        <a href="{{ route('applications.index') }}" class="mobile-menu-item {{ request()->routeIs('applications.*') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-list"></i>
+            <span>My Applications</span>
+            <span class="badge bg-info">{{ auth()->user()->jobApplications->count() }}</span>
+        </a>
+
+        <!-- Available Trainings -->
+        <a href="{{ route('skill-trainings.public.index') }}" class="mobile-menu-item {{ request()->routeIs('skill-trainings.public*') ? 'active' : '' }}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Skills & Trainings</span>
+            <span class="badge bg-success">
+                @php
+                    try {
+                        $activeTrainingsCount = \App\Models\SkillTraining::where('is_active', true)
+                            ->where('end_date', '>=', now())
+                            ->count();
+                        echo $activeTrainingsCount;
+                    } catch (Exception $e) {
+                        echo "0";
+                    }
+                @endphp
+            </span>
+        </a>
+
+        <div class="mobile-menu-divider"></div>
+        <div class="mobile-menu-header">My Account</div>
+
+        <!-- Notifications -->
+        <a href="{{ route('notifications.index') }}" class="mobile-menu-item {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+            @php $unread = auth()->user()->unreadNotifications->count(); @endphp
+            @if($unread > 0)
+                <span class="badge bg-danger">{{ $unread }}</span>
+            @endif
+        </a>
+
+        <!-- Documents -->
+        <a href="{{ route('documents.index') }}" class="mobile-menu-item {{ request()->routeIs('documents.*') ? 'active' : '' }}">
+            <i class="fas fa-folder"></i>
+            <span>My Documents</span>
+            <span class="badge bg-secondary">{{ auth()->user()->documents->count() }}</span>
+        </a>
+
+        <!-- My Enrollments -->
+        <a href="{{ route('enrollments.index') }}" class="mobile-menu-item {{ request()->routeIs('enrollments.*') ? 'active' : '' }}">
+            <i class="fas fa-bookmark"></i>
+            <span>My Enrollments</span>
+            <span class="badge bg-warning">{{ auth()->user()->trainingEnrollments->count() }}</span>
+        </a>
+
+        <!-- Profile -->
+        <a href="{{ route('profile.show') }}" class="mobile-menu-item {{ request()->routeIs('profile.show') ? 'active' : '' }}">
+            <i class="fas fa-user"></i>
+            <span>My Profile</span>
+        </a>
+
+        <div class="mobile-menu-divider"></div>
+        <div class="mobile-menu-header">Settings</div>
+
+        <!-- Edit Profile -->
+        <a href="{{ route('profile.edit') }}" class="mobile-menu-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            <i class="fas fa-cog"></i>
+            <span>Edit Profile</span>
+        </a>
+
+        @if(!auth()->user()->hasPwdProfile() || !auth()->user()->isProfileComplete())
+            <a href="{{ route('profile.pwd-complete-form') }}" class="mobile-menu-item {{ request()->routeIs('profile.pwd-complete*') ? 'active' : '' }}">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Complete PWD Profile</span>
+                <span class="badge bg-danger">!</span>
+            </a>
+        @endif
+
+        <!-- Accessibility -->
+        <a href="{{ route('accessibility.settings') }}" class="mobile-menu-item {{ request()->routeIs('accessibility.*') ? 'active' : '' }}">
+            <i class="fas fa-universal-access"></i>
+            <span>Accessibility Settings</span>
+        </a>
+
+        <!-- Contact Support -->
+        <a href="{{ route('contact') }}" class="mobile-menu-item {{ request()->routeIs('contact') ? 'active' : '' }}">
+            <i class="fas fa-headset"></i>
+            <span>Contact Support</span>
+        </a>
+
+        <div class="mobile-menu-divider"></div>
+
+        <!-- Logout -->
+        <a href="#" class="mobile-menu-item text-danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
 
     <!-- Logout Form -->
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
@@ -483,6 +889,64 @@
 
         // Apply preferences on load
         applyPreference();
+
+        // Mobile Menu Toggle
+        const hamburgerBtn = el('hamburgerBtn');
+        const mobileMenu = el('mobileMenu');
+        const mobileOverlay = el('mobileOverlay');
+
+        if (hamburgerBtn && mobileMenu && mobileOverlay) {
+            // Toggle menu
+            hamburgerBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isOpen = mobileMenu.classList.contains('show');
+
+                if (isOpen) {
+                    mobileMenu.classList.remove('show');
+                    mobileOverlay.classList.remove('show');
+                    hamburgerBtn.classList.remove('active');
+                    hamburgerBtn.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
+                } else {
+                    mobileMenu.classList.add('show');
+                    mobileOverlay.classList.add('show');
+                    hamburgerBtn.classList.add('active');
+                    hamburgerBtn.setAttribute('aria-expanded', 'true');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+
+            // Close menu when overlay is clicked
+            mobileOverlay.addEventListener('click', function() {
+                mobileMenu.classList.remove('show');
+                mobileOverlay.classList.remove('show');
+                hamburgerBtn.classList.remove('active');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            });
+
+            // Close menu when a menu item is clicked
+            document.querySelectorAll('.mobile-menu-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    mobileMenu.classList.remove('show');
+                    mobileOverlay.classList.remove('show');
+                    hamburgerBtn.classList.remove('active');
+                    hamburgerBtn.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
+                });
+            });
+
+            // Close menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mobileMenu.classList.contains('show')) {
+                    mobileMenu.classList.remove('show');
+                    mobileOverlay.classList.remove('show');
+                    hamburgerBtn.classList.remove('active');
+                    hamburgerBtn.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
     </script>
     <style>
         /* High contrast and large text helpers */
@@ -493,5 +957,8 @@
         .nav-link:focus, .nav-icon:focus, .nav-icon button:focus, .dropdown-item:focus { outline: 3px solid #fff; outline-offset: 2px; }
         .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
     </style>
+
+    {{-- Include Modern Accessibility Widget --}}
+    @include('partials.accessibility-widget')
 </body>
 </html>

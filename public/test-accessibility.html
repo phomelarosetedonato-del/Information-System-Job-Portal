@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token-12345">
+    <title>Accessibility Widget Test</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2E8B57;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .status.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background: #2E8B57;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1A5D34;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-universal-access"></i> Accessibility Widget Diagnostic</h1>
+        
+        <div class="status info">
+            <strong>Testing Page:</strong> http://127.0.0.1:8000/
+        </div>
+
+        <h2>Diagnostic Checks</h2>
+        <div id="results"></div>
+
+        <h2>Manual Tests</h2>
+        <button onclick="testWidgetExists()">1. Check Widget HTML</button>
+        <button onclick="testCsrfToken()">2. Check CSRF Token</button>
+        <button onclick="testFontAwesome()">3. Check Font Awesome</button>
+        <button onclick="testWidgetButton()">4. Test Widget Button</button>
+        <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            resultsDiv.appendChild(statusDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function testWidgetExists() {
+            clearResults();
+            const widget = document.querySelector('.accessibility-widget');
+            const button = document.querySelector('.accessibility-toggle');
+            const panel = document.querySelector('.accessibility-panel');
+
+            if (widget) {
+                showResult('✓ Widget container found (.accessibility-widget)', 'success');
+            } else {
+                showResult('✗ Widget container NOT found (.accessibility-widget)', 'error');
+            }
+
+            if (button) {
+                showResult('✓ Widget button found (.accessibility-toggle)', 'success');
+            } else {
+                showResult('✗ Widget button NOT found (.accessibility-toggle)', 'error');
+            }
+
+            if (panel) {
+                showResult('✓ Widget panel found (.accessibility-panel)', 'success');
+            } else {
+                showResult('✗ Widget panel NOT found (.accessibility-panel)', 'error');
+            }
+        }
+
+        function testCsrfToken() {
+            clearResults();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (csrfToken) {
+                const token = csrfToken.getAttribute('content');
+                showResult(`✓ CSRF Token found: ${token.substring(0, 20)}...`, 'success');
+            } else {
+                showResult('✗ CSRF Token NOT found in meta tags', 'error');
+            }
+        }
+
+        function testFontAwesome() {
+            clearResults();
+            const faIcon = document.querySelector('.fa-universal-access, .fas');
+            if (faIcon) {
+                showResult('✓ Font Awesome icons loaded', 'success');
+            } else {
+                showResult('✗ Font Awesome icons NOT loaded', 'error');
+            }
+        }
+
+        function testWidgetButton() {
+            clearResults();
+            const button = document.querySelector('.accessibility-toggle');
+            if (button) {
+                const computedStyle = window.getComputedStyle(button);
+                showResult(`✓ Button found`, 'success');
+                showResult(`Position: ${computedStyle.position}`, 'info');
+                showResult(`Display: ${computedStyle.display}`, 'info');
+                showResult(`Z-index: ${computedStyle.zIndex}`, 'info');
+                showResult(`Bottom: ${computedStyle.bottom}`, 'info');
+                showResult(`Right: ${computedStyle.right}`, 'info');
+            } else {
+                showResult('✗ Widget button not found for testing', 'error');
+            }
+        }
+
+        function runAllTests() {
+            clearResults();
+            setTimeout(() => testCsrfToken(), 100);
+            setTimeout(() => testFontAwesome(), 300);
+            setTimeout(() => testWidgetExists(), 500);
+            setTimeout(() => testWidgetButton(), 700);
+        }
+
+        // Auto-run on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            showResult('Diagnostic page loaded. Click buttons above to run tests.', 'info');
+            showResult('To test the actual homepage, open http://127.0.0.1:8000/ in a new tab and look for a green circular button in the bottom-right corner.', 'info');
+        });
+    </script>
+</body>
+</html>

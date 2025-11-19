@@ -41,11 +41,13 @@ class PwdProfile extends Model
      * @var array
      */
     protected $casts = [
-        'birthdate' => 'date',
+        'birthdate' => 'datetime',
         'is_employed' => 'boolean',
         'profile_completed' => 'boolean',
-        'accessibility_needs' => 'array',
         'assistive_devices' => 'array',
+        'accessibility_needs' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
@@ -101,7 +103,7 @@ class PwdProfile extends Model
      */
     public function getAgeAttribute()
     {
-        return $this->birthdate ? $this->birthdate->age : null;
+        return $this->birthdate ? $this->birthdate->diffInYears(now()) : null;
     }
 
     /**

@@ -27,7 +27,7 @@
 
     <!-- Main Content Area -->
     <div class="dashboard-content bg-light">
-        <div class="container-fluid py-4">
+        <div class="container-fluid py-4 pt-5">
             <!-- Session Messages & Alerts -->
             @if (session('status'))
                 <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" aria-live="polite">
@@ -310,63 +310,62 @@
                             </div>
                         @endif
                     </div>
+                </div>
 
-                    <!-- 📊 3. Application Summary / Stats -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-header bg-white border-bottom py-3">
-                                    <h2 class="h5 mb-0 text-dark">📊 Application Summary</h2>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row text-center">
-                                        <div class="col-md-3 mb-3">
-                                            <div class="p-3 bg-primary bg-opacity-10 rounded">
-                                                <div class="h4 text-primary mb-1">{{ $applicationStats['total'] }}</div>
-                                                <div class="text-muted small">Total Applications</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <div class="p-3 bg-warning bg-opacity-10 rounded">
-                                                <div class="h4 text-warning mb-1">{{ $applicationStats['pending'] }}</div>
-                                                <div class="text-muted small">Under Review</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <div class="p-3 bg-success bg-opacity-10 rounded">
-                                                <div class="h4 text-success mb-1">{{ $applicationStats['approved'] }}</div>
-                                                <div class="text-muted small">Shortlisted</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <div class="p-3 bg-info bg-opacity-10 rounded">
-                                                <div class="h4 text-info mb-1">{{ $applicationStats['hired'] }}</div>
-                                                <div class="text-muted small">Hired</div>
-                                            </div>
-                                        </div>
+                <!-- Right Column - Sidebar -->
+                <div class="col-lg-4">
+                    <!-- � 3. Application Summary / Stats -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h2 class="h5 mb-0 text-dark">📊 Application Summary</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6 mb-3">
+                                    <div class="p-3 bg-primary bg-opacity-10 rounded">
+                                        <div class="h4 text-primary mb-1">{{ $applicationStats['total'] }}</div>
+                                        <div class="text-muted small">Total Applications</div>
                                     </div>
-
-                                    <!-- Progress Visualization -->
-                                    @if($applicationStats['total'] > 0)
-                                        <div class="mt-3">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-muted small">Application Progress</span>
-                                                <span class="text-muted small">{{ $applicationStats['total'] }} applications</span>
-                                            </div>
-                                            <div class="progress" style="height: 12px;">
-                                                @php
-                                                    $pendingWidth = ($applicationStats['pending'] / $applicationStats['total']) * 100;
-                                                    $approvedWidth = ($applicationStats['approved'] / $applicationStats['total']) * 100;
-                                                    $hiredWidth = ($applicationStats['hired'] / $applicationStats['total']) * 100;
-                                                @endphp
-                                                <div class="progress-bar bg-warning" style="width: {{ $pendingWidth }}%" title="Under Review: {{ $applicationStats['pending'] }}"></div>
-                                                <div class="progress-bar bg-success" style="width: {{ $approvedWidth }}%" title="Shortlisted: {{ $applicationStats['approved'] }}"></div>
-                                                <div class="progress-bar bg-info" style="width: {{ $hiredWidth }}%" title="Hired: {{ $applicationStats['hired'] }}"></div>
-                                            </div>
-                                        </div>
-                                    @endif
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="p-3 bg-warning bg-opacity-10 rounded">
+                                        <div class="h4 text-warning mb-1">{{ $applicationStats['pending'] }}</div>
+                                        <div class="text-muted small">Under Review</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="p-3 bg-success bg-opacity-10 rounded">
+                                        <div class="h4 text-success mb-1">{{ $applicationStats['approved'] }}</div>
+                                        <div class="text-muted small">Shortlisted</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="p-3 bg-info bg-opacity-10 rounded">
+                                        <div class="h4 text-info mb-1">{{ $applicationStats['hired'] }}</div>
+                                        <div class="text-muted small">Hired</div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Progress Visualization -->
+                            @if($applicationStats['total'] > 0)
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted small">Application Progress</span>
+                                        <span class="text-muted small">{{ $applicationStats['total'] }} applications</span>
+                                    </div>
+                                    <div class="progress" style="height: 12px;">
+                                        @php
+                                            $pendingWidth = ($applicationStats['pending'] / $applicationStats['total']) * 100;
+                                            $approvedWidth = ($applicationStats['approved'] / $applicationStats['total']) * 100;
+                                            $hiredWidth = ($applicationStats['hired'] / $applicationStats['total']) * 100;
+                                        @endphp
+                                        <div class="progress-bar bg-warning" style="width: {{ $pendingWidth }}%" title="Under Review: {{ $applicationStats['pending'] }}"></div>
+                                        <div class="progress-bar bg-success" style="width: {{ $approvedWidth }}%" title="Shortlisted: {{ $applicationStats['approved'] }}"></div>
+                                        <div class="progress-bar bg-info" style="width: {{ $hiredWidth }}%" title="Hired: {{ $applicationStats['hired'] }}"></div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -377,59 +376,39 @@
                         </div>
                         <div class="card-body p-0">
                             @if($recentApplications->count() > 0)
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Job Title</th>
-                                                <th>Company</th>
-                                                <th>Date Applied</th>
-                                                <th>Status</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($recentApplications as $application)
-                                                <tr>
-                                                    <td>
-                                                        <strong>{{ $application->jobPosting->title ?? 'N/A' }}</strong>
-                                                    </td>
-                                                    <td>{{ $application->jobPosting->employer->company_name ?? 'N/A' }}</td>
-                                                    <td>{{ $application->created_at->format('M d, Y') }}</td>
-                                                    <td>
-                                                        <span class="badge bg-{{ $application->status == 'pending' ? 'warning' : ($application->status == 'approved' ? 'success' : ($application->status == 'rejected' ? 'danger' : 'info')) }}">
-                                                            {{ ucfirst($application->status) }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <a href="{{ route('applications.show', $application) }}" class="btn btn-sm btn-outline-primary">
-                                                            View
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                <div class="list-group list-group-flush">
+                                    @foreach($recentApplications->take(3) as $application)
+                                        <div class="list-group-item border-0 p-3">
+                                            <h6 class="mb-1 text-dark">{{ $application->jobPosting->title ?? 'N/A' }}</h6>
+                                            <p class="mb-1 small text-muted">{{ $application->jobPosting->employer->company_name ?? 'N/A' }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">{{ $application->created_at->format('M d, Y') }}</small>
+                                                <span class="badge bg-{{ $application->status == 'pending' ? 'warning' : ($application->status == 'approved' ? 'success' : ($application->status == 'rejected' ? 'danger' : 'info')) }}">
+                                                    {{ ucfirst($application->status) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        @if(!$loop->last)
+                                            <hr class="my-0">
+                                        @endif
+                                    @endforeach
                                 </div>
-                                <div class="card-footer bg-white border-top py-3 text-center">
-                                    <a href="{{ route('applications.index') }}" class="btn btn-outline-primary btn-sm">
+                                <div class="card-footer bg-white border-top py-2 text-center">
+                                    <a href="{{ route('applications.index') }}" class="btn btn-sm btn-outline-primary">
                                         View All Applications <i class="fas fa-arrow-right ms-1"></i>
                                     </a>
                                 </div>
                             @else
-                                <div class="text-center py-5">
-                                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted mb-3">You haven't submitted any applications yet.</p>
-                                    <a href="{{ route('job-postings.public') }}" class="btn btn-primary">Start Applying</a>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-2 small">No applications yet</p>
+                                    <a href="{{ route('job-postings.public') }}" class="btn btn-sm btn-outline-primary">Start Applying</a>
                                 </div>
                             @endif
                         </div>
                     </div>
-                </div>
 
-                <!-- Right Column - Sidebar -->
-                <div class="col-lg-4">
-                    <!-- 🔔 5. Notifications / Alerts -->
+                    <!-- �🔔 5. Notifications / Alerts -->
                     <div class="card shadow-sm border-warning mb-4">
                         <div class="card-header bg-warning text-dark border-bottom py-3">
                             <div class="d-flex justify-content-between align-items-center">
@@ -569,66 +548,91 @@
 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
     @csrf
 </form>
-@endsection
 
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Quick filter badges
-    const quickFilterBadges = document.querySelectorAll('.badge[href]');
-    quickFilterBadges.forEach(badge => {
-        badge.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = this.href;
-        });
-    });
+<!-- Resume Required Modal -->
+<div class="modal fade" id="resumeRequiredModal" tabindex="-1" aria-labelledby="resumeRequiredModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark py-2">
+                <h6 class="modal-title mb-0" id="resumeRequiredModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Resume Required
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <div class="text-center mb-3">
+                    <i class="fas fa-file-upload fa-3x text-warning mb-2"></i>
+                    <p class="mb-2 fw-bold">Upload Your Resume to Apply</p>
+                    <p class="text-muted small mb-0">
+                        You need to have a resume on file before you can apply for jobs.
+                    </p>
+                </div>
 
-    // Real-time search with debounce
-    let searchTimeout;
-    const searchInput = document.getElementById('q');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                document.getElementById('pwd-filters-form').submit();
-            }, 800);
-        });
-    }
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-warning btn-sm" id="uploadResumeBtn">
+                        <i class="fas fa-upload me-2"></i>Upload Resume Now
+                    </button>
+                    <a href="{{ route('profile.edit') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-user-edit me-2"></i>Go to Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    // Auto-submit form when filters change
-    const filterElements = document.querySelectorAll('#pwd-filters-form select, #pwd-filters-form input[type="checkbox"]');
-    filterElements.forEach(element => {
-        element.addEventListener('change', function() {
-            document.getElementById('pwd-filters-form').submit();
-        });
-    });
+<!-- Resume Upload Form Modal -->
+<div class="modal fade" id="resumeUploadModal" tabindex="-1" aria-labelledby="resumeUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-2">
+                <h6 class="modal-title mb-0" id="resumeUploadModalLabel">
+                    <i class="fas fa-file-alt me-2"></i>Upload Resume
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <form action="{{ route('profile.uploadResume') }}" method="POST" enctype="multipart/form-data" id="uploadResumeForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="resume-file" class="form-label small">Choose Resume File</label>
+                        <input type="file" class="form-control form-control-sm" id="resume-file" name="resume"
+                               accept=".pdf,.doc,.docx" required>
+                        <div class="form-text small">PDF, DOC, or DOCX (Max 5MB)</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm" id="submitResumeBtn">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>Upload Resume
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-    // Show loading state when form is submitting
-    const form = document.getElementById('pwd-filters-form');
-    if (form) {
-        form.addEventListener('submit', function() {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Searching...';
-                submitBtn.disabled = true;
-            }
-        });
-    }
-});
-</script>
 @endsection
 
 @section('styles')
 <style>
     .card-hover {
         transition: all 0.3s ease;
-        border: 1px solid #e9ecef;
+        border: 2px solid #6b7280;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     }
 
     .card-hover:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
         border-color: #02710b;
+        border-width: 2px;
+    }
+
+    .shadow-sm {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
     }
 
     .dashboard-content {
@@ -636,7 +640,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     .border-bottom {
-        border-bottom: 1px solid #e9ecef !important;
+        border-bottom: 2px solid #6b7280 !important;
+    }
+
+    .card {
+        border: 2px solid #6b7280 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #6b7280 !important;
+    }
+
+    .card-footer {
+        border-top: 2px solid #6b7280 !important;
     }
 
     .text-primary { color: #2E8B57 !important; }
@@ -755,5 +772,118 @@ document.addEventListener('DOMContentLoaded', function() {
     .card-footer .d-flex {
         gap: 0.5rem;
     }
+
+    /* Darker dividers between list items */
+    hr {
+        border-color: #6b6b6b !important;
+        opacity: 1 !important;
+    }
+
+    .list-group-item {
+        border-color: #a0a0a0 !important;
+    }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+    // Wait for jQuery to be available, then initialize
+    (function checkJQuery() {
+        if (typeof jQuery !== 'undefined') {
+            initializeResumeHandlers();
+        } else {
+            setTimeout(checkJQuery, 100);
+        }
+    })();
+
+    function initializeResumeHandlers() {
+        jQuery(document).ready(function($) {
+            console.log('Document ready, initializing handlers');
+            console.log('jQuery version:', $.fn.jquery);
+            console.log('Upload button exists:', $('#uploadResumeBtn').length);
+
+            // ========== RESUME UPLOAD HANDLERS ==========
+
+            // Handle resume upload button click using jQuery
+            $('#uploadResumeBtn').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Upload Resume button clicked!');
+            console.log('Button element:', this);
+            console.log('Button is visible:', $(this).is(':visible'));
+            console.log('Button is enabled:', !$(this).prop('disabled'));
+
+            try {
+                // Hide the first modal using jQuery/Bootstrap
+                $('#resumeRequiredModal').modal('hide');
+                console.log('First modal hiding...');
+
+                // Wait for first modal to fully hide, then show upload modal
+                $('#resumeRequiredModal').on('hidden.bs.modal', function() {
+                    // Remove this event listener after first use
+                    $(this).off('hidden.bs.modal');
+
+                    // Show the upload modal
+                    $('#resumeUploadModal').modal('show');
+                    console.log('Upload modal shown');
+                });
+
+            } catch (error) {
+                console.error('Error in upload button handler:', error);
+                alert('Error opening upload form: ' + error.message);
+            }
+        });
+
+        console.log('Event listener attached to Upload Resume button');
+
+        // Handle form submission with loading state
+        $('#uploadResumeForm').on('submit', function(e) {
+            const submitBtn = $('#submitResumeBtn');
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Uploading...');
+        });
+
+        // File size validation
+        $('#resume-file').on('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.size > maxSize) {
+                    alert('File size must be less than 5MB');
+                    $(this).val('');
+                }
+            }
+        });
+
+        // ========== FILTER FORM HANDLERS ==========
+
+        // Quick filter badges
+        $('.badge[href]').on('click', function(e) {
+            e.preventDefault();
+            window.location.href = $(this).attr('href');
+        });
+
+        // Real-time search with debounce
+        let searchTimeout;
+        $('#q').on('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                $('#pwd-filters-form').submit();
+            }, 800);
+        });
+
+        // Auto-submit form when filters change
+        $('#pwd-filters-form select, #pwd-filters-form input[type="checkbox"]').on('change', function() {
+            $('#pwd-filters-form').submit();
+        });
+
+        // Show loading state when form is submitting
+        $('#pwd-filters-form').on('submit', function() {
+            const submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i> Searching...');
+            submitBtn.prop('disabled', true);
+        });
+    });
+    }
+</script>
 @endsection

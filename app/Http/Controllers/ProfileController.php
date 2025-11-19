@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\PwdProfile;
 use App\Models\DisabilityType;
+use App\Models\SkillOption;
+use App\Models\QualificationOption;
+use App\Models\AccommodationOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +21,8 @@ class ProfileController extends Controller
      */
     public function show()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         // Check if user exists (should always exist for authenticated users)
         if (!$user) {
@@ -48,7 +52,8 @@ class ProfileController extends Controller
      */
     public function edit()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         if (!$user) {
             abort(404, 'User not found');
@@ -63,11 +68,17 @@ class ProfileController extends Controller
         }
 
         $disabilityTypes = DisabilityType::orderBy('type')->get();
+        $skillOptions = SkillOption::active()->orderBy('name')->get();
+        $qualificationOptions = QualificationOption::active()->orderBy('name')->get();
+        $accommodationOptions = AccommodationOption::active()->orderBy('name')->get();
 
         return view('profile.edit', [
             'user' => $user,
             'pwdProfile' => $pwdProfile,
             'disabilityTypes' => $disabilityTypes,
+            'skillOptions' => $skillOptions,
+            'qualificationOptions' => $qualificationOptions,
+            'accommodationOptions' => $accommodationOptions,
         ]);
     }
 
@@ -76,7 +87,8 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         // Start with basic user validation
         $validated = $request->validate([
@@ -148,7 +160,8 @@ class ProfileController extends Controller
      */
     public function deletePhoto()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         try {
             if ($user->pwdProfile && $user->pwdProfile->profile_photo) {
@@ -170,7 +183,8 @@ class ProfileController extends Controller
      */
     public function showPwdCompleteForm()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         // Check if user already has a complete profile
         if ($user->hasPwdProfile() && $user->isProfileComplete()) {
@@ -181,11 +195,17 @@ class ProfileController extends Controller
         $pwdProfile = $user->pwdProfile ?? new PwdProfile();
 
         $disabilityTypes = DisabilityType::orderBy('type')->get();
+        $skillOptions = SkillOption::active()->orderBy('name')->get();
+        $qualificationOptions = QualificationOption::active()->orderBy('name')->get();
+        $accommodationOptions = AccommodationOption::active()->orderBy('name')->get();
 
         return view('profile.pwd-complete', [
             'user' => $user,
             'pwdProfile' => $pwdProfile,
             'disabilityTypes' => $disabilityTypes,
+            'skillOptions' => $skillOptions,
+            'qualificationOptions' => $qualificationOptions,
+            'accommodationOptions' => $accommodationOptions,
         ]);
     }
 
@@ -194,7 +214,8 @@ class ProfileController extends Controller
      */
     public function completePwdProfile(Request $request)
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         // Validation rules for PWD profile
         $validated = $request->validate([
@@ -208,9 +229,9 @@ class ProfileController extends Controller
             'skills' => 'nullable|string|max:1000',
             'interests' => 'nullable|string|max:1000',
             'accommodation_needs' => 'nullable|string|max:1000',
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'pwd_id_number' => 'nullable|string|max:100',
-            'pwd_id_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'pwd_id_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
         try {
@@ -235,7 +256,7 @@ class ProfileController extends Controller
             $mappedData = [
                 'disability_type_id' => $validated['disability_type_id'],
                 'disability_severity' => $validated['disability_level'],
-                'assistive_devices' => $validated['assistive_devices'] ?? null,
+                'assistive_devices' => !empty($validated['assistive_devices']) ? json_encode(['device' => $validated['assistive_devices']]) : null,
                 'special_needs' => $validated['medical_conditions'] ?? null,
                 'accessibility_needs' => !empty($validated['accommodation_needs']) ? json_encode(['notes' => $validated['accommodation_needs']]) : null,
                 'skills' => $validated['skills'] ?? null,
@@ -243,11 +264,17 @@ class ProfileController extends Controller
                 'emergency_contact_name' => $validated['emergency_contact_name'],
                 'emergency_contact_phone' => $validated['emergency_contact_phone'],
                 'emergency_contact_relationship' => $validated['emergency_contact_relationship'],
-                'profile_photo' => $validated['profile_photo'] ?? null,
                 'pwd_id_number' => $validated['pwd_id_number'] ?? null,
-                'pwd_id_photo' => $validated['pwd_id_photo'] ?? null,
                 'profile_completed' => true,
             ];
+
+            // Only include file paths if they were uploaded
+            if (isset($validated['profile_photo'])) {
+                $mappedData['profile_photo'] = $validated['profile_photo'];
+            }
+            if (isset($validated['pwd_id_photo'])) {
+                $mappedData['pwd_id_photo'] = $validated['pwd_id_photo'];
+            }
 
             // Also set legacy disability_type string for backward compatibility when possible
             try {
@@ -286,7 +313,8 @@ class ProfileController extends Controller
      */
     public function checkProfileComplete()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         return response()->json([
             'has_pwd_profile' => $user->hasPwdProfile(),
@@ -295,12 +323,13 @@ class ProfileController extends Controller
         ]);
     }
 
-/**
- * Upload resume
- */
-public function uploadResume(Request $request)
-{
-    $user = auth()->user();
+    /**
+     * Upload resume
+     */
+    public function uploadResume(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
     if (!$user->canUploadResume()) {
         return redirect()->back()->with('error', 'You are not allowed to upload a resume.');
@@ -347,12 +376,13 @@ public function uploadResume(Request $request)
     }
 }
 
-/**
- * Download resume
- */
-public function downloadResume()
-{
-    $user = auth()->user();
+    /**
+     * Download resume
+     */
+    public function downloadResume()
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
     if (!$user->hasResume()) {
         return redirect()->back()->with('error', 'No resume found.');
@@ -367,12 +397,13 @@ public function downloadResume()
     return response()->download($filePath, $user->resume_file_name ?? basename($user->resume));
 }
 
-/**
- * Delete resume
- */
-public function deleteResume()
-{
-    $user = auth()->user();
+    /**
+     * Delete resume
+     */
+    public function deleteResume()
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
     try {
         if ($user->resume) {

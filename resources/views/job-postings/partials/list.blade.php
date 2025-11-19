@@ -20,7 +20,7 @@
                                 @if(auth()->user()->can_apply_for_jobs)
                                     <form action="{{ route('job.apply', $job) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-success btn-sm">
+                                        <button type="submit" class="btn btn-sm" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                             <i class="fas fa-paper-plane"></i> Apply Now
                                         </button>
                                     </form>
@@ -85,14 +85,14 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <a href="{{ route('job-postings.public.show', $job) }}" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ route('job-postings.public.show', $job) }}" class="btn btn-sm" style="border: 1px solid #2E8B57; color: #2E8B57;">
                             <i class="fas fa-eye"></i> View Details
                         </a>
                         @if(auth()->user() && auth()->user()->role === 'pwd' && empty($hasApplied))
                             @if(auth()->user()->can_apply_for_jobs)
                                 <form action="{{ route('job.apply', $job) }}" method="POST" class="d-inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-success btn-sm">
+                                    <button type="submit" class="btn btn-sm" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                         <i class="fas fa-paper-plane"></i> Quick Apply
                                     </button>
                                 </form>
@@ -117,3 +117,9 @@
         <p class="text-muted">There are currently no active job postings. Please check back later.</p>
     </div>
 @endif
+
+@auth
+    @if(auth()->user()->role === 'pwd')
+        @include('partials.resume-required-modal')
+    @endif
+@endauth

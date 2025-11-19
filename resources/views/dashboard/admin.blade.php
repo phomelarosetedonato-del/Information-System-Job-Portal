@@ -10,15 +10,15 @@
 
 <div class="dashboard-container" id="main-content" tabindex="-1" role="main" aria-labelledby="dashboard-heading">
     <!-- Dashboard Header -->
-    <div class="dashboard-header bg-white border-bottom py-4">
-        <div class="dashboard-header-content">
+    <div class="dashboard-header bg-white border-bottom py-3 sticky-top shadow-sm">
+        <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="h3 mb-2 text-dark" id="dashboard-heading">
+                    <h1 class="h4 mb-1 text-dark" id="dashboard-heading">
                         <i class="fas fa-universal-access me-2 text-primary" aria-hidden="true"></i>
                         Admin Dashboard - PWD System Alaminos City
                     </h1>
-                    <p class="mb-0 text-muted">System overview and management tools</p>
+                    <p class="mb-0 text-muted small">System overview and management tools</p>
                 </div>
                 <div class="col-md-4 text-md-end">
                     <div class="btn-group">
@@ -112,7 +112,7 @@
                                         <i class="fas fa-sun me-2"></i>Welcome back, {{ auth()->user()->name }}!
                                     </h2>
                                     <p class="text-white-50 mb-0">
-                                        <i class="fas fa-calendar-day me-2"></i>{{ now()->format('l, F j, Y') }} | 
+                                        <i class="fas fa-calendar-day me-2"></i>{{ now()->format('l, F j, Y') }} |
                                         <i class="fas fa-clock ms-2 me-2"></i>{{ now()->format('g:i A') }}
                                     </p>
                                 </div>
@@ -253,76 +253,57 @@
 
             <div class="row mb-4">
                 <!-- System Overview Chart -->
-                <div class="col-lg-8 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white border-bottom py-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h4 class="h6 mb-0 text-dark">
-                                    <i class="fas fa-chart-bar me-2 text-primary"></i>System Overview
-                                </h4>
-                                <span class="badge bg-primary bg-opacity-10 text-primary">Live Data</span>
-                            </div>
+                        <div class="card-header bg-white border-bottom py-2">
+                            <h4 class="h6 mb-0 text-dark">
+                                <i class="fas fa-chart-bar me-2 text-primary"></i>System Overview
+                            </h4>
                         </div>
-                        <div class="card-body">
-                            <canvas id="systemOverviewChart" height="100"></canvas>
+                        <div class="card-body p-2">
+                            <canvas id="systemOverviewChart" height="200"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <!-- User Distribution Pie Chart -->
-                <div class="col-lg-4 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white border-bottom py-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h4 class="h6 mb-0 text-dark">
-                                    <i class="fas fa-users me-2 text-info"></i>User Distribution
-                                </h4>
-                                <span class="badge bg-info bg-opacity-10 text-info">{{ $stats['total_users'] }} Total</span>
-                            </div>
+                        <div class="card-header bg-white border-bottom py-2">
+                            <h4 class="h6 mb-0 text-dark">
+                                <i class="fas fa-users me-2 text-info"></i>User Distribution
+                            </h4>
                         </div>
-                        <div class="card-body d-flex align-items-center justify-content-center">
-                            <canvas id="userDistributionChart"></canvas>
+                        <div class="card-body p-2 d-flex align-items-center justify-content-center">
+                            <canvas id="userDistributionChart" height="200"></canvas>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Application & Training Charts -->
-            <div class="row mb-4">
                 <!-- Application Status Chart -->
-                <div class="col-lg-6 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white border-bottom py-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h4 class="h6 mb-0 text-dark">
-                                    <i class="fas fa-file-alt me-2 text-success"></i>Job Applications Status
-                                </h4>
-                                <span class="badge bg-warning bg-opacity-10 text-warning">
-                                    <i class="fas fa-clock me-1"></i>{{ $stats['pending_applications'] }} Pending
-                                </span>
-                            </div>
+                        <div class="card-header bg-white border-bottom py-2">
+                            <h4 class="h6 mb-0 text-dark">
+                                <i class="fas fa-file-alt me-2 text-success"></i>Applications
+                            </h4>
                         </div>
-                        <div class="card-body">
-                            <canvas id="applicationStatusChart" height="150"></canvas>
+                        <div class="card-body p-2">
+                            <canvas id="applicationStatusChart" height="200"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <!-- Training Enrollments Chart -->
-                <div class="col-lg-6 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white border-bottom py-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h4 class="h6 mb-0 text-dark">
-                                    <i class="fas fa-graduation-cap me-2 text-warning"></i>Training Enrollments
-                                </h4>
-                                <span class="badge bg-success bg-opacity-10 text-success">
-                                    <i class="fas fa-check me-1"></i>{{ $stats['active_trainings'] }} Active
-                                </span>
-                            </div>
+                        <div class="card-header bg-white border-bottom py-2">
+                            <h4 class="h6 mb-0 text-dark">
+                                <i class="fas fa-graduation-cap me-2 text-warning"></i>Training
+                            </h4>
                         </div>
-                        <div class="card-body">
-                            <canvas id="trainingEnrollmentsChart" height="150"></canvas>
+                        <div class="card-body p-2">
+                            <canvas id="trainingEnrollmentsChart" height="200"></canvas>
                         </div>
                     </div>
                 </div>
@@ -347,10 +328,10 @@
                             <h4 class="h2 mb-1 text-dark">{{ $stats['active_jobs'] }}</h4>
                             <p class="text-muted mb-3 small">Active Job Postings</p>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-primary" role="progressbar" 
+                                <div class="progress-bar bg-primary" role="progressbar"
                                      style="width: {{ $stats['job_postings'] > 0 ? ($stats['active_jobs'] / $stats['job_postings'] * 100) : 0 }}%"
-                                     aria-valuenow="{{ $stats['active_jobs'] }}" 
-                                     aria-valuemin="0" 
+                                     aria-valuenow="{{ $stats['active_jobs'] }}"
+                                     aria-valuemin="0"
                                      aria-valuemax="{{ $stats['job_postings'] }}">
                                 </div>
                             </div>
@@ -370,10 +351,10 @@
                             <h4 class="h2 mb-1 text-dark">{{ $stats['pending_applications'] }}</h4>
                             <p class="text-muted mb-3 small">Pending Applications</p>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-warning" role="progressbar" 
+                                <div class="progress-bar bg-warning" role="progressbar"
                                      style="width: {{ ($stats['pending_applications'] + $stats['approved_applications']) > 0 ? ($stats['pending_applications'] / ($stats['pending_applications'] + $stats['approved_applications']) * 100) : 0 }}%"
-                                     aria-valuenow="{{ $stats['pending_applications'] }}" 
-                                     aria-valuemin="0" 
+                                     aria-valuenow="{{ $stats['pending_applications'] }}"
+                                     aria-valuemin="0"
                                      aria-valuemax="100">
                                 </div>
                             </div>
@@ -391,10 +372,10 @@
                             <h4 class="h2 mb-1 text-dark">{{ $stats['approved_applications'] }}</h4>
                             <p class="text-muted mb-3 small">Approved Applications</p>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-success" role="progressbar" 
+                                <div class="progress-bar bg-success" role="progressbar"
                                      style="width: 90%"
-                                     aria-valuenow="{{ $stats['approved_applications'] }}" 
-                                     aria-valuemin="0" 
+                                     aria-valuenow="{{ $stats['approved_applications'] }}"
+                                     aria-valuemin="0"
                                      aria-valuemax="100">
                                 </div>
                             </div>
@@ -412,10 +393,10 @@
                             <h4 class="h2 mb-1 text-dark">{{ $stats['active_trainings'] }}</h4>
                             <p class="text-muted mb-3 small">Active Enrollments</p>
                             <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-info" role="progressbar" 
+                                <div class="progress-bar bg-info" role="progressbar"
                                      style="width: 85%"
-                                     aria-valuenow="{{ $stats['active_trainings'] }}" 
-                                     aria-valuemin="0" 
+                                     aria-valuenow="{{ $stats['active_trainings'] }}"
+                                     aria-valuemin="0"
                                      aria-valuemax="100">
                                 </div>
                             </div>
@@ -509,14 +490,14 @@
             <div class="row mb-4">
                 <!-- Recent Applications -->
                 <div class="col-xl-3 col-lg-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-header bg-white border-bottom py-3">
+                    <div class="card shadow-sm border-0" style="max-height: 400px;">
+                        <div class="card-header bg-white border-bottom py-2">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h2 class="h5 mb-0 text-dark">Recent Job Applications</h2>
-                                <a href="{{ route('admin.applications.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                                <h2 class="h6 mb-0 text-dark">Recent Applications</h2>
+                                <a href="{{ route('admin.applications.index') }}" class="btn btn-sm btn-outline-primary">All</a>
                             </div>
                         </div>
-                        <div class="card-body p-0">
+                        <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
                             @if($recentApplications->count() > 0)
                                 <div class="list-group list-group-flush">
                                     @foreach($recentApplications as $application)
@@ -549,14 +530,14 @@
 
                 <!-- Recent Enrollments -->
                 <div class="col-xl-3 col-lg-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-header bg-white border-bottom py-3">
+                    <div class="card shadow-sm border-0" style="max-height: 400px;">
+                        <div class="card-header bg-white border-bottom py-2">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h2 class="h5 mb-0 text-dark">Recent Training Enrollments</h2>
-                                <a href="{{ route('admin.enrollments.index') }}" class="btn btn-sm btn-outline-success">View All</a>
+                                <h2 class="h6 mb-0 text-dark">Recent Enrollments</h2>
+                                <a href="{{ route('admin.enrollments.index') }}" class="btn btn-sm btn-outline-success">All</a>
                             </div>
                         </div>
-                        <div class="card-body p-0">
+                        <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
                             @if($recentEnrollments->count() > 0)
                                 <div class="list-group list-group-flush">
                                     @foreach($recentEnrollments as $enrollment)
@@ -589,14 +570,14 @@
 
                 <!-- Recent Users -->
                 <div class="col-xl-3 col-lg-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-header bg-white border-bottom py-3">
+                    <div class="card shadow-sm border-0" style="max-height: 400px;">
+                        <div class="card-header bg-white border-bottom py-2">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h2 class="h5 mb-0 text-dark">Recent Users</h2>
-                                <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-info">View All</a>
+                                <h2 class="h6 mb-0 text-dark">Recent Users</h2>
+                                <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-info">All</a>
                             </div>
                         </div>
-                        <div class="card-body p-0">
+                        <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
                             @if($recentUsers->count() > 0)
                                 <div class="list-group list-group-flush">
                                     @foreach($recentUsers as $user)
@@ -629,14 +610,14 @@
 
                 <!-- Security Alerts -->
                 <div class="col-xl-3 col-lg-6 mb-4">
-                    <div class="card h-100 shadow-sm border-warning">
-                        <div class="card-header bg-warning text-dark border-bottom py-3">
+                    <div class="card shadow-sm border-warning" style="max-height: 400px;">
+                        <div class="card-header bg-warning text-dark border-bottom py-2">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h2 class="h5 mb-0">Security Alerts</h2>
-                                <a href="{{ route('admin.security.report') }}" class="btn btn-sm btn-warning">View Report</a>
+                                <h2 class="h6 mb-0">Security Alerts</h2>
+                                <a href="{{ route('admin.security.report') }}" class="btn btn-sm btn-warning">Report</a>
                             </div>
                         </div>
-                        <div class="card-body p-0">
+                        <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
                             @if($securityAlerts->count() > 0)
                                 <div class="list-group list-group-flush">
                                     @foreach($securityAlerts as $user)
@@ -873,6 +854,32 @@
         border-bottom: 1px solid #e9ecef !important;
     }
 
+    .dashboard-header.sticky-top {
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+        background-color: #fff;
+    }
+
+    /* Scrollbar styling for recent activity cards */
+    .card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .card-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .card-body::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    .card-body::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
     /* Green color scheme for PWD system */
     .text-primary { color: #2E8B57 !important; }
     .text-success { color: #1A5D34 !important; }
@@ -1047,11 +1054,11 @@
     .accessibility-option:hover i {
         transform: scale(1.2);
     }
-    
+
     .accessibility-option div {
         pointer-events: none;
     }
-    
+
     .accessibility-option span {
         pointer-events: none;
     }
@@ -1326,19 +1333,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleMenu = function(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         console.log('Toggle button CLICKED!');
-        
+
         const isExpanded = accessibilityMenu.classList.toggle('active');
         accessibilityToggle.setAttribute('aria-expanded', isExpanded);
-        
+
         console.log('Menu state changed to:', isExpanded ? 'OPEN' : 'CLOSED');
-        
+
         // Visual confirmation
         if (isExpanded) {
             accessibilityMenu.style.display = 'block';
         }
-        
+
         announceToScreenReader(isExpanded ? 'Accessibility menu opened' : 'Accessibility menu closed');
     };
 
@@ -1367,11 +1374,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const increaseFontBtn = document.getElementById('increase-font');
     if (increaseFontBtn) {
         console.log('✓ Increase font button found');
-        
+
         const increaseFontHandler = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             console.log('>>> INCREASE FONT CLICKED! Current:', currentFontSize);
 
             currentFontSize = Math.min(currentFontSize + 2, 24); // Max 24px
@@ -1391,10 +1398,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 increaseFontBtn.style.color = '';
             }, 300);
         };
-        
+
         increaseFontBtn.addEventListener('click', increaseFontHandler, true);
         increaseFontBtn.addEventListener('touchstart', increaseFontHandler, true);
-        
+
         // Also add mousedown for better responsiveness
         increaseFontBtn.addEventListener('mousedown', function(e) {
             console.log('>>> Increase font MOUSEDOWN detected');
@@ -1407,11 +1414,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const decreaseFontBtn = document.getElementById('decrease-font');
     if (decreaseFontBtn) {
         console.log('✓ Decrease font button found');
-        
+
         const decreaseFontHandler = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             console.log('>>> DECREASE FONT CLICKED! Current:', currentFontSize);
 
             currentFontSize = Math.max(currentFontSize - 2, 12); // Min 12px
@@ -1431,7 +1438,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 decreaseFontBtn.style.color = '';
             }, 300);
         };
-        
+
         decreaseFontBtn.addEventListener('click', decreaseFontHandler, true);
         decreaseFontBtn.addEventListener('touchstart', decreaseFontHandler, true);
     } else {
@@ -1442,11 +1449,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const highContrastBtn = document.getElementById('high-contrast');
     if (highContrastBtn) {
         console.log('✓ High contrast button found');
-        
+
         const highContrastHandler = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             console.log('>>> HIGH CONTRAST CLICKED!');
 
             const isActive = document.body.classList.toggle('high-contrast');
@@ -1467,7 +1474,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('>>> High contrast mode:', isActive ? 'ENABLED' : 'DISABLED');
             announceToScreenReader('High contrast mode ' + (isActive ? 'enabled' : 'disabled'));
         };
-        
+
         highContrastBtn.addEventListener('click', highContrastHandler, true);
         highContrastBtn.addEventListener('touchstart', highContrastHandler, true);
     } else {
@@ -1478,11 +1485,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const dyslexicFontBtn = document.getElementById('dyslexic-font');
     if (dyslexicFontBtn) {
         console.log('✓ Dyslexic font button found');
-        
+
         const dyslexicFontHandler = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             console.log('>>> DYSLEXIC FONT CLICKED!');
 
             const isActive = document.body.classList.toggle('dyslexic-font');
@@ -1503,7 +1510,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('>>> Dyslexic font:', isActive ? 'ENABLED' : 'DISABLED');
             announceToScreenReader('Dyslexic friendly font ' + (isActive ? 'enabled' : 'disabled'));
         };
-        
+
         dyslexicFontBtn.addEventListener('click', dyslexicFontHandler, true);
         dyslexicFontBtn.addEventListener('touchstart', dyslexicFontHandler, true);
     } else {
@@ -1514,11 +1521,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetBtn = document.getElementById('reset-accessibility');
     if (resetBtn) {
         console.log('✓ Reset button found');
-        
+
         const resetHandler = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             console.log('>>> RESET ALL CLICKED!');
 
             // Reset font size
@@ -1554,7 +1561,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 resetBtn.style.color = '';
             }, 500);
         };
-        
+
         resetBtn.addEventListener('click', resetHandler, true);
         resetBtn.addEventListener('touchstart', resetHandler, true);
     } else {
@@ -1572,7 +1579,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Final summary
     console.log('===========================================');
     console.log('ACCESSIBILITY WIDGET SUMMARY:');
@@ -1581,7 +1588,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('===========================================');
     console.log('✓ Accessibility widget READY!');
     console.log('=== INITIALIZATION COMPLETE ===');
-    
+
     // Add global test function for debugging
     window.testAccessibilityWidget = function() {
         console.log('=== TESTING ACCESSIBILITY WIDGET ===');
@@ -1595,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('=== END TEST ===');
         console.log('Try clicking: document.getElementById("increase-font").click()');
     };
-    
+
     console.log('💡 TIP: Run testAccessibilityWidget() in console to debug');
 
     // Function to load saved preferences
@@ -1689,7 +1696,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(systemOverviewCtx.getContext('2d'), {
             type: 'bar',
             data: {
-                labels: ['Job Postings', 'Active Jobs', 'Skill Trainings', 'Total Users', 'PWD Users', 'Applications'],
+                labels: ['Jobs', 'Active', 'Training', 'Users', 'PWD', 'Apps'],
                 datasets: [{
                     label: 'Count',
                     data: [
@@ -1721,12 +1728,18 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            font: { size: 10 }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 10 }
                         }
                     }
                 },
@@ -1752,7 +1765,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(userDistributionCtx.getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['PWD Users', 'Admin Users', 'Other Users'],
+                labels: ['PWD', 'Admin', 'Other'],
                 datasets: [{
                     data: [
                         {{ $stats['pwd_users'] }},
@@ -1774,14 +1787,14 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            padding: 10,
+                            padding: 5,
                             font: {
-                                size: 11
+                                size: 9
                             }
                         }
                     },
@@ -1827,13 +1840,19 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 indexAxis: 'y',
                 scales: {
                     x: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            font: { size: 10 }
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: 10 }
                         }
                     }
                 },
@@ -1844,7 +1863,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return context.label + ': ' + context.parsed.x + ' applications';
+                                return context.label + ': ' + context.parsed.x;
                             }
                         }
                     }
@@ -1859,7 +1878,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(trainingEnrollmentsCtx.getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Active Enrollments', 'Available Slots'],
+                labels: ['Active', 'Available'],
                 datasets: [{
                     data: [
                         {{ $stats['active_trainings'] }},
@@ -1878,14 +1897,14 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            padding: 10,
+                            padding: 5,
                             font: {
-                                size: 11
+                                size: 9
                             }
                         }
                     },
@@ -1912,12 +1931,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .hover-lift {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
+
     .hover-lift:hover {
         transform: translateY(-5px);
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
     }
-    
+
     .icon-circle {
         width: 50px;
         height: 50px;
@@ -1926,43 +1945,43 @@ document.addEventListener('DOMContentLoaded', function() {
         align-items: center;
         justify-content: center;
     }
-    
+
     .card-header h4, .card-header h5 {
         font-weight: 600;
     }
-    
+
     /* Progress bar animations */
     .progress-bar {
         transition: width 1s ease-in-out;
     }
-    
+
     /* Badge improvements */
     .badge {
         font-weight: 500;
         padding: 0.5em 0.75em;
     }
-    
+
     /* Card shadows */
     .shadow-sm {
         box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.075) !important;
     }
-    
+
     /* Text weight */
     .font-weight-bold {
         font-weight: 700 !important;
     }
-    
+
     /* Smooth transitions for interactive elements */
     .btn, .card, a {
         transition: all 0.3s ease;
     }
-    
+
     /* Welcome banner gradient */
     .card[style*="linear-gradient"] {
         position: relative;
         overflow: hidden;
     }
-    
+
     .card[style*="linear-gradient"]::before {
         content: '';
         position: absolute;
@@ -1974,7 +1993,7 @@ document.addEventListener('DOMContentLoaded', function() {
         opacity: 0;
         transition: opacity 0.3s ease;
     }
-    
+
     .card[style*="linear-gradient"]:hover::before {
         opacity: 1;
     }

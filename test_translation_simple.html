@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token">
+    <title>Test Translation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background: #2E8B57;
+            color: white;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-left: 4px solid #2E8B57;
+        }
+    </style>
+</head>
+<body>
+    <h1>Translation System Test</h1>
+
+    <div class="test-section">
+        <h2>Test Elements with data-translate</h2>
+        <p><span data-translate="language">Language</span></p>
+        <p><span data-translate="small">Small</span></p>
+        <p><span data-translate="medium">Medium</span></p>
+        <p><span data-translate="large">Large</span></p>
+        <p><span data-translate="text_size">Text Size</span></p>
+        <p><span data-translate="accessibility">Accessibility</span></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Controls</h2>
+        <button onclick="testTranslate()">Test Translation to Tagalog</button>
+        <button onclick="testEnglish()">Test Back to English</button>
+        <button onclick="checkCsrfToken()">Check CSRF Token</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            resultDiv.style.borderLeftColor = type === 'error' ? '#dc3545' : '#2E8B57';
+        }
+
+        function checkCsrfToken() {
+            const token = document.querySelector('meta[name="csrf-token"]');
+            if (token) {
+                showResult(`CSRF Token Found: ${token.getAttribute('content')}`, 'success');
+            } else {
+                showResult('CSRF Token NOT FOUND!', 'error');
+            }
+        }
+
+        async function testTranslate() {
+            const elements = document.querySelectorAll('[data-translate]');
+            showResult(`Found ${elements.length} elements with data-translate attribute`);
+
+            const keys = [];
+            elements.forEach(el => {
+                const key = el.dataset.translate;
+                if (key && !keys.includes(key)) {
+                    keys.push(key);
+                }
+                // Store original
+                if (!el.dataset.originalText) {
+                    el.dataset.originalText = el.textContent.trim();
+                }
+            });
+
+            showResult(`Sending ${keys.length} translation keys: ${keys.join(', ')}`);
+
+            // Simulate translation (since this is a static HTML file)
+            const translations = {
+                'language': 'Wika',
+                'small': 'Maliit',
+                'medium': 'Katamtaman',
+                'large': 'Malaki',
+                'text_size': 'Laki ng Teksto',
+                'accessibility': 'Accessibility'
+            };
+
+            elements.forEach(el => {
+                const key = el.dataset.translate;
+                if (translations[key]) {
+                    el.textContent = translations[key];
+                }
+            });
+
+            showResult('Translation applied! Check the elements above.', 'success');
+        }
+
+        function testEnglish() {
+            const elements = document.querySelectorAll('[data-translate]');
+            elements.forEach(el => {
+                if (el.dataset.originalText) {
+                    el.textContent = el.dataset.originalText;
+                }
+            });
+            showResult('Restored to English!', 'success');
+        }
+    </script>
+</body>
+</html>

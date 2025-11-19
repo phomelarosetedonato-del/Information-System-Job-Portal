@@ -220,8 +220,10 @@ class SkillTrainingController extends Controller
         $query = SkillTraining::where('is_active', true)
             ->withCount('enrollments')
             ->with(['enrollments' => function($query) {
-                // FIXED: Use auth()->user()->id instead of auth()->user->id
-                $query->where('user_id', auth()->id());
+                // Load user's own enrollment if authenticated
+                if (Auth::check()) {
+                    $query->where('user_id', Auth::id());
+                }
             }]);
 
         // Apply filters
@@ -256,8 +258,8 @@ class SkillTrainingController extends Controller
             'upcomingTrainings' => SkillTraining::where('is_active', true)
                 ->where('start_date', '>', now())
                 ->count(),
-            // FIXED: Use auth()->check() instead of auth->check
-            'userEnrollments' => auth()->check() ? auth()->user()->trainingEnrollments()->count() : 0,
+            // FIXED: Use Auth facade for consistency
+            'userEnrollments' => Auth::check() ? Auth::user()->trainingEnrollments()->count() : 0,
         ];
 
         return view('skill-trainings.public.index', array_merge($stats, [
@@ -279,10 +281,10 @@ class SkillTrainingController extends Controller
         $skillTraining->loadCount('enrollments');
 
         $userEnrollment = null;
-        // FIXED: Use auth()->check() instead of auth->check
-        if (auth()->check()) {
+        // FIXED: Use Auth facade for consistency
+        if (Auth::check()) {
             $userEnrollment = $skillTraining->enrollments()
-                ->where('user_id', auth()->id())
+                ->where('user_id', Auth::id())
                 ->first();
         }
 

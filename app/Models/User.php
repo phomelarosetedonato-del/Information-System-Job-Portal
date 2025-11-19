@@ -375,7 +375,33 @@ protected static function booted()
         return $this->employer_verification_status === 'rejected';
     }
 
-    public function getEmployerVerificationStatus(): string
+    public function getEmployerVerificationStatus(): array
+    {
+        $status = 'Not Applied';
+
+        if ($this->isEmployerVerified()) {
+            if ($this->verification_expires_at && $this->verification_expires_at->isPast()) {
+                $status = 'Verification Expired';
+            } else {
+                $status = 'Verified';
+            }
+        } elseif ($this->isEmployerPendingVerification()) {
+            $status = 'Pending Verification';
+        } elseif ($this->isEmployerRejected()) {
+            $status = 'Verification Rejected';
+        }
+
+        return [
+            'is_verified' => $this->isEmployerVerified(),
+            'verification_date' => $this->employer_verified_at,
+            'status' => $status,
+        ];
+    }
+
+    /**
+     * Get employer verification status as string (for compatibility)
+     */
+    public function getEmployerVerificationStatusText(): string
     {
         if ($this->isEmployerVerified()) {
             if ($this->verification_expires_at && $this->verification_expires_at->isPast()) {
@@ -1670,13 +1696,19 @@ public function getPasswordSecurityStatus()
             if (!$this->pwdProfile) {
                 return false;
             }
-            $basicComplete = !empty($this->pwdProfile->disability_type) &&
-                            !empty($this->pwdProfile->skills) &&
-                            !empty($this->phone) &&
-                            !empty($this->address);
 
-            // For PWD users, resume is important but not mandatory for basic completion
-            return $basicComplete;
+            // Check all required fields for PWD profile completion
+            $requiredFieldsComplete =
+                (!empty($this->pwdProfile->disability_type_id) || !empty($this->pwdProfile->disability_type)) &&
+                !empty($this->pwdProfile->disability_severity) &&
+                !empty($this->pwdProfile->emergency_contact_name) &&
+                !empty($this->pwdProfile->emergency_contact_phone) &&
+                !empty($this->pwdProfile->emergency_contact_relationship) &&
+                !empty($this->phone) &&
+                !empty($this->address);
+
+            // For PWD users, all required fields must be complete
+            return $requiredFieldsComplete;
         }
 
         if ($this->isEmployer()) {
@@ -1707,14 +1739,16 @@ public function getPasswordSecurityStatus()
         if ($this->isPwd()) {
             if ($this->pwdProfile) {
                 $requiredChecks['pwd_disability_type'] = !empty($this->pwdProfile->disability_type_id) || !empty($this->pwdProfile->disability_type);
-                $requiredChecks['pwd_skills'] = !empty($this->pwdProfile->skills);
-                $requiredChecks['pwd_phone'] = !empty($this->pwdProfile->phone) || !empty($this->phone);
-                $requiredChecks['pwd_address'] = !empty($this->pwdProfile->address) || !empty($this->address);
+                $requiredChecks['pwd_disability_severity'] = !empty($this->pwdProfile->disability_severity);
+                $requiredChecks['pwd_emergency_contact_name'] = !empty($this->pwdProfile->emergency_contact_name);
+                $requiredChecks['pwd_emergency_contact_phone'] = !empty($this->pwdProfile->emergency_contact_phone);
+                $requiredChecks['pwd_emergency_contact_relationship'] = !empty($this->pwdProfile->emergency_contact_relationship);
             } else {
                 $requiredChecks['pwd_disability_type'] = false;
-                $requiredChecks['pwd_skills'] = false;
-                $requiredChecks['pwd_phone'] = false;
-                $requiredChecks['pwd_address'] = false;
+                $requiredChecks['pwd_disability_severity'] = false;
+                $requiredChecks['pwd_emergency_contact_name'] = false;
+                $requiredChecks['pwd_emergency_contact_phone'] = false;
+                $requiredChecks['pwd_emergency_contact_relationship'] = false;
             }
 
             // Resume is required for applying
@@ -1722,8 +1756,10 @@ public function getPasswordSecurityStatus()
 
             $optionalChecks = [
                 'documents' => $this->documents()->count() > 0,
-                'experience_or_skills' => !empty($this->experience) || !empty($this->skills),
+                'skills' => (!empty($this->pwdProfile) && !empty($this->pwdProfile->skills)),
+                'qualifications' => (!empty($this->pwdProfile) && !empty($this->pwdProfile->qualifications)),
                 'profile_photo' => (!empty($this->pwdProfile) && !empty($this->pwdProfile->profile_photo)),
+                'pwd_id_number' => (!empty($this->pwdProfile) && !empty($this->pwdProfile->pwd_id_number)),
             ];
 
             $requiredTotal = count($requiredChecks);
@@ -1732,8 +1768,8 @@ public function getPasswordSecurityStatus()
             $optionalTotal = count($optionalChecks);
             $optionalCompleted = collect($optionalChecks)->filter()->count();
 
-            $requiredScore = $requiredTotal ? ($requiredCompleted / $requiredTotal) * 80 : 80;
-            $optionalScore = $optionalTotal ? ($optionalCompleted / $optionalTotal) * 20 : 0;
+            $requiredScore = $requiredTotal ? ($requiredCompleted / $requiredTotal) * 70 : 70;
+            $optionalScore = $optionalTotal ? ($optionalCompleted / $optionalTotal) * 30 : 0;
 
             $percentage = $requiredScore + $optionalScore;
 

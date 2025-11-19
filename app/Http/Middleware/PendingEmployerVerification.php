@@ -4,24 +4,25 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class PendingEmployerVerification
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
 
         if (!$user->isEmployer()) {
             return $next($request);
         }
 
         // Redirect to verification if not applied but trying to access certain features
-        $verificationStatus = $user->getEmployerVerificationStatus();
+        $verificationStatus = $user->getEmployerVerificationStatusText();
 
         if ($verificationStatus === 'Not Applied' &&
             $user->getEmployerProfileCompletion() >= 70 &&

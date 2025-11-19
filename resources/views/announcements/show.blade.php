@@ -1,46 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $announcement->title }} - PWD System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">PWD System - Alaminos City</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link text-white" href="{{ route('dashboard') }}">Dashboard</a>
-                <a class="nav-link text-white" href="{{ route('announcements.index') }}">Announcements</a>
-                <a class="nav-link text-white" href="{{ route('logout') }}"
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    Logout
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                    @csrf
-                </form>
-            </div>
-        </div>
-    </nav>
+@extends('layouts.admin')
 
-    <div class="container mt-4">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ $announcement->title }}</h4>
-                        <div>
-                            <span class="badge bg-{{ $announcement->is_active ? 'success' : 'secondary' }} me-2">
-                                {{ $announcement->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                            <span class="badge bg-light text-dark">
-                                <i class="fas fa-calendar"></i> {{ $announcement->created_at->format('M d, Y') }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-body">
+@section('title', 'View Announcement - Admin Panel')
+
+@section('page-title', 'Announcement Details')
+
+@section('content')
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-bullhorn"></i> {{ $announcement->title }}
+        </h1>
+        <div>
+            <span class="badge bg-{{ $announcement->is_active ? 'success' : 'secondary' }} me-2">
+                {{ $announcement->is_active ? 'Active' : 'Inactive' }}
+            </span>
+            <a href="{{ route('admin.announcements.index') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to Announcements
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 offset-lg-1">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Announcement Details
+                    </h6>
+                </div>
+                <div class="card-body">
                         <!-- Announcement Content -->
                         <div class="mb-4">
                             <div class="card bg-light">
@@ -109,20 +97,20 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{{ route('announcements.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Announcements
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a href="{{ route('admin.announcements.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
                             </a>
                             <div>
-                                <a href="{{ route('announcements.edit', $announcement->id) }}" class="btn btn-primary">
+                                <a href="{{ route('admin.announcements.edit', $announcement->id) }}" class="btn btn-primary">
                                     <i class="fas fa-edit"></i> Edit Announcement
                                 </a>
-                                <form action="{{ route('announcements.destroy', $announcement->id) }}" method="POST" class="d-inline">
+                                <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger"
                                             onclick="return confirm('Are you sure you want to delete this announcement? This action cannot be undone.')">
-                                        <i class="fas fa-trash"></i> Delete Announcement
+                                        <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </form>
                             </div>
@@ -132,7 +120,5 @@
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
+@endsection

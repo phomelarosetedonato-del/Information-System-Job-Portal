@@ -118,8 +118,14 @@ class AccessibilityController extends Controller
      */
     public function quickTool(Request $request)
     {
+        // Support both formats: {tool: 'language', language: 'tl'} OR just {language: 'tl'}
         $tool = $request->input('tool');
         $action = $request->input('action');
+        
+        // If language is provided directly without tool parameter, handle it
+        if (!$tool && $request->has('language')) {
+            return $this->handleLanguage($request->input('language'));
+        }
 
         switch ($tool) {
             case 'font_size':
@@ -221,6 +227,45 @@ private function getContrastMessage($contrast)
         }
 
         return response()->json(['error' => 'Unsupported language'], 400);
+    }
+
+    /**
+     * Translate text dynamically
+     */
+    public function translateText(Request $request)
+    {
+        $text = $request->input('text');
+        $targetLang = $request->input('target_lang', 'tl');
+
+        // Use Translation Service
+        $translationService = new \App\Services\TranslationService();
+        $translated = $translationService::translate($text, $targetLang);
+
+        return response()->json([
+            'success' => true,
+            'original' => $text,
+            'translated' => $translated,
+            'target_lang' => $targetLang
+        ]);
+    }
+
+    /**
+     * Translate batch of texts
+     */
+    public function translateBatch(Request $request)
+    {
+        $texts = $request->input('texts', []);
+        $targetLang = $request->input('target_lang', 'tl');
+
+        // Use Translation Service
+        $translationService = new \App\Services\TranslationService();
+        $translated = $translationService::translateBatch($texts, $targetLang);
+
+        return response()->json([
+            'success' => true,
+            'translations' => $translated,
+            'target_lang' => $targetLang
+        ]);
     }
 
     /**

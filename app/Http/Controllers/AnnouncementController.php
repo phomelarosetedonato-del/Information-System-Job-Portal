@@ -10,7 +10,7 @@ class AnnouncementController extends Controller
 {
     public function index()
     {
-        $announcements = Announcement::latest()->get();
+        $announcements = Announcement::orderBy('created_at', 'desc')->paginate(10);
         return view('announcements.index', compact('announcements'));
     }
 
@@ -32,7 +32,7 @@ class AnnouncementController extends Controller
 
         Announcement::create($validated);
 
-        return redirect()->route('announcements.index')->with('success', 'Announcement created successfully.');
+        return redirect()->route('admin.announcements.index')->with('success', 'Announcement created successfully.');
     }
 
     public function show(Announcement $announcement)
@@ -56,13 +56,13 @@ class AnnouncementController extends Controller
 
         $announcement->update($validated);
 
-        return redirect()->route('announcements.index')->with('success', 'Announcement updated successfully.');
+        return redirect()->route('admin.announcements.index')->with('success', 'Announcement updated successfully.');
     }
 
     public function destroy(Announcement $announcement)
     {
         $announcement->delete();
-        return redirect()->route('announcements.index')->with('success', 'Announcement deleted successfully.');
+        return redirect()->route('admin.announcements.index')->with('success', 'Announcement deleted successfully.');
     }
 
     // Add public routes for all users

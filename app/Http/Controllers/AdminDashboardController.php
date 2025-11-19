@@ -38,9 +38,12 @@ class AdminDashboardController extends Controller
             'total_users' => User::count(),
             'pwd_users' => User::where('role', 'pwd')->count(),
             'admin_users' => User::where('role', 'admin')->count(),
+            'employer_users' => User::where('role', 'employer')->count(),
             'pending_applications' => JobApplication::where('status', 'pending')->count(),
             'approved_applications' => JobApplication::where('status', 'approved')->count(),
+            'rejected_applications' => JobApplication::where('status', 'rejected')->count(),
             'active_trainings' => TrainingEnrollment::where('status', 'enrolled')->count(),
+            'completed_trainings' => TrainingEnrollment::where('status', 'completed')->count(),
             'locked_users' => User::whereNotNull('account_locked_until')
                             ->where('account_locked_until', '>', now())
                             ->count(),
@@ -52,6 +55,8 @@ class AdminDashboardController extends Controller
             })->count(),
             'total_documents' => Document::count(),
             'active_jobs' => JobPosting::where('is_active', true)->count(),
+            'inactive_jobs' => JobPosting::where('is_active', false)->count(),
+            'expired_jobs' => JobPosting::where('application_deadline', '<', now())->count(),
             'active_trainings_count' => SkillTraining::where('is_active', true)->count(),
         ];
 

@@ -14,6 +14,7 @@ class JobPostingAccessibilityFilterTest extends TestCase
     public function test_accommodations_filter_returns_only_jobs_with_accommodations()
     {
         // Create an employer user
+        /** @var User $user */
         $user = User::factory()->create();
 
         // Job that provides accommodations
@@ -50,9 +51,9 @@ class JobPostingAccessibilityFilterTest extends TestCase
             'provides_accommodations' => false,
         ]);
 
-    // Act as the created user and request public job listing with accommodations filter
-    $this->actingAs($user);
-    $response = $this->get('/jobs?accommodations=1');
+        // Act as the created user and request public job listing with accommodations filter
+        $this->actingAs($user);
+        $response = $this->get('/jobs?accommodations=1');
 
         $response->assertStatus(200);
         $response->assertSeeText('Accessible Role');

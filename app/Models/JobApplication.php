@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class JobApplication extends Model
@@ -308,7 +309,7 @@ class JobApplication extends Model
             'status' => $status,
             'status_updated_at' => now(),
             'reviewed_at' => now(),
-            'reviewed_by' => $reviewedBy ?? auth()->id(),
+            'reviewed_by' => $reviewedBy ?? (Auth::check() ? Auth::id() : null),
         ], $additionalData);
 
         return $this->update($data);
@@ -429,7 +430,7 @@ class JobApplication extends Model
                         $application->statusHistory()->create([
                             'from_status' => $oldStatus,
                             'to_status' => $newStatus,
-                            'changed_by' => auth()->id() ?? $application->reviewed_by,
+                            'changed_by' => Auth::id() ?? $application->reviewed_by,
                             'notes' => $application->rejection_reason,
                         ]);
                     } catch (\Exception $e) {

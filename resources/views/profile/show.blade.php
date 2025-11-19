@@ -1,297 +1,274 @@
 @extends('layouts.app')
 
-@section('title', 'Complete PWD Profile - PWD System')
+@section('title', 'My Profile - PWD System')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-clipboard-check me-2"></i>
-                        Complete Your PWD Profile
-                    </h4>
+<div class="container-fluid px-0">
+    <!-- Page Header -->
+    <div class="dashboard-header bg-white border-bottom py-3 py-md-4">
+        <div class="container">
+            <div class="row align-items-center g-3">
+                <div class="col-12 col-md-8">
+                    <h1 class="h4 h3-md mb-2 text-dark">
+                        <i class="fas fa-user me-2 text-primary"></i>
+                        My Profile
+                    </h1>
+                    <p class="mb-0 text-muted small">View and manage your personal information</p>
                 </div>
+                <div class="col-12 col-md-4 text-md-end">
+                    <a href="{{ route('profile.edit') }}" class="btn btn-primary w-100 w-md-auto">
+                        <i class="fas fa-edit me-2"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="card-body">
-                    @if (session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            {{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Session Messages -->
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-                    <p class="text-muted mb-4">Please provide your PWD information to access all features and opportunities.</p>
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-                    @php
-                        $completion = $user->profileCompletion ?? null;
-                        if (is_null($completion)) {
-                            $completion = ($pwdProfile ?? false) ? 85 : 25;
-                        }
-                    @endphp
+                @if (session('info'))
+                    <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ session('info') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted">Profile Completion</span>
-                            <span class="fw-bold text-primary">{{ $completion }}% Complete</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (int)$completion }}%" aria-valuenow="{{ (int)$completion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                <!-- Profile Photo & Basic Info Card -->
+                <div class="card shadow-sm border-0 mb-3 mb-md-4">
+                    <div class="card-body p-3 p-md-4">
+                        <div class="row align-items-center g-3">
+                            <div class="col-12 col-md-3 text-center">
+                                @if($pwdProfile && $pwdProfile->has_profile_photo)
+                                    <img src="{{ $pwdProfile->profile_photo_url }}"
+                                         alt="Profile Photo"
+                                         class="rounded-circle border shadow-sm mb-3 profile-photo"
+                                         style="width: 120px; height: 120px; object-fit: cover;">
+                                @else
+                                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border shadow-sm mb-3 profile-photo"
+                                         style="width: 120px; height: 120px;">
+                                        <i class="fas fa-user fa-3x text-muted"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="col-12 col-md-9 text-center text-md-start">
+                                <h2 class="h4 h3-md text-dark mb-2">{{ $user->name }}</h2>
+                                <p class="text-muted mb-2 small text-break">
+                                    <i class="fas fa-envelope me-2"></i>{{ $user->email }}
+                                </p>
+                                @if($user->phone)
+                                    <p class="text-muted mb-2 small">
+                                        <i class="fas fa-phone me-2"></i>{{ $user->phone }}
+                                    </p>
+                                @endif
+                                @if($user->address)
+                                    <p class="text-muted mb-2 small">
+                                        <i class="fas fa-map-marker-alt me-2"></i>{{ $user->address }}
+                                    </p>
+                                @endif
+                                <span class="badge bg-{{ $user->role_badge_class }} fs-6 mt-2">
+                                    {{ ucfirst($user->role) }}
+                                </span>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    @if($pwdProfile)
-    <!-- Display PWD-specific information -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5>PWD Information</h5>
-        </div>
-        <div class="card-body">
-            <p><strong>Disability Type:</strong> {{ $pwdProfile->disability_type ?? 'Not specified' }}</p>
-            <p><strong>Skills:</strong> {{ $pwdProfile->skills ?? 'Not specified' }}</p>
-            <!-- Add other PWD profile fields -->
-        </div>
-    </div>
-@else
-    <div class="alert alert-info">
-        <p>No PWD profile found.
-            @if($user->isPwd())
-                <a href="{{ route('profile.pwd-complete-form') }}">Complete your PWD profile</a>
-            @endif
-        </p>
-    </div>
-@endif
-
-
-
-
-
-                    <form method="POST" action="{{ route('profile.pwd-complete') }}" enctype="multipart/form-data">
-                        @csrf
-
-                        <!-- Disability Information -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-wheelchair me-2 text-primary"></i>
-                                    Disability Information
+                <!-- PWD Profile Information -->
+                @if($user->isPwd())
+                    @if($pwdProfile && $pwdProfile->profile_completed)
+                        <div class="card shadow-sm border-0 mb-3 mb-md-4">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="mb-0 text-dark h6 h5-md">
+                                    <i class="fas fa-universal-access me-2 text-primary"></i>
+                                    PWD Information
                                 </h5>
                             </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="disability_type_id" class="form-label fw-bold">Type of Disability <span class="text-danger">*</span></label>
-                                <select class="form-select @error('disability_type_id') is-invalid @enderror"
-                                        id="disability_type_id" name="disability_type_id" required>
-                                    <option value="">Select Disability Type</option>
-                                    @foreach(($disabilityTypes ?? []) as $dt)
-                                        <option value="{{ $dt->id }}" {{ old('disability_type_id', $pwdProfile->disability_type_id ?? '') == $dt->id ? 'selected' : '' }}>{{ $dt->type }}</option>
-                                    @endforeach
-                                </select>
-                                @error('disability_type_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="disability_level" class="form-label fw-bold">Disability Level <span class="text-danger">*</span></label>
-                                <select class="form-select @error('disability_level') is-invalid @enderror"
-                                        id="disability_level" name="disability_level" required>
-                                    <option value="">Select Level</option>
-                                    <option value="mild" {{ old('disability_level', $pwdProfile->disability_level ?? '') == 'mild' ? 'selected' : '' }}>Mild</option>
-                                    <option value="moderate" {{ old('disability_level', $pwdProfile->disability_level ?? '') == 'moderate' ? 'selected' : '' }}>Moderate</option>
-                                    <option value="severe" {{ old('disability_level', $pwdProfile->disability_level ?? '') == 'severe' ? 'selected' : '' }}>Severe</option>
-                                    <option value="profound" {{ old('disability_level', $pwdProfile->disability_level ?? '') == 'profound' ? 'selected' : '' }}>Profound</option>
-                                </select>
-                                @error('disability_level')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-12 mb-3">
-                                <label for="assistive_devices" class="form-label fw-bold">Assistive Devices Used</label>
-                                <textarea class="form-control @error('assistive_devices') is-invalid @enderror"
-                                          id="assistive_devices" name="assistive_devices"
-                                          rows="2" placeholder="e.g., Wheelchair, hearing aid, white cane, etc.">{{ old('assistive_devices', $pwdProfile->assistive_devices ?? '') }}</textarea>
-                                @error('assistive_devices')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-12 mb-3">
-                                <label for="medical_conditions" class="form-label fw-bold">Medical Conditions</label>
-                                <textarea class="form-control @error('medical_conditions') is-invalid @enderror"
-                                          id="medical_conditions" name="medical_conditions"
-                                          rows="2" placeholder="Any relevant medical conditions or allergies">{{ old('medical_conditions', $pwdProfile->medical_conditions ?? '') }}</textarea>
-                                @error('medical_conditions')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="card-body p-3 p-md-4">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small">Disability Type</p>
+                                        <p class="mb-0 fw-semibold">
+                                            {{ $pwdProfile->disabilityType->type ?? $pwdProfile->disability_type ?? 'Not specified' }}
+                                        </p>
+                                    </div>
+                                    <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small">Disability Level</p>
+                                        <p class="mb-0 fw-semibold">{{ $pwdProfile->disability_severity ?? 'Not specified' }}</p>
+                                    </div>
+                                    @if($pwdProfile->assistive_devices)
+                                        <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                            <p class="mb-1 text-muted small">Assistive Devices</p>
+                                            <p class="mb-0">
+                                                @php
+                                                    $devices = is_array($pwdProfile->assistive_devices)
+                                                        ? ($pwdProfile->assistive_devices['device'] ?? '')
+                                                        : $pwdProfile->assistive_devices;
+                                                @endphp
+                                                {{ $devices ?: 'None' }}
+                                            </p>
+                                        </div>
+                                    @endif
+                                    @if($pwdProfile->special_needs)
+                                        <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                            <p class="mb-1 text-muted small">Medical Conditions</p>
+                                            <p class="mb-0">{{ $pwdProfile->special_needs }}</p>
+                                        </div>
+                                    @endif
+                                    @if($pwdProfile->pwd_id_number)
+                                        <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                            <p class="mb-1 text-muted small">PWD ID Number</p>
+                                            <p class="mb-0 fw-semibold">{{ $pwdProfile->pwd_id_number }}</p>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Skills & Qualifications -->
+                        @if($pwdProfile->skills || $pwdProfile->qualifications)
+                            <div class="card shadow-sm border-0 mb-3 mb-md-4">
+                                <div class="card-header bg-white border-bottom py-3">
+                                    <h5 class="mb-0 text-dark h6 h5-md">
+                                        <i class="fas fa-star me-2 text-primary"></i>
+                                        Skills & Interests
+                                    </h5>
+                                </div>
+                                <div class="card-body p-3 p-md-4">
+                                    <div class="row g-3">
+                                        @if($pwdProfile->skills)
+                                            <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                                <p class="mb-1 text-muted small">Skills & Talents</p>
+                                                <p class="mb-0">{{ $pwdProfile->skills }}</p>
+                                            </div>
+                                        @endif
+                                        @if($pwdProfile->qualifications)
+                                            <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                                <p class="mb-1 text-muted small">Interests & Hobbies</p>
+                                                <p class="mb-0">{{ $pwdProfile->qualifications }}</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Emergency Contact -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-phone-emergency me-2 text-danger"></i>
-                                    Emergency Contact Information
+                        <div class="card shadow-sm border-0 mb-3 mb-md-4">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="mb-0 text-dark h6 h5-md">
+                                    <i class="fas fa-phone-square me-2 text-primary"></i>
+                                    Emergency Contact
                                 </h5>
                             </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="emergency_contact_name" class="form-label fw-bold">Emergency Contact Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('emergency_contact_name') is-invalid @enderror"
-                                       id="emergency_contact_name" name="emergency_contact_name"
-                                       value="{{ old('emergency_contact_name', $pwdProfile->emergency_contact_name ?? '') }}" required>
-                                @error('emergency_contact_name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="emergency_contact_phone" class="form-label fw-bold">Emergency Contact Phone <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control @error('emergency_contact_phone') is-invalid @enderror"
-                                       id="emergency_contact_phone" name="emergency_contact_phone"
-                                       value="{{ old('emergency_contact_phone', $pwdProfile->emergency_contact_phone ?? '') }}" required>
-                                @error('emergency_contact_phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="emergency_contact_relationship" class="form-label fw-bold">Relationship <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('emergency_contact_relationship') is-invalid @enderror"
-                                       id="emergency_contact_relationship" name="emergency_contact_relationship"
-                                       value="{{ old('emergency_contact_relationship', $pwdProfile->emergency_contact_relationship ?? '') }}"
-                                       placeholder="e.g., Parent, Spouse, Sibling" required>
-                                @error('emergency_contact_relationship')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Skills & Accommodation -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-user-check me-2 text-success"></i>
-                                    Skills & Accommodation Needs
-                                </h5>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="skills" class="form-label fw-bold">Skills & Talents</label>
-                                <textarea class="form-control @error('skills') is-invalid @enderror"
-                                          id="skills" name="skills"
-                                          rows="3" placeholder="List your skills, talents, or areas of expertise">{{ old('skills', $pwdProfile->skills ?? '') }}</textarea>
-                                @error('skills')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text text-muted">This helps match you with suitable job opportunities.</div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="interests" class="form-label fw-bold">Interests & Hobbies</label>
-                                <textarea class="form-control @error('interests') is-invalid @enderror"
-                                          id="interests" name="interests"
-                                          rows="3" placeholder="Your interests and hobbies">{{ old('interests', $pwdProfile->interests ?? '') }}</textarea>
-                                @error('interests')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text text-muted">Helps us understand your preferences for training programs.</div>
-                            </div>
-
-                            <div class="col-12 mb-3">
-                                <label for="accommodation_needs" class="form-label fw-bold">Accommodation Needs</label>
-                                <textarea class="form-control @error('accommodation_needs') is-invalid @enderror"
-                                          id="accommodation_needs" name="accommodation_needs"
-                                          rows="3" placeholder="Any specific accommodations needed for work or training (e.g., wheelchair access, sign language interpreter, etc.)">{{ old('accommodation_needs', $pwdProfile->accommodation_needs ?? '') }}</textarea>
-                                @error('accommodation_needs')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text text-muted">This information helps employers provide appropriate workplace accommodations.</div>
-                            </div>
-                        </div>
-
-                        <!-- PWD Identification -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-id-card me-2 text-warning"></i>
-                                    PWD Identification
-                                </h5>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="pwd_id_number" class="form-label fw-bold">PWD ID Number</label>
-                                <input type="text" class="form-control @error('pwd_id_number') is-invalid @enderror"
-                                       id="pwd_id_number" name="pwd_id_number"
-                                       value="{{ old('pwd_id_number', $pwdProfile->pwd_id_number ?? '') }}"
-                                       placeholder="Your official PWD ID number">
-                                @error('pwd_id_number')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="pwd_id_photo" class="form-label fw-bold">PWD ID Photo</label>
-                                <input type="file" class="form-control @error('pwd_id_photo') is-invalid @enderror"
-                                       id="pwd_id_photo" name="pwd_id_photo"
-                                       accept="image/*">
-                                @error('pwd_id_photo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text text-muted">Upload a clear photo of your PWD ID (optional)</div>
-                            </div>
-                        </div>
-
-                        <!-- Profile Photo -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-camera me-2 text-info"></i>
-                                    Profile Photo
-                                </h5>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="profile_photo" class="form-label fw-bold">Profile Photo</label>
-                                <input type="file" class="form-control @error('profile_photo') is-invalid @enderror"
-                                       id="profile_photo" name="profile_photo"
-                                       accept="image/*">
-                                @error('profile_photo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text text-muted">Upload a profile photo (optional)</div>
-                            </div>
-
-                            @if(($pwdProfile->profile_photo ?? false) && $pwdProfile->id)
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Current Photo</label>
-                                <div>
-                                    <img src="{{ Storage::url($pwdProfile->profile_photo) }}"
-                                         alt="Current Profile Photo"
-                                         class="img-thumbnail rounded" style="max-height: 100px;">
+                            <div class="card-body p-3 p-md-4">
+                                <div class="row g-3">
+                                    <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small">Name</p>
+                                        <p class="mb-0 fw-semibold">{{ $pwdProfile->emergency_contact_name ?? 'Not specified' }}</p>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small">Phone</p>
+                                        <p class="mb-0">{{ $pwdProfile->emergency_contact_phone ?? 'Not specified' }}</p>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small">Relationship</p>
+                                        <p class="mb-0">{{ $pwdProfile->emergency_contact_relationship ?? 'Not specified' }}</p>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                    @else
+                        <div class="alert alert-warning mb-3 mb-md-4">
+                            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                <div class="flex-grow-1">
+                                    <h5 class="alert-heading mb-1 h6">Complete Your PWD Profile</h5>
+                                    <p class="mb-2 small">Please complete your PWD profile to access all features and opportunities.</p>
+                                    <a href="{{ route('profile.pwd-complete-form') }}" class="btn btn-warning btn-sm w-100 w-sm-auto">
+                                        <i class="fas fa-clipboard-check me-2"></i>Complete Profile Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+
+                <!-- Resume Section -->
+                @if($user->canUploadResume())
+                    <div class="card shadow-sm border-0 mb-3 mb-md-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h5 class="mb-0 text-dark h6 h5-md">
+                                <i class="fas fa-file me-2 text-primary"></i>
+                                Resume
+                            </h5>
+                        </div>
+                        <div class="card-body p-3 p-md-4">
+                            @if($user->hasResume())
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 small"><strong>Current Resume:</strong></p>
+                                        <p class="mb-1 text-break">{{ $user->resume_file_name }}</p>
+                                        <p class="mb-0 text-muted"><small>Size: {{ $user->resume_file_size }}</small></p>
+                                    </div>
+                                    <div class="d-flex gap-2 w-100 w-md-auto">
+                                        <a href="{{ route('profile.downloadResume') }}" class="btn btn-sm btn-primary flex-fill flex-md-grow-0">
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
+                                        <form action="{{ route('profile.deleteResume') }}" method="POST" class="flex-fill flex-md-grow-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger w-100"
+                                                    onclick="return confirm('Are you sure you want to delete your resume?')">
+                                                <i class="fas fa-trash me-1"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-muted mb-0 small">No resume uploaded. <a href="{{ route('profile.edit') }}">Upload one now</a></p>
                             @endif
                         </div>
+                    </div>
+                @endif
 
-                        <!-- Action Buttons -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-between">
-                                    <a href="{{ route('profile.show') }}" class="btn btn-secondary">
-                                        <i class="fas fa-arrow-left me-1"></i> Back to Profile
-                                    </a>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-check-circle me-1"></i> Complete Profile
-                                    </button>
-                                </div>
+                <!-- Account Actions -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 text-dark h6 h5-md">
+                            <i class="fas fa-cog me-2 text-primary"></i>
+                            Account Actions
+                        </h5>
+                    </div>
+                    <div class="card-body p-3 p-md-4">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                            <div>
+                                <p class="mb-0 small">Need to update your information?</p>
                             </div>
+                            <a href="{{ route('profile.edit') }}" class="btn btn-primary w-100 w-md-auto">
+                                <i class="fas fa-edit me-2"></i> Edit Profile
+                            </a>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -299,68 +276,93 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // File input validation
-        const fileInputs = document.querySelectorAll('input[type="file"]');
-        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+@section('styles')
+<style>
+    .card {
+        border-radius: 12px;
+        transition: transform 0.2s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
 
-        fileInputs.forEach(input => {
-            input.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    // Check file size
-                    if (file.size > maxSize) {
-                        alert('File size exceeds 2MB limit. Please choose a smaller file.');
-                        e.target.value = ''; // Clear the file input
-                        return;
-                    }
+    /* Disable hover transform on mobile for better touch experience */
+    @media (min-width: 768px) {
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4) !important;
+        }
+    }
 
-                    // Check file type for images
-                    if (this.accept.includes('image')) {
-                        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-                        if (!validTypes.includes(file.type)) {
-                            alert('Please select a valid image file (JPEG, PNG, JPG, or GIF).');
-                            e.target.value = ''; // Clear the file input
-                            return;
-                        }
-                    }
-                }
-            });
-        });
+    .profile-photo {
+        transition: transform 0.3s ease;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    }
 
-        // Real-time validation for required fields
-        const requiredFields = document.querySelectorAll('input[required], select[required]');
-        requiredFields.forEach(field => {
-            field.addEventListener('blur', function() {
-                if (!this.value.trim()) {
-                    this.classList.add('is-invalid');
-                } else {
-                    this.classList.remove('is-invalid');
-                }
-            });
-        });
+    @media (min-width: 768px) {
+        .profile-photo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+    }
 
-        // Form submission validation
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            let isValid = true;
+    /* Larger profile photo on desktop */
+    @media (min-width: 768px) {
+        .profile-photo {
+            width: 150px !important;
+            height: 150px !important;
+        }
+        .profile-photo i {
+            font-size: 4rem !important;
+        }
+    }
 
-            // Check required fields
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.classList.add('is-invalid');
-                    isValid = false;
-                }
-            });
+    /* Improve button tap targets on mobile */
+    @media (max-width: 767px) {
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+    }
 
-            if (!isValid) {
-                e.preventDefault();
-                alert('Please fill in all required fields marked with *.');
-                return false;
-            }
-        });
-    });
-</script>
+    /* Better text wrapping on mobile */
+    .text-break {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Responsive heading sizes */
+    .h3-md {
+        font-size: 1.5rem;
+    }
+    .h5-md {
+        font-size: 1.125rem;
+    }
+    @media (min-width: 768px) {
+        .h3-md {
+            font-size: 1.75rem;
+        }
+        .h5-md {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Ensure proper spacing on mobile */
+    @media (max-width: 767px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
+    /* Touch-friendly alert on mobile */
+    @media (max-width: 575px) {
+        .alert {
+            padding: 1rem;
+        }
+    }
+</style>
 @endsection
