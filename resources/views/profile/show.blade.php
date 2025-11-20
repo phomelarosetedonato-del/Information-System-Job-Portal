@@ -7,16 +7,16 @@
     <!-- Page Header -->
     <div class="dashboard-header bg-white border-bottom py-3 py-md-4">
         <div class="container">
-            <div class="row align-items-center g-3">
+            <div class="row align-items-center g-2 g-md-3">
                 <div class="col-12 col-md-8">
-                    <h1 class="h4 h3-md mb-2 text-dark">
+                    <h1 class="h5 h3-md mb-1 mb-md-2 text-dark">
                         <i class="fas fa-user me-2 text-primary"></i>
                         My Profile
                     </h1>
-                    <p class="mb-0 text-muted small">View and manage your personal information</p>
+                    <p class="mb-0 text-muted" style="font-size: 0.85rem;">View and manage your personal information</p>
                 </div>
-                <div class="col-12 col-md-4 text-md-end">
-                    <a href="{{ route('profile.edit') }}" class="btn btn-primary w-100 w-md-auto">
+                <div class="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                    <a href="{{ route('profile.edit') }}" class="btn btn-primary w-100 w-md-auto btn-mobile-lg">
                         <i class="fas fa-edit me-2"></i> Edit Profile
                     </a>
                 </div>
@@ -111,21 +111,21 @@
                                 @endif
                             </div>
                             <div class="col-12 col-md-9 text-center text-md-start">
-                                <h2 class="h4 h3-md text-dark mb-2">{{ $user->name }}</h2>
-                                <p class="text-muted mb-2 small text-break">
-                                    <i class="fas fa-envelope me-2"></i>{{ $user->email }}
+                                <h2 class="h5 h4-md text-dark mb-2 mb-md-3">{{ $user->name }}</h2>
+                                <p class="text-muted mb-2 text-break" style="font-size: 0.85rem;">
+                                    <i class="fas fa-envelope me-1 me-md-2"></i><span class="d-none d-sm-inline">Email: </span>{{ $user->email }}
                                 </p>
                                 @if($user->phone)
-                                    <p class="text-muted mb-2 small">
-                                        <i class="fas fa-phone me-2"></i>{{ $user->phone }}
+                                    <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                        <i class="fas fa-phone me-1 me-md-2"></i><span class="d-none d-sm-inline">Phone: </span>{{ $user->phone }}
                                     </p>
                                 @endif
                                 @if($user->address)
-                                    <p class="text-muted mb-2 small">
-                                        <i class="fas fa-map-marker-alt me-2"></i>{{ $user->address }}
+                                    <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                        <i class="fas fa-map-marker-alt me-1 me-md-2"></i><span class="d-none d-sm-inline">Address: </span>{{ $user->address }}
                                     </p>
                                 @endif
-                                <span class="badge bg-{{ $user->role_badge_class }} fs-6 mt-2">
+                                <span class="badge bg-{{ $user->role_badge_class }} mt-2" style="font-size: 0.85rem; padding: 0.4rem 0.75rem;">
                                     {{ ucfirst($user->role) }}
                                 </span>
                             </div>
@@ -416,45 +416,90 @@
         </div>
     </div>
 </div>
+
+<!-- Quick Resume Upload Modal -->
+<div class="modal fade" id="quickUploadModal" tabindex="-1" aria-labelledby="quickUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickUploadModalLabel">
+                    <i class="fas fa-upload me-2"></i>Upload PDF Resume
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('profile.uploadResume') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="resume" class="form-label">Select Resume File</label>
+                        <input type="file" class="form-control" id="resume" name="resume" accept=".pdf,.doc,.docx,.txt" required>
+                        <div class="form-text">Accepted formats: PDF, DOC, DOCX, TXT (Max: 5MB)</div>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>Your resume will be available to potential employers when you apply for jobs.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Upload Resume
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('styles')
 <style>
     .card {
-        border-radius: 12px;
+        border-radius: 8px;
         transition: transform 0.2s;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
         border: 1px solid rgba(0, 0, 0, 0.125);
     }
 
-    /* Disable hover transform on mobile for better touch experience */
+    /* Desktop card styling */
     @media (min-width: 768px) {
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+        }
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4) !important;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2) !important;
         }
     }
 
     .profile-photo {
         transition: transform 0.3s ease;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
     @media (min-width: 768px) {
         .profile-photo:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-    }
-
-    /* Larger profile photo on desktop */
-    @media (min-width: 768px) {
         .profile-photo {
             width: 150px !important;
             height: 150px !important;
         }
         .profile-photo i {
-            font-size: 4rem !important;
+            font-size: 3.5rem !important;
+        }
+    }
+
+    /* Mobile photo sizing */
+    @media (max-width: 767px) {
+        .profile-photo {
+            width: 100px !important;
+            height: 100px !important;
+        }
+        .profile-photo i {
+            font-size: 2rem !important;
         }
     }
 
@@ -480,17 +525,47 @@
         }
     }
 
-    /* Improve button tap targets on mobile */
+    /* Mobile-friendly buttons */
+    .btn-mobile-lg {
+        min-height: 44px;
+        padding: 0.6rem 1rem;
+    }
+
+    .btn-mobile-touch {
+        min-height: 40px;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.85rem;
+    }
+
     @media (max-width: 767px) {
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.55rem 1rem;
             font-size: 0.9rem;
             min-height: 44px;
         }
         .btn-sm {
-            padding: 0.4rem 0.8rem;
+            padding: 0.5rem 0.85rem;
             font-size: 0.85rem;
-            min-height: 38px;
+            min-height: 42px;
+        }
+        .btn-mobile-lg {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+        }
+        body {
+            font-size: 0.95rem;
+        }
+        p {
+            margin-bottom: 0.75rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .btn-mobile-lg, .btn-mobile-touch {
+            min-height: auto;
+            padding: 0.375rem 0.75rem;
+            font-size: inherit;
         }
     }
 
@@ -502,57 +577,93 @@
 
     /* Responsive heading sizes */
     .h3-md {
-        font-size: 1.5rem;
+        font-size: 1.35rem;
+    }
+    .h4-md {
+        font-size: 1.15rem;
     }
     .h5-md {
-        font-size: 1.125rem;
+        font-size: 1rem;
     }
     .h6 {
-        font-size: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .fa-3x-md {
+        font-size: 2.5em;
     }
 
     @media (min-width: 768px) {
         .h3-md {
             font-size: 1.75rem;
         }
+        .h4-md {
+            font-size: 1.5rem;
+        }
         .h5-md {
             font-size: 1.25rem;
         }
+        .h6 {
+            font-size: 1rem;
+        }
+        .fa-3x-md {
+            font-size: 3em;
+        }
     }
 
-    /* Ensure proper spacing on mobile */
+    /* Mobile spacing optimization */
     @media (max-width: 767px) {
         .container {
-            padding-left: 1rem;
-            padding-right: 1rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
         }
 
         .dashboard-header {
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
         }
 
         .card-body.p-3.p-md-4 {
-            padding: 1rem !important;
+            padding: 0.9rem !important;
         }
 
         .card-header {
-            padding: 0.75rem 1rem !important;
+            padding: 0.65rem 0.9rem !important;
+        }
+
+        .card {
+            margin-bottom: 0.75rem !important;
         }
     }
 
-    /* Touch-friendly alert on mobile */
+    @media (max-width: 375px) {
+        .container {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .card-body.p-3.p-md-4 {
+            padding: 0.75rem !important;
+        }
+
+        .card-header {
+            padding: 0.5rem 0.75rem !important;
+        }
+    }
+
+    /* Touch-friendly alerts */
     @media (max-width: 575px) {
         .alert {
-            padding: 1rem;
-            font-size: 0.9rem;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
         }
     }
 
-    /* Better spacing for small text on mobile */
+    /* Better text sizing on mobile */
     @media (max-width: 575px) {
         .small, small {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
     }
 
@@ -585,14 +696,14 @@
     /* Better gap handling on mobile */
     @media (max-width: 575px) {
         .gap-3 {
-            gap: 0.75rem !important;
+            gap: 0.65rem !important;
         }
         .gap-2 {
-            gap: 0.5rem !important;
+            gap: 0.45rem !important;
         }
     }
 
-    /* Form controls in alerts (resume section) */
+    /* Form controls in alerts */
     @media (max-width: 575px) {
         .alert form {
             width: 100%;
@@ -607,6 +718,44 @@
     @media (max-width: 575px) {
         .d-flex.flex-md-row {
             flex-direction: column !important;
+        }
+    }
+
+    /* Modal mobile optimization */
+    @media (max-width: 767px) {
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+
+        .modal-content {
+            border-radius: 8px;
+        }
+
+        .modal-header, .modal-footer {
+            padding: 0.75rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+        }
+    }
+
+    /* Progress bar mobile */
+    @media (max-width: 767px) {
+        .progress {
+            height: 20px !important;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Better touch targets */
+    @media (max-width: 767px) {
+        a, button {
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
         }
     }
 </style>

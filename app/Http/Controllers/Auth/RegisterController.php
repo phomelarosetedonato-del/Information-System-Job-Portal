@@ -33,6 +33,9 @@ class RegisterController extends Controller
 
     protected function validator(array $data)
     {
+        // Increase execution time for this validation (captcha can be slow)
+        set_time_limit(120);
+
         $rules = [
             'name' => [
                 'required',
@@ -146,8 +149,15 @@ class RegisterController extends Controller
 
         // Add reCAPTCHA validation if enabled
         if (config('services.recaptcha.enabled', false)) {
-            $rules['g-recaptcha-response'] = ['required', 'captcha'];
-            $messages['g-recaptcha-response.captcha'] = 'reCAPTCHA verification failed. Please try again.';
+            try {
+                $rules['g-recaptcha-response'] = ['required', 'captcha'];
+                $messages['g-recaptcha-response.captcha'] = 'reCAPTCHA verification failed. Please try again.';
+            } catch (\Exception $e) {
+                Log::error('reCAPTCHA validation setup failed', [
+                    'error' => $e->getMessage()
+                ]);
+                // Continue without captcha if it fails to load
+            }
         }
 
         $messages = [
@@ -179,6 +189,9 @@ class RegisterController extends Controller
 
     protected function create(array $data)
     {
+        // Increase execution time for user creation (includes password hashing)
+        set_time_limit(120);
+
         return DB::transaction(function () use ($data) {
             // Check for suspicious registration patterns
             $this->checkSuspiciousRegistration($data);

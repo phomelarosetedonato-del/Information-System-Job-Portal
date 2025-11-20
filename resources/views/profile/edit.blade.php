@@ -116,11 +116,9 @@
                 <!-- Remove Photo Button -->
                 @if($hasProfilePhoto && $pwdProfile)
                     <div class="mt-2">
-                        <a href="{{ route('profile.deletePhoto') }}"
-                           class="btn btn-outline-danger btn-sm"
-                           onclick="return confirm('Are you sure you want to remove your profile photo?')">
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="document.getElementById('deletePhotoForm').submit();">
                             <i class="fas fa-trash me-1"></i> Remove Photo
-                        </a>
+                        </button>
                     </div>
                 @endif
             </div>
@@ -227,14 +225,38 @@
                                 <p class="card-text small text-muted">Upload an existing resume file</p>
                                 <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#quickUploadModal">
                                     Upload PDF Resume
-                                </button>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="profile_photo" class="form-label fw-semibold">Update Profile Photo</label>
+                            <input type="file"
+                                   class="form-control @error('profile_photo') is-invalid @enderror"
+                                   id="profile_photo"
+                                   name="profile_photo"
+                                   accept="image/jpeg,image/png,image/jpg,image/gif">
+                            @error('profile_photo')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Upload JPG, PNG, or GIF. Maximum file size: 2MB.
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-5">
-                        <div class="card border">
-                            <div class="card-body">
-                                <h6 class="card-title"><i class="fas fa-edit me-2"></i>Build Online</h6>
+                </div>
+            </div>
+        </div>
+        @if($hasProfilePhoto && $pwdProfile)
+            <div class="mt-2 text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="document.getElementById('deletePhotoForm').submit();">
+                    <i class="fas fa-trash me-1"></i> Remove Photo
+                </button>
+            </div>
+            <form id="deletePhotoForm" action="{{ route('profile.deletePhoto') }}" method="POST" style="display: none;" onsubmit="return confirm('Are you sure you want to remove your profile photo?')">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endif
                                 <p class="card-text small text-muted">Create a resume step-by-step</p>
                                 <a href="{{ route('resumes.create') }}" class="btn btn-primary btn-sm">
                                     Build Resume
@@ -495,11 +517,13 @@
                         </div>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
 </div>
 @endsection
+...existing code...
 
 @section('styles')
 <style>
@@ -976,4 +1000,38 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✓ Profile edit form initialization complete');
 });
 </script>
+
+<!-- Quick Resume Upload Modal -->
+<div class="modal fade" id="quickUploadModal" tabindex="-1" aria-labelledby="quickUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickUploadModalLabel">
+                    <i class="fas fa-upload me-2"></i>Upload PDF Resume
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('profile.uploadResume') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="resume" class="form-label">Select Resume File</label>
+                        <input type="file" class="form-control" id="resume" name="resume" accept=".pdf,.doc,.docx,.txt" required>
+                        <div class="form-text">Accepted formats: PDF, DOC, DOCX, TXT (Max: 5MB)</div>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>Your resume will be available to potential employers when you apply for jobs.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Upload Resume
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

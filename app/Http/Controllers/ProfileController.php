@@ -340,60 +340,60 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-    if (!$user->canUploadResume()) {
-        return redirect()->back()->with('error', 'You are not allowed to upload a resume.');
-    }
-
-    $request->validate([
-        'resume' => 'required|file|mimes:pdf,doc,docx,txt|max:5120', // 5MB
-    ]);
-
-    try {
-        $file = $request->file('resume');
-
-        // Delete old resume if exists
-        if ($user->resume) {
-            Storage::disk('public')->delete($user->resume);
-
-            // Also delete old resume document entry if exists
-            \App\Models\Document::where('user_id', $user->id)
-                ->where('type', 'resume')
-                ->where('file_path', $user->resume)
-                ->delete();
+        if (!$user->canUploadResume()) {
+            return redirect()->back()->with('error', 'You are not allowed to upload a resume.');
         }
 
-        // Store new resume
-        $resumePath = $file->store('resumes', 'public');
-        $user->update(['resume' => $resumePath]);
-
-        // Create document entry for tracking in Documents section
-        \App\Models\Document::create([
-            'user_id' => $user->id,
-            'type' => 'resume',
-            'name' => 'Resume - ' . $file->getClientOriginalName(),
-            'file_path' => $resumePath,
-            'mime_type' => $file->getClientMimeType(),
-            'size' => $file->getSize(),
-            'description' => 'Resume uploaded from profile',
-            'is_verified' => false,
+        $request->validate([
+            'resume' => 'required|file|mimes:pdf,doc,docx,txt|max:5120', // 5MB
         ]);
 
-        // Check if profile is complete
-        $profileCompletion = $user->getProfileCompletionPercentage();
+        try {
+            $file = $request->file('resume');
 
-        if ($profileCompletion < 80 || !$user->hasCompletePwdProfile()) {
-            return redirect()->route('profile.pwd-complete-form')
-                ->with('success', 'Resume uploaded successfully! Please complete your profile to start applying for jobs.')
-                ->with('info', 'Complete all required fields to reach 80% profile completion.');
+            // Delete old resume if exists
+            if ($user->resume) {
+                Storage::disk('public')->delete($user->resume);
+
+                // Also delete old resume document entry if exists
+                \App\Models\Document::where('user_id', $user->id)
+                    ->where('type', 'resume')
+                    ->where('file_path', $user->resume)
+                    ->delete();
+            }
+
+            // Store new resume
+            $resumePath = $file->store('resumes', 'public');
+            $user->update(['resume' => $resumePath]);
+
+            // Create document entry for tracking in Documents section
+            \App\Models\Document::create([
+                'user_id' => $user->id,
+                'type' => 'resume',
+                'name' => 'Resume - ' . $file->getClientOriginalName(),
+                'file_path' => $resumePath,
+                'mime_type' => $file->getClientMimeType(),
+                'size' => $file->getSize(),
+                'description' => 'Resume uploaded from profile',
+                'is_verified' => false,
+            ]);
+
+            // Check if profile is complete
+            $profileCompletion = $user->getProfileCompletionPercentage();
+
+            if ($profileCompletion < 80 || !$user->hasCompletePwdProfile()) {
+                return redirect()->route('profile.pwd-complete-form')
+                    ->with('success', 'Resume uploaded successfully! Please complete your profile to start applying for jobs.')
+                    ->with('info', 'Complete all required fields to reach 80% profile completion.');
+            }
+
+            return redirect()->route('profile.show')
+                ->with('success', 'Resume uploaded successfully! You can now apply for jobs.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error uploading resume: ' . $e->getMessage());
         }
-
-        return redirect()->route('profile.show')
-            ->with('success', 'Resume uploaded successfully! You can now apply for jobs.');
-
-    } catch (\Exception $e) {
-        return redirect()->back()->with('error', 'Error uploading resume: ' . $e->getMessage());
     }
-}
 
     /**
      * Download resume
@@ -403,18 +403,18 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-    if (!$user->hasResume()) {
-        return redirect()->back()->with('error', 'No resume found.');
+        if (!$user->hasResume()) {
+            return redirect()->back()->with('error', 'No resume found.');
+        }
+
+        $filePath = storage_path('app/public/' . $user->resume);
+
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'Resume file not found.');
+        }
+
+        return response()->download($filePath, $user->resume_file_name ?? basename($user->resume));
     }
-
-    $filePath = storage_path('app/public/' . $user->resume);
-
-    if (!file_exists($filePath)) {
-        return redirect()->back()->with('error', 'Resume file not found.');
-    }
-
-    return response()->download($filePath, $user->resume_file_name ?? basename($user->resume));
-}
 
     /**
      * Delete resume
@@ -424,17 +424,23 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-    try {
-        if ($user->resume) {
-            Storage::disk('public')->delete($user->resume);
-            $user->update(['resume' => null]);
+        try {
+            if ($user->resume) {
+                Storage::disk('public')->delete($user->resume);
+
+                // Also delete the document entry
+                \App\Models\Document::where('user_id', $user->id)
+                    ->where('type', 'resume')
+                    ->where('file_path', $user->resume)
+                    ->delete();
+
+                $user->update(['resume' => null]);
+            }
+
+            return redirect()->route('profile.show')->with('success', 'Resume deleted successfully!');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error deleting resume: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('success', 'Resume deleted successfully!');
-
-    } catch (\Exception $e) {
-        return redirect()->back()->with('error', 'Error deleting resume: ' . $e->getMessage());
     }
-}
-
 }
