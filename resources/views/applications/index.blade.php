@@ -109,6 +109,7 @@
                                         <tr>
                                             <th class="border-0 ps-4">Job Position & Details</th>
                                             <th class="border-0">Company</th>
+                                            <th class="border-0">Resume</th>
                                             <th class="border-0">Applied Date</th>
                                             <th class="border-0">Status</th>
                                             <th class="border-0 pe-4 text-end">Actions</th>
@@ -123,7 +124,18 @@
                                                             <h6 class="mb-1 text-dark">{{ $application->jobPosting->title }}</h6>
                                                             <div class="text-muted small mb-2">
                                                                 <i class="fas fa-map-marker-alt me-1"></i>
-                                                                {{ $application->jobPosting->location ?? 'Not specified' }}
+                                                                @php
+                                                                    $locationObj = $application->jobPosting->location;
+                                                                @endphp
+                                                                @if(is_object($locationObj) && isset($locationObj->name))
+                                                                    {{ $locationObj->name }}
+                                                                @elseif(is_array($locationObj) && isset($locationObj['name']))
+                                                                    {{ $locationObj['name'] }}
+                                                                @elseif(is_string($locationObj))
+                                                                    {{ $locationObj }}
+                                                                @else
+                                                                    Not specified
+                                                                @endif
                                                             </div>
                                                             @if($application->jobPosting->application_deadline)
                                                                 <div class="text-muted small">
@@ -139,6 +151,15 @@
                                                         <i class="fas fa-building me-1"></i>
                                                         {{ $application->jobPosting->company }}
                                                     </div>
+                                                </td>
+                                                <td>
+                                                    @if($application->resume_path)
+                                                        <a href="{{ asset('storage/' . $application->resume_path) }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                                            <i class="fas fa-download me-1"></i> Download
+                                                        </a>
+                                                    @else
+                                                        <span class="text-muted small">No Resume</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <div class="text-muted small">

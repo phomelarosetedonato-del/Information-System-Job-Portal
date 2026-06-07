@@ -251,7 +251,7 @@ class PwdDashboardController extends Controller
         $query = JobPosting::query()
             ->active()
             ->open()
-            ->with(['employer', 'applications' => function($q) use ($user) {
+            ->with(['employer', 'location', 'applications' => function($q) use ($user) {
                 $q->where('user_id', $user->id);
             }]);
 
@@ -272,10 +272,8 @@ class PwdDashboardController extends Controller
         // Location filter
         if (!empty($filters['location'])) {
             $loc = trim($filters['location']);
-            $query->where(function($q) use ($loc) {
-                $q->where('location', 'LIKE', "%{$loc}%")
-                  ->orWhere('city', 'LIKE', "%{$loc}%")
-                  ->orWhere('province', 'LIKE', "%{$loc}%");
+            $query->whereHas('location', function($q) use ($loc) {
+                $q->where('name', 'LIKE', "%{$loc}%");
             });
         }
 
@@ -426,7 +424,7 @@ class PwdDashboardController extends Controller
             return JobPosting::query()
                 ->active()
                 ->open()
-                ->with(['employer', 'applications' => function($q) use ($user) {
+                ->with(['employer', 'location', 'applications' => function($q) use ($user) {
                     $q->where('user_id', $user->id);
                 }])
                 ->latest()
@@ -535,7 +533,7 @@ class PwdDashboardController extends Controller
                 'title' => 'Update Profile',
                 'description' => 'Keep your profile and skills updated',
                 'icon' => 'fas fa-user-edit',
-                'url' => route('profile.edit'),
+                'url' => route('profile.form', ['mode' => 'edit']),
                 'color' => 'info'
             ]
         ];
@@ -546,7 +544,7 @@ class PwdDashboardController extends Controller
                 'title' => 'Upload Resume',
                 'description' => 'Upload your resume for better job matching',
                 'icon' => 'fas fa-file-upload',
-                'url' => route('profile.edit'),
+                'url' => route('profile.form', ['mode' => 'edit']),
                 'color' => 'warning'
             ];
         }
@@ -566,7 +564,7 @@ class PwdDashboardController extends Controller
             $alerts[] = [
                 'type' => 'warning',
                 'message' => 'Complete your profile to get better job recommendations.',
-                'action' => route('profile.edit')
+                'action' => route('profile.form', ['mode' => 'edit'])
             ];
         }
 
@@ -575,7 +573,7 @@ class PwdDashboardController extends Controller
             $alerts[] = [
                 'type' => 'info',
                 'message' => 'Upload your resume to improve your job applications.',
-                'action' => route('profile.edit')
+                'action' => route('profile.form', ['mode' => 'edit'])
             ];
         }
 

@@ -1,11 +1,13 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\JobPosting;
 use App\Models\JobApplication;
@@ -86,12 +88,18 @@ class EmployerController extends Controller
 
         try {
             $user->update($validated);
+            $user->refresh(); // Ensure latest data for profile completion percent
 
             return redirect()->route('employer.profile.show')
                 ->with('success', 'Profile updated successfully!');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to update profile. Please try again.')
+            \Log::error('Employer profile update failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'validated' => $validated,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->with('error', 'Failed to update profile: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -439,9 +447,10 @@ class EmployerController extends Controller
      */
     private function getUnderperformingJobs($user, $limit = 5)
     {
+        // SQLite does not support HAVING on non-aggregate queries, so use whereRaw
         return $user->jobPostings()
             ->withCount('applications')
-            ->having('applications_count', '<', 5)
+            ->whereRaw('(select count(*) from job_applications where job_postings.id = job_applications.job_posting_id) < 5')
             ->orderBy('applications_count')
             ->orderBy('views')
             ->limit($limit)

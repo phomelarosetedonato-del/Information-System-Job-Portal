@@ -7,6 +7,7 @@ use App\Models\JobPosting;
 use App\Models\User;
 use App\Notifications\JobApplicationStatusUpdated;
 use App\Notifications\NewJobApplicationReceived;
+use App\Notifications\JobApplicationSubmittedConfirmation;
 use App\Notifications\ApplicationApproved;
 use App\Notifications\ApplicationRejected;
 use App\Notifications\ApplicationShortlisted;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Carbon\Carbon;
 
 class JobApplicationController extends Controller
@@ -35,10 +37,20 @@ class JobApplicationController extends Controller
             return $this->handleApplicationError($validation);
         }
 
-        // Validate custom cover letter if provided
+
+        // Validate custom cover letter and resume if provided
         $validated = $request->validate([
-            'cover_letter' => 'nullable|string|max:2000'
+            'cover_letter' => 'nullable|string|max:2000',
+            'resume' => 'nullable|file|mimes:pdf,doc,docx,txt|max:5120',
         ]);
+
+        $resumePath = null;
+        if ($request->hasFile('resume')) {
+            $resumePath = $request->file('resume')->store('resumes', 'public');
+        } else if ($user->resume) {
+            // Use user's existing resume if not uploading a new one
+            $resumePath = $user->resume;
+        }
 
         // Create application
         $application = JobApplication::create([
@@ -46,7 +58,16 @@ class JobApplicationController extends Controller
             'job_posting_id' => $job->id,
             'status' => 'pending',
             'cover_letter' => $validated['cover_letter'] ?? $this->generateDefaultCoverLetter($user, $job),
+            'resume_path' => $resumePath,
         ]);
+
+        // Notify the PWD applicant about their submission
+        Log::info('Sending job application confirmation to applicant', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'application_id' => $application->id
+        ]);
+        $user->notify(new JobApplicationSubmittedConfirmation($application));
 
         // Notify admins and employer
         $this->sendApplicationNotifications($application);
@@ -222,7 +243,7 @@ class JobApplicationController extends Controller
 
         $query = $user->jobApplications()
             ->with(['jobPosting' => function($query) {
-                $query->withTrashed();
+                $query->withTrashed()->with('location');
             }]);
 
         // Apply filters
@@ -313,9 +334,9 @@ class JobApplicationController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // Load job posting with trashed records
+        // Load job posting with trashed records and location relationship
         $application->load(['jobPosting' => function($query) {
-            $query->withTrashed();
+            $query->withTrashed()->with('location');
         }, 'user.pwdProfile']);
 
         return view('applications.show', compact('application'));
@@ -642,7 +663,9 @@ class JobApplicationController extends Controller
 
         $employerId = Auth::id();
 
-        $query = JobApplication::with(['user', 'user.pwdProfile', 'jobPosting'])
+        $query = JobApplication::with(['user', 'user.pwdProfile', 'jobPosting' => function($q) {
+            $q->with('location');
+        }])
             ->whereHas('jobPosting', function($q) use ($employerId) {
                 $q->where('created_by', $employerId);
             });
@@ -754,7 +777,9 @@ class JobApplicationController extends Controller
             $q->where('created_by', $employerId);
         })
         ->select('job_posting_id', DB::raw('count(*) as applications'))
-        ->with('jobPosting')
+        ->with(['jobPosting' => function($q) {
+            $q->with('location');
+        }])
         ->groupBy('job_posting_id')
         ->orderBy('applications', 'desc')
         ->get();

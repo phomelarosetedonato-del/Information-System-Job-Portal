@@ -8,6 +8,8 @@ use App\Models\DisabilityType;
 use App\Models\SkillOption;
 use App\Models\QualificationOption;
 use App\Models\AccommodationOption;
+use App\Models\AssistiveDeviceOption;
+use App\Models\WorkArrangementOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -71,6 +73,7 @@ class ProfileController extends Controller
         $skillOptions = SkillOption::active()->orderBy('name')->get();
         $qualificationOptions = QualificationOption::active()->orderBy('name')->get();
         $accommodationOptions = AccommodationOption::active()->orderBy('name')->get();
+        $workArrangementOptions = WorkArrangementOption::active()->orderBy('name')->get();
 
         return view('profile.edit', [
             'user' => $user,
@@ -90,6 +93,14 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        // Log the incoming request for debugging
+        Log::info('Profile update request', [
+            'user_id' => $user->id,
+            'method' => $request->method(),
+            'url' => $request->url(),
+            'all_input_keys' => array_keys($request->all())
+        ]);
+
         // Start with basic user validation
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -102,16 +113,39 @@ class ProfileController extends Controller
             // Update user basic information
             $user->update($validated);
 
-            // If user is PWD, update PWD profile fields
+            // If user is PWD, update comprehensive PWD profile fields
             if ($user->isPwd()) {
                 $pwdValidated = $request->validate([
-                    'disability_type_id' => 'required|integer|exists:disability_types,id',
+                    // Personal
                     'gender' => 'nullable|string|max:10',
                     'birthdate' => 'nullable|date',
+                    'nationality' => 'nullable|string|max:100',
+
+                    // Education
+                    'education_level' => 'nullable|string|max:50',
+                    'school_name' => 'nullable|string|max:255',
+
+                    // Disability & Work
+                    'disability_type_id' => 'required|integer|exists:disability_types,id',
+                    'pwd_id_number' => 'nullable|string|max:100',
+                    'pwd_id_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:7168',
                     'is_employed' => 'nullable|boolean',
-                    'skills' => 'nullable|string',
-                    'qualifications' => 'nullable|string',
-                    'special_needs' => 'nullable|string',
+                    'skills' => 'nullable|string|max:1000',
+                    'qualifications' => 'nullable|string|max:1000',
+                    'limitations' => 'nullable|string|max:1000',
+                    'special_needs' => 'nullable|string|max:1000',
+
+                    // Work Conditions
+                    'desired_position' => 'nullable|string|max:255',
+                    'employment_type' => 'nullable|string|max:50',
+                    'preferred_work_conditions' => 'nullable|string|max:500',
+                    'assistive_devices' => 'nullable|string|max:500',
+                    'accessibility_accommodations' => 'nullable|string|max:1000',
+
+                    // Emergency Contact
+                    'emergency_contact_name' => 'nullable|string|max:255',
+                    'emergency_contact_relationship' => 'nullable|string|max:100',
+                    'emergency_contact_phone' => 'nullable|string|max:20',
                 ]);
 
                 // Handle profile photo upload
@@ -127,6 +161,21 @@ class ProfileController extends Controller
 
                     // Store the new profile photo
                     $pwdValidated['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
+                }
+
+                // Handle PWD ID photo upload
+                if ($request->hasFile('pwd_id_photo')) {
+                    $request->validate([
+                        'pwd_id_photo' => 'image|mimes:jpeg,png,jpg,gif,webp|max:7168'
+                    ]);
+
+                    // Delete old PWD ID photo if exists
+                    if ($user->pwdProfile && $user->pwdProfile->pwd_id_photo) {
+                        Storage::disk('public')->delete($user->pwdProfile->pwd_id_photo);
+                    }
+
+                    // Store the new PWD ID photo
+                    $pwdValidated['pwd_id_photo'] = $request->file('pwd_id_photo')->store('pwd-id-photos', 'public');
                 }
 
                 // Map disability_type_id to legacy disability_type string for compatibility
@@ -157,7 +206,22 @@ class ProfileController extends Controller
             return redirect()->route('profile.show')
                 ->with('success', 'Profile updated successfully! Your profile is ' . $user->getProfileCompletionPercentage() . '% complete.');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Profile update validation error', [
+                'user_id' => $user->id,
+                'errors' => $e->errors()
+            ]);
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', 'Validation failed: ' . json_encode($e->errors()));
         } catch (\Exception $e) {
+            Log::error('Profile update exception', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
             return redirect()->back()
                 ->with('error', 'Error updating profile: ' . $e->getMessage())
                 ->withInput();
@@ -203,10 +267,13 @@ class ProfileController extends Controller
 
         $pwdProfile = $user->pwdProfile ?? new PwdProfile();
 
+
         $disabilityTypes = DisabilityType::orderBy('type')->get();
         $skillOptions = SkillOption::active()->orderBy('name')->get();
         $qualificationOptions = QualificationOption::active()->orderBy('name')->get();
         $accommodationOptions = AccommodationOption::active()->orderBy('name')->get();
+        $workArrangementOptions = WorkArrangementOption::active()->orderBy('name')->get();
+        $assistiveDeviceOptions = AssistiveDeviceOption::active()->orderBy('name')->get();
 
         return view('profile.pwd-complete', [
             'user' => $user,
@@ -215,6 +282,8 @@ class ProfileController extends Controller
             'skillOptions' => $skillOptions,
             'qualificationOptions' => $qualificationOptions,
             'accommodationOptions' => $accommodationOptions,
+            'workArrangementOptions' => $workArrangementOptions,
+            'assistiveDeviceOptions' => $assistiveDeviceOptions,
         ]);
     }
 
@@ -226,58 +295,149 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Validation rules for PWD profile
+        // Validation rules for new comprehensive PWD profile form
         $validated = $request->validate([
-            'disability_type_id' => 'required|integer|exists:disability_types,id',
-            'disability_level' => 'required|string|max:255',
-            'assistive_devices' => 'nullable|string|max:500',
-            'medical_conditions' => 'nullable|string|max:500',
-            'emergency_contact_name' => 'required|string|max:255',
-            'emergency_contact_phone' => 'required|string|max:20',
-            'emergency_contact_relationship' => 'required|string|max:255',
+            // Personal Information
+            'name' => 'required|string|max:255',
+            'gender' => 'nullable|string|max:10',
+            'birthdate' => 'nullable|date',
+            'nationality' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'required|string|email|max:255',
+            'address' => 'nullable|string|max:500',
+
+            // Education
+            'education_level' => 'nullable|string|max:50',
+            'school_name' => 'nullable|string|max:255',
+
+            // Work Experience (repeatable, handled as array)
+            'work_experience' => 'nullable|array',
+            'work_experience.*.company' => 'nullable|string|max:255',
+            'work_experience.*.position' => 'nullable|string|max:255',
+            'work_experience.*.start_date' => 'nullable|date',
+            'work_experience.*.end_date' => 'nullable|date|after_or_equal:work_experience.*.start_date',
+            'work_experience.*.description' => 'nullable|string|max:1000',
+            'work_experience.*.file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
+
+            // Skills
             'skills' => 'nullable|string|max:1000',
-            'interests' => 'nullable|string|max:1000',
-            'accommodation_needs' => 'nullable|string|max:1000',
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+
+            // Certifications (repeatable, handled as array)
+            'certifications' => 'nullable|array',
+            'certifications.*.name' => 'nullable|string|max:255',
+            'certifications.*.issuer' => 'nullable|string|max:255',
+            'certifications.*.date' => 'nullable|date',
+
+            // Disability-Related
+            'disability_type_id' => 'required|integer|exists:disability_types,id',
+            'assistive_devices' => 'nullable|string|max:500',
+            'preferred_work_conditions' => 'nullable|string|max:1000',
+            'limitations' => 'nullable|string|max:1000',
+            'accessibility_accommodations' => 'nullable|string|max:1000',
+
+            // Job Preferences
+            'desired_position' => 'nullable|string|max:255',
+            'employment_type' => 'nullable|string|max:50',
+
+            // Emergency Contact
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_relationship' => 'nullable|string|max:100',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+
+            // Optional uploads
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:7168',
             'pwd_id_number' => 'nullable|string|max:100',
-            'pwd_id_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'pwd_id_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:7168',
         ]);
 
         try {
+
             // Handle file uploads
             if ($request->hasFile('profile_photo')) {
-                // Delete old profile photo if exists
                 if ($user->pwdProfile && $user->pwdProfile->profile_photo) {
                     Storage::disk('public')->delete($user->pwdProfile->profile_photo);
                 }
                 $validated['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
             }
-
             if ($request->hasFile('pwd_id_photo')) {
-                // Delete old PWD ID photo if exists
                 if ($user->pwdProfile && $user->pwdProfile->pwd_id_photo) {
                     Storage::disk('public')->delete($user->pwdProfile->pwd_id_photo);
                 }
                 $validated['pwd_id_photo'] = $request->file('pwd_id_photo')->store('pwd-ids', 'public');
             }
 
+
+            // Handle work experience file uploads
+            $workExperience = $request->input('work_experience', []);
+            if ($request->hasFile('work_experience')) {
+                foreach ($request->file('work_experience') as $idx => $entry) {
+                    if (isset($entry['file']) && $entry['file']) {
+                        $file = $entry['file'];
+                        $path = $file->store('work-experience-files', 'public');
+                        $workExperience[$idx]['file_path'] = $path;
+                        unset($workExperience[$idx]['file']);
+                    }
+                }
+            }
+
+            // Handle certifications file uploads
+            $certifications = $request->input('certifications', []);
+            if ($request->hasFile('certifications')) {
+                foreach ($request->file('certifications') as $idx => $entry) {
+                    if (isset($entry['file']) && $entry['file']) {
+                        $file = $entry['file'];
+                        $path = $file->store('certification-files', 'public');
+                        $certifications[$idx]['file_path'] = $path;
+                        unset($certifications[$idx]['file']);
+                    }
+                }
+            }
+
             // Map form fields to database columns
             $mappedData = [
-                'disability_type_id' => $validated['disability_type_id'],
-                'disability_severity' => $validated['disability_level'],
-                'assistive_devices' => !empty($validated['assistive_devices']) ? json_encode(['device' => $validated['assistive_devices']]) : null,
-                'special_needs' => $validated['medical_conditions'] ?? null,
-                'accessibility_needs' => !empty($validated['accommodation_needs']) ? json_encode(['notes' => $validated['accommodation_needs']]) : null,
+                // Personal
+                'name' => $validated['name'],
+                'gender' => $validated['gender'] ?? null,
+                'birthdate' => $validated['birthdate'] ?? null,
+                'nationality' => $validated['nationality'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'email' => $validated['email'],
+                'address' => $validated['address'] ?? null,
+
+                // Education
+                'education_level' => $validated['education_level'] ?? null,
+                'school_name' => $validated['school_name'] ?? null,
+
+                // Work Experience (JSON array with file paths)
+                'work_experience' => !empty($workExperience) ? json_encode($workExperience) : null,
+
+                // Skills
                 'skills' => $validated['skills'] ?? null,
-                'qualifications' => $validated['interests'] ?? null,
-                'emergency_contact_name' => $validated['emergency_contact_name'],
-                'emergency_contact_phone' => $validated['emergency_contact_phone'],
-                'emergency_contact_relationship' => $validated['emergency_contact_relationship'],
+
+                // Certifications (JSON array)
+                'certifications' => !empty($certifications) ? json_encode($certifications) : null,
+
+                // Disability
+                'disability_type_id' => $validated['disability_type_id'],
+                'assistive_devices' => $validated['assistive_devices'] ?? null,
+                'preferred_work_conditions' => $validated['preferred_work_conditions'] ?? null,
+                'limitations' => $validated['limitations'] ?? null,
+                'accessibility_accommodations' => $validated['accessibility_accommodations'] ?? null,
+
+                // Job Preferences
+                'desired_position' => $validated['desired_position'] ?? null,
+                'employment_type' => $validated['employment_type'] ?? null,
+
+                // Emergency Contact
+                'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
+                'emergency_contact_relationship' => $validated['emergency_contact_relationship'] ?? null,
+                'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
+
+                // Optional uploads
                 'pwd_id_number' => $validated['pwd_id_number'] ?? null,
                 'profile_completed' => true,
             ];
 
-            // Only include file paths if they were uploaded
             if (isset($validated['profile_photo'])) {
                 $mappedData['profile_photo'] = $validated['profile_photo'];
             }
@@ -285,7 +445,7 @@ class ProfileController extends Controller
                 $mappedData['pwd_id_photo'] = $validated['pwd_id_photo'];
             }
 
-            // Also set legacy disability_type string for backward compatibility when possible
+            // Set legacy disability_type string for backward compatibility
             try {
                 $dt = DisabilityType::find($mappedData['disability_type_id']);
                 if ($dt) {
@@ -443,4 +603,69 @@ class ProfileController extends Controller
             return redirect()->back()->with('error', 'Error deleting resume: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Show the unified profile form (edit/complete)
+     */
+    public function form($mode = null)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $pwdProfile = $user->pwdProfile;
+
+        // Determine mode: 'edit' or 'complete'
+        if (!$mode) {
+            if ($user->isPwd() && !$pwdProfile) {
+                $mode = 'complete';
+            } else {
+                $mode = 'edit';
+            }
+        }
+
+        // If user is PWD but has no profile and not in complete mode, force complete
+        if ($user->isPwd() && !$pwdProfile && $mode !== 'complete') {
+            $mode = 'complete';
+        }
+
+        $disabilityTypes = DisabilityType::orderBy('type')->get();
+        $skillOptions = SkillOption::active()->orderBy('name')->get();
+        $qualificationOptions = QualificationOption::active()->orderBy('name')->get();
+        $accommodationOptions = AccommodationOption::active()->orderBy('name')->get();
+
+        $workArrangementOptions = \App\Models\WorkArrangementOption::active()->orderBy('name')->get();
+        $assistiveDeviceOptions = \App\Models\AssistiveDeviceOption::active()->orderBy('name')->get();
+
+        return view('profile.profile-form', [
+            'user' => $user,
+            'pwdProfile' => $pwdProfile,
+            'disabilityTypes' => $disabilityTypes,
+            'skillOptions' => $skillOptions,
+            'qualificationOptions' => $qualificationOptions,
+            'accommodationOptions' => $accommodationOptions,
+            'workArrangementOptions' => $workArrangementOptions,
+            'assistiveDeviceOptions' => $assistiveDeviceOptions,
+            'mode' => $mode,
+        ]);
+    }
+
+    /**
+     * Handle submission of the unified profile form (edit/complete)
+     */
+    public function submitForm(Request $request, $mode = null)
+    {
+        // You can route to update() or completePwdProfile() logic based on mode or user state
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($mode === 'complete' || ($user->isPwd() && !$user->pwdProfile)) {
+            // Use completePwdProfile logic
+            return $this->completePwdProfile($request);
+        } else {
+            // Use update logic
+            return $this->update($request);
+        }
+    }
+
+    // Deprecated: use form() instead of edit()
+    // Deprecated: use form() instead of showPwdCompleteForm()
 }

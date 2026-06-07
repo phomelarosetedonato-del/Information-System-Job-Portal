@@ -18,7 +18,7 @@
 
     <!-- Key Performance Indicators -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -72,7 +72,7 @@
 
     <!-- Detailed Metrics -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-4">
@@ -111,7 +111,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-4">
@@ -162,7 +162,7 @@
                     <p class="text-muted small mb-4">See how you compare to platform averages</p>
 
                     <div class="row g-4">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <h6>Conversion Rate</h6>
                             <div class="mb-2">
                                 <div class="d-flex justify-content-between mb-1">
@@ -186,7 +186,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <h6>Response Time</h6>
                             <div class="mb-2">
                                 <div class="d-flex justify-content-between mb-1">
@@ -210,7 +210,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <h6>Application Quality</h6>
                             <div class="mb-2">
                                 <div class="d-flex justify-content-between mb-1">

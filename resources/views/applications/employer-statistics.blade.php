@@ -129,7 +129,13 @@
                                         </td>
                                         <td>
                                             @if($jobApp->jobPosting)
-                                                <small>{{ $jobApp->jobPosting->location }}</small>
+                                                <small>
+                                                    @if($jobApp->jobPosting->location && is_object($jobApp->jobPosting->location))
+                                                        {{ $jobApp->jobPosting->location->name }}
+                                                    @else
+                                                        {{ $jobApp->jobPosting->location ?? 'N/A' }}
+                                                    @endif
+                                                </small>
                                             @else
                                                 N/A
                                             @endif
@@ -150,7 +156,7 @@
                                         </td>
                                         <td class="text-center">
                                             @if($jobApp->jobPosting)
-                                                <a href="{{ route('employer.applications.index', ['job_posting_id' => $jobApp->job_posting_id]) }}" 
+                                                <a href="{{ route('employer.applications.index', ['job_posting_id' => $jobApp->job_posting_id]) }}"
                                                    class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye"></i> View Applications
                                                 </a>
@@ -193,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
     @if($applicationsByStatus->count() > 0)
     const statusCtx = document.getElementById('statusChart').getContext('2d');
     const statusData = @json($applicationsByStatus);
-    
+
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {

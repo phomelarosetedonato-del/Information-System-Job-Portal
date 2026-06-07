@@ -7,6 +7,89 @@
 <!-- Hero Section -->
 <section class="hero-section py-5" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); min-height: 85vh; display: flex; align-items: center;">
     <div class="container">
+        <!-- Hero Image with Overlayed Filter Form -->
+        <div class="hero-image-overlay mb-5 position-relative" style="max-height: 320px;">
+            <img src="/images/landingpage.jpg" alt="PWD Job Portal Banner" class="img-fluid rounded shadow w-100 hero-bg-img" style="max-height: 320px; object-fit: cover;">
+            <div class="hero-img-overlay-dark"></div>
+            <div class="filter-overlay-form position-absolute top-50 start-50 translate-middle w-100" style="z-index: 2; max-width: 900px; left: 50%; transform: translate(-50%, -50%);">
+                <div style="background: rgba(255,255,255,0.95); border-radius: 50px; box-shadow: 0 2px 16px rgba(16,185,129,0.12); padding: 24px 18px;">
+                    <form method="GET" action="{{ route('home') }}" id="home-job-search-form" aria-label="Search jobs">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-4 mb-2">
+                                <input type="text" name="q" class="form-control form-control-lg" placeholder="Job title, company, or keyword" value="{{ request('q') }}">
+                            </div>
+                            <div class="col-12 col-md-4 mb-2">
+                                <select name="location" class="form-select form-select-lg">
+                                    <option value="">All Locations</option>
+                                    @foreach($locations ?? [] as $loc)
+                                        @if(is_object($loc) && isset($loc->name))
+                                            <option value="{{ $loc->name }}" @if(request('location') == $loc->name) selected @endif>{{ $loc->name }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4 mb-2">
+                                <select name="disability_type_id" class="form-select form-select-lg">
+                                    <option value="">Any Disability Type</option>
+                                    @foreach($disabilityTypes ?? [] as $dt)
+                                        @if(is_object($dt) && isset($dt->id))
+                                            <option value="{{ $dt->id }}" @if(request('disability_type_id') == $dt->id) selected @endif>{{ $dt->type }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-green-solid btn-lg w-100" style="font-size: 1.25rem;">
+                                    <i class="fas fa-search me-2"></i>Find Jobs
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @section('styles')
+        @parent
+        <style>
+        .hero-image-overlay {
+            max-height: 320px;
+            overflow: hidden;
+            position: relative;
+        }
+        .hero-bg-img {
+            opacity: 0.45;
+            transition: opacity 0.3s;
+        }
+        .hero-img-overlay-dark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.25);
+            border-radius: 16px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .filter-overlay-form {
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        @media (max-width: 991.98px) {
+            .filter-overlay-form {
+                max-width: 98vw;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+        </style>
+        @endsection
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
                 <!-- Main Badge -->
@@ -49,17 +132,9 @@
                     </div>
                 </div>
 
-                <!-- CTA Buttons -->
-                <div class="hero-buttons d-flex flex-wrap gap-3 mb-4">
-                    <a href="{{ route('register') }}" class="btn btn-success btn-lg px-5 py-3 shadow-lg"
-                       style="border-radius: 50px; font-weight: 600; font-size: 1.1rem;">
-                        <i class="fas fa-rocket me-2"></i><span>Start Your Journey</span>
-                    </a>
-                    <a href="#featured-jobs" class="btn btn-outline-success btn-lg px-5 py-3"
-                       style="border-radius: 50px; font-weight: 600; font-size: 1.1rem; border-width: 2px;">
-                        <i class="fas fa-briefcase me-2"></i><span>View Jobs</span>
-                    </a>
-                </div>
+
+
+
 
                 <!-- Trust Indicators -->
                 <div class="mt-4 pt-3 border-top">
@@ -195,9 +270,7 @@
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100 text-center p-4 step-card">
                     <div class="step-number mx-auto mb-4"
-                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669);
-                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
-                                font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         1
                     </div>
                     <div class="mb-3">
@@ -205,209 +278,40 @@
                     </div>
                     <h3 class="h4 fw-bold mb-3">Create Your Profile</h3>
                     <p class="text-gray-600">
-                        Sign up for free and complete your PWD profile with your skills, qualifications,
-                        and accommodation needs. Your information is secure and private.
+                        Sign up for free and complete your PWD profile with your skills, qualifications, and work preferences. This helps us match you with the best opportunities.
                     </p>
                 </div>
             </div>
-
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100 text-center p-4 step-card">
                     <div class="step-number mx-auto mb-4"
-                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669);
-                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
-                                font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         2
                     </div>
                     <div class="mb-3">
                         <i class="fas fa-search text-success" style="font-size: 3rem;"></i>
                     </div>
-                    <h3 class="h4 fw-bold mb-3">Browse & Apply</h3>
+                    <h3 class="h4 fw-bold mb-3">Search & Apply</h3>
                     <p class="text-gray-600">
-                        Explore PWD-friendly job opportunities from verified inclusive employers.
-                        Filter by disability type, accommodation available, and work arrangement.
+                        Browse inclusive job opportunities and training programs. Use filters to find roles that fit your abilities and interests, then apply in just a few clicks.
                     </p>
                 </div>
             </div>
-
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100 text-center p-4 step-card">
                     <div class="step-number mx-auto mb-4"
-                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669);
-                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
-                                font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+                         style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         3
                     </div>
                     <div class="mb-3">
                         <i class="fas fa-briefcase text-success" style="font-size: 3rem;"></i>
                     </div>
-                    <h3 class="h4 fw-bold mb-3">Get Hired</h3>
+                    <h3 class="h4 fw-bold mb-3">Get Hired & Grow</h3>
                     <p class="text-gray-600">
-                        Connect with employers who value diversity. Receive interview invitations,
-                        access training programs, and start your meaningful career journey.
+                        Connect with employers, attend interviews, and start your new career. Access ongoing support and training to help you succeed and grow professionally.
                     </p>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- Featured Jobs -->
-<section id="featured-jobs" class="py-5 bg-white">
-    <div class="container">
-        <div class="row mb-5 align-items-end">
-            <div class="col-lg-8">
-                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill mb-3">
-                    <i class="fas fa-briefcase me-2"></i>Opportunities
-                </span>
-                <h2 class="display-5 fw-bold text-gray-900 mb-2">Featured Job Opportunities</h2>
-                <p class="lead text-gray-600">
-                    Handpicked opportunities from verified PWD-friendly employers
-                </p>
-            </div>
-            <div class="col-lg-4 text-lg-end">
-                <a href="{{ route('login') }}" class="btn btn-outline-success btn-lg px-4">
-                    <i class="fas fa-arrow-right me-2"></i>View All Jobs
-                </a>
-            </div>
-        </div>
-
-        @if($featuredJobs->count() > 0)
-        <div class="row">
-            @foreach($featuredJobs as $job)
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card job-card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <span class="badge bg-green-100 text-green-800">{{ $job->employment_type ?? 'Full-time' }}</span>
-                            <small class="text-gray-500">{{ $job->created_at->diffForHumans() }}</small>
-                        </div>
-                        <h5 class="card-title text-gray-800">{{ $job->title }}</h5>
-                        <p class="company-name text-green-600 mb-2">{{ $job->company_name ?? 'Company' }}</p>
-                        <div class="job-meta mb-3">
-                            <small class="text-gray-600">
-                                <i class="fas fa-map-marker-alt me-1"></i>{{ $job->location ?? 'Remote' }}
-                            </small>
-                            @if(!empty($job->salary_range))
-                            <small class="text-gray-600 ms-3">
-                                <i class="fas fa-money-bill-wave me-1"></i>{{ $job->salary_range }}
-                            </small>
-                            @endif
-                        </div>
-                        <p class="card-text text-gray-600 small">{{ Str::limit($job->description, 120) }}</p>
-                    </div>
-                    <div class="card-footer bg-transparent border-top">
-                        <a href="{{ route('login') }}" class="btn btn-green-solid w-100">Apply Now</a>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @else
-        <div class="row">
-            <div class="col-12 text-center py-4">
-                <div class="empty-state">
-                    <i class="fas fa-briefcase fa-3x text-gray-400 mb-3"></i>
-                    <h4 class="text-gray-800">No Featured Jobs Available</h4>
-                    <p class="text-gray-600">Check back later for new opportunities</p>
-                    <a href="{{ route('login') }}" class="btn btn-green-outline">View All Jobs</a>
-                </div>
-            </div>
-        </div>
-        @endif
-    </div>
-</section>
-
-<!-- Training Programs -->
-@if($upcomingTrainings->count() > 0)
-<section class="py-5 bg-gray-50">
-    <div class="container">
-        <div class="row mb-5 align-items-end">
-            <div class="col-lg-8">
-                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill mb-3">
-                    <i class="fas fa-graduation-cap me-2"></i>Training & Development
-                </span>
-                <h2 class="display-5 fw-bold text-gray-900 mb-2">Free Skills Training Programs</h2>
-                <p class="lead text-gray-600">
-                    Enhance your employability with specialized training designed for PWD professionals
-                </p>
-            </div>
-            <div class="col-lg-4 text-lg-end">
-                <a href="{{ route('login') }}" class="btn btn-outline-success btn-lg px-4">
-                    <i class="fas fa-arrow-right me-2"></i>View All Training
-                </a>
-            </div>
-        </div>
-
-        <div class="row">
-            @foreach($upcomingTrainings as $training)
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card training-card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <span class="badge bg-green-100 text-green-800 mb-3">Enrolling Now</span>
-                        <h5 class="card-title text-gray-800">{{ $training->title }}</h5>
-                        <p class="text-gray-600 small">{{ Str::limit($training->description, 100) }}</p>
-
-                        <div class="training-details">
-                            @if($training->start_date)
-                            <div class="detail-item mb-2">
-                                <i class="fas fa-calendar text-green-600 me-2"></i>
-                                <small class="text-gray-600">Starts: {{ $training->start_date->format('M d, Y') }}</small>
-                            </div>
-                            @endif
-                            @if($training->duration)
-                            <div class="detail-item mb-2">
-                                <i class="fas fa-clock text-green-600 me-2"></i>
-                                <small class="text-gray-600">Duration: {{ $training->duration }}</small>
-                            </div>
-                            @endif
-                            <div class="detail-item mb-2">
-                                <i class="fas fa-globe text-green-600 me-2"></i>
-                                <small class="text-gray-600">Mode: {{ $training->mode ?? 'Online' }}</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-top">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-green-600 fw-bold">
-                                {{ (!empty($training->is_free) && $training->is_free) ? 'FREE' : '₱'.($training->fee ?? '0') }}
-                            </span>
-                            <a href="{{ route('login') }}" class="btn btn-green-solid btn-sm">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-@else
-<section class="py-5 bg-gray-50">
-    <div class="container">
-        <div class="row mb-5">
-            <div class="col text-center">
-                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill mb-3">
-                    <i class="fas fa-graduation-cap me-2"></i>Training & Development
-                </span>
-                <h2 class="display-5 fw-bold text-gray-900 mb-2">Free Skills Training Programs</h2>
-                <p class="lead text-gray-600">
-                    New training programs coming soon!
-                </p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 text-center py-4">
-                <div class="empty-state">
-                    <i class="fas fa-graduation-cap fa-3x text-gray-400 mb-3"></i>
-                    <h4 class="text-gray-800">No Training Programs Available</h4>
-                    <p class="text-gray-600">Check back later for new training opportunities</p>
-                    <a href="{{ route('login') }}" class="btn btn-green-outline">View All Trainings</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-@endif
 
 <!-- Success Stories Section -->
 <section class="py-5 bg-white">

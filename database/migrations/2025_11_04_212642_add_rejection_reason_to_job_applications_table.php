@@ -19,6 +19,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('job_applications', function (Blueprint $table) {
+            // Drop foreign key constraint first before dropping column
+            $table->dropForeignKey(['reviewed_by']);
             $table->dropColumn(['rejection_reason', 'reviewed_by', 'reviewed_at', 'status_updated_at']);
         });
     }

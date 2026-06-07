@@ -43,13 +43,20 @@ class JobPosting extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'requirements', 'location', 'company',
+        'title', 'description', 'requirements', 'location', 'location_id', 'company',
         'salary_min', 'salary_max', 'employment_type', 'application_deadline',
-        'is_active', 'created_by', 'contact_email', 'contact_phone',
-        'job_category', 'experience_level', 'views',
+        'is_active', 'created_by', 'contact_email', 'contact_phone', 'views',
         // Accessibility fields
         'is_remote', 'provides_accommodations', 'accessibility_features', 'assistive_technology'
     ];
+
+    /**
+     * Location relationship
+     */
+    public function location()
+    {
+        return $this->belongsTo(\App\Models\Location::class, 'location_id');
+    }
 
     /**
      * The attributes that should be cast.

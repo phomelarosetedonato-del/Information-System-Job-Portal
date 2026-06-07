@@ -79,9 +79,13 @@
                             <div class="col-md-3">
                                 <label class="form-label small mb-1 fw-semibold" for="location">
                                     <i class="fas fa-map-marker-alt me-1"></i>Location
-                                </label>
-                                <input type="text" id="location" name="location" class="form-control form-control-sm"
-                                       placeholder="Enter city or region" value="{{ request('location') }}">
+                                    </label>
+                                    <select id="location" name="location" class="form-select form-select-sm">
+                                        <option value="">All Locations</option>
+                                        @foreach(\App\Models\Location::activeLocations() as $loc)
+                                            <option value="{{ $loc->name }}" {{ request('location') == $loc->name ? 'selected' : '' }}>{{ $loc->name }}</option>
+                                        @endforeach
+                                    </select>
                             </div>
                         </div>
 
@@ -220,7 +224,13 @@
                                                                 <strong style="color: #2E8B57;">{{ $job->company }}</strong>
                                                                 <span class="text-muted mx-2">•</span>
                                                                 <i class="fas fa-map-marker-alt text-muted me-1"></i>
-                                                                <span>{{ $job->location }}</span>
+                                                                <span>
+                                                                    @if(is_array($job->location) || is_object($job->location))
+                                                                        {{ $job->location['name'] ?? $job->location->name ?? 'N/A' }}
+                                                                    @else
+                                                                        {{ $job->location ?? 'N/A' }}
+                                                                    @endif
+                                                                </span>
                                                             </div>
                                                         </div>
                                                         <div class="flex-shrink-0">

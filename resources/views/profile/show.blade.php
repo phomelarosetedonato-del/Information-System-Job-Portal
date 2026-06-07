@@ -16,8 +16,9 @@
                     <p class="mb-0 text-muted" style="font-size: 0.85rem;">View and manage your personal information</p>
                 </div>
                 <div class="col-12 col-md-4 text-md-end mt-2 mt-md-0">
-                    <a href="{{ route('profile.edit') }}" class="btn btn-primary w-100 w-md-auto btn-mobile-lg">
-                        <i class="fas fa-edit me-2"></i> Edit Profile
+                    <a href="{{ route('profile.form') }}" class="btn btn-primary w-100 w-md-auto btn-mobile-lg">
+                        <i class="fas fa-edit me-2"></i>
+                        {{ ($pwdProfile && $pwdProfile->profile_completed) ? 'Edit Profile' : 'Complete Profile' }}
                     </a>
                 </div>
             </div>
@@ -115,16 +116,21 @@
                                 <p class="text-muted mb-2 text-break" style="font-size: 0.85rem;">
                                     <i class="fas fa-envelope me-1 me-md-2"></i><span class="d-none d-sm-inline">Email: </span>{{ $user->email }}
                                 </p>
-                                @if($user->phone)
-                                    <p class="text-muted mb-2" style="font-size: 0.85rem;">
-                                        <i class="fas fa-phone me-1 me-md-2"></i><span class="d-none d-sm-inline">Phone: </span>{{ $user->phone }}
-                                    </p>
-                                @endif
-                                @if($user->address)
-                                    <p class="text-muted mb-2" style="font-size: 0.85rem;">
-                                        <i class="fas fa-map-marker-alt me-1 me-md-2"></i><span class="d-none d-sm-inline">Address: </span>{{ $user->address }}
-                                    </p>
-                                @endif
+                                <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                    <i class="fas fa-phone me-1 me-md-2"></i><span class="d-none d-sm-inline">Contact: </span>{{ $pwdProfile->contact_number ?? $user->phone ?? 'Not specified' }}
+                                </p>
+                                <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                    <i class="fas fa-map-marker-alt me-1 me-md-2"></i><span class="d-none d-sm-inline">Address: </span>{{ $pwdProfile->complete_address ?? $user->address ?? 'Not specified' }}
+                                </p>
+                                <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                    <i class="fas fa-venus-mars me-1 me-md-2"></i><span class="d-none d-sm-inline">Gender: </span>{{ $pwdProfile->gender ? ucfirst($pwdProfile->gender) : 'Not specified' }}
+                                </p>
+                                <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                    <i class="fas fa-birthday-cake me-1 me-md-2"></i><span class="d-none d-sm-inline">Date of Birth: </span>{{ $pwdProfile->date_of_birth ?? ($pwdProfile->birthdate ? $pwdProfile->birthdate->format('F d, Y') : 'Not specified') }}
+                                </p>
+                                <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                    <i class="fas fa-flag me-1 me-md-2"></i><span class="d-none d-sm-inline">Nationality: </span>{{ $pwdProfile->nationality ?? 'Not specified' }}
+                                </p>
                                 <span class="badge bg-{{ $user->role_badge_class }} mt-2" style="font-size: 0.85rem; padding: 0.4rem 0.75rem;">
                                     {{ ucfirst($user->role) }}
                                 </span>
@@ -140,98 +146,53 @@
                             <div class="card-header bg-white border-bottom py-3">
                                 <h5 class="mb-0 text-dark h6 h5-md">
                                     <i class="fas fa-universal-access me-2 text-primary"></i>
-                                    PWD Information
+                                    PWD Profile Information
                                 </h5>
                             </div>
                             <div class="card-body p-3 p-md-4">
                                 <div class="row g-3">
-                                    <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
-                                        <p class="mb-1 text-muted small"><i class="fas fa-wheelchair me-2"></i>Disability Type</p>
-                                        <p class="mb-0 fw-semibold">
-                                            {{ $pwdProfile->disabilityType->type ?? $pwdProfile->disability_type ?? 'Not specified' }}
-                                        </p>
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-graduation-cap me-2"></i>Highest Education Level</p>
+                                        <p class="mb-0">{{ $pwdProfile->highest_education ?? 'Not specified' }}</p>
                                     </div>
-                                    <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
-                                        <p class="mb-1 text-muted small"><i class="fas fa-signal me-2"></i>Disability Level</p>
-                                        <p class="mb-0 fw-semibold">{{ $pwdProfile->disability_severity ?? 'Not specified' }}</p>
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-university me-2"></i>School/University</p>
+                                        <p class="mb-0">{{ $pwdProfile->school_name ?? 'Not specified' }}</p>
                                     </div>
-                                    <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
-                                        <p class="mb-1 text-muted small"><i class="fas fa-venus-mars me-2"></i>Gender</p>
-                                        <p class="mb-0">{{ $pwdProfile->gender ? ucfirst($pwdProfile->gender) : 'Not specified' }}</p>
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-wheelchair me-2"></i>Type of Disability</p>
+                                        <p class="mb-0">{{ $pwdProfile->disabilityType->type ?? $pwdProfile->disability_type ?? 'Not specified' }}</p>
                                     </div>
-                                    @if($pwdProfile->birthdate)
-                                        <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
-                                            <p class="mb-1 text-muted small"><i class="fas fa-birthday-cake me-2"></i>Birthdate</p>
-                                            <p class="mb-0">{{ $pwdProfile->birthdate->format('F d, Y') }}</p>
-                                            <p class="mb-0 text-muted" style="font-size: 0.85rem;">Age: {{ $pwdProfile->birthdate->age }} years old</p>
-                                        </div>
-                                    @endif
-                                    <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
-                                        <p class="mb-1 text-muted small"><i class="fas fa-briefcase me-2"></i>Employment Status</p>
-                                        <p class="mb-0">
-                                            @if($pwdProfile->is_employed)
-                                                <span class="badge bg-success">Employed</span>
-                                            @else
-                                                <span class="badge bg-secondary">Not Employed</span>
-                                            @endif
-                                        </p>
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-medkit me-2"></i>Assistive Devices</p>
+                                        <p class="mb-0">{{ $pwdProfile->assistive_devices ?? 'None' }}</p>
                                     </div>
-                                    @php
-                                        $devices = '';
-                                        if($pwdProfile->assistive_devices) {
-                                            $devices = is_array($pwdProfile->assistive_devices)
-                                                ? ($pwdProfile->assistive_devices['device'] ?? '')
-                                                : $pwdProfile->assistive_devices;
-                                        }
-                                        $showDevices = !empty($devices) && strtolower(trim($devices)) !== 'none';
-                                    @endphp
-                                    @if($showDevices)
-                                        <div class="col-12 col-md-6 mb-2 mb-md-3">
-                                            <p class="mb-1 text-muted small"><i class="fas fa-medkit me-2"></i>Assistive Devices</p>
-                                            <p class="mb-0">{{ $devices }}</p>
-                                        </div>
-                                    @endif
-                                    @if($pwdProfile->special_needs)
-                                        <div class="col-12 col-md-6 mb-2 mb-md-3">
-                                            <p class="mb-1 text-muted small"><i class="fas fa-notes-medical me-2"></i>Medical Conditions</p>
-                                            <p class="mb-0">{{ $pwdProfile->special_needs }}</p>
-                                        </div>
-                                    @endif
-                                    @php
-                                        $accessibilityNeeds = '';
-                                        if($pwdProfile->accessibility_needs) {
-                                            $accessibilityNeeds = is_array($pwdProfile->accessibility_needs)
-                                                ? ($pwdProfile->accessibility_needs['notes'] ?? '')
-                                                : $pwdProfile->accessibility_needs;
-                                        }
-                                        $showAccessibility = !empty($accessibilityNeeds) && strtolower(trim($accessibilityNeeds)) !== 'none';
-                                    @endphp
-                                    @if($showAccessibility)
-                                        <div class="col-12 mb-2 mb-md-3">
-                                            <p class="mb-1 text-muted small"><i class="fas fa-universal-access me-2"></i>Accessibility Needs</p>
-                                            <p class="mb-0">{{ $accessibilityNeeds }}</p>
-                                        </div>
-                                    @endif
-                                    @if($pwdProfile->pwd_id_number)
-                                        <div class="col-12 col-sm-6 col-md-4 mb-2 mb-md-3">
-                                            <p class="mb-1 text-muted small"><i class="fas fa-id-card me-2"></i>PWD ID Number</p>
-                                            <p class="mb-0 fw-semibold">{{ $pwdProfile->pwd_id_number }}</p>
-                                        </div>
-                                    @endif
-                                    @if($pwdProfile->pwd_id_photo)
-                                        <div class="col-12 mb-2 mb-md-3">
-                                            <p class="mb-2 text-muted small"><i class="fas fa-image me-2"></i>PWD ID Photo</p>
-                                            <a href="{{ asset('storage/' . $pwdProfile->pwd_id_photo) }}" target="_blank" class="d-inline-block">
-                                                <img src="{{ asset('storage/' . $pwdProfile->pwd_id_photo) }}"
-                                                     alt="PWD ID Photo"
-                                                     class="img-thumbnail pwd-id-photo"
-                                                     style="max-width: 300px; max-height: 200px; object-fit: cover; cursor: pointer;">
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-briefcase me-2"></i>Preferred Work Conditions</p>
+                                        <p class="mb-0">{{ $pwdProfile->preferred_work_conditions ?? 'Not specified' }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-universal-access me-2"></i>Accessibility Accommodations</p>
+                                        <p class="mb-0">{{ $pwdProfile->accessibility_accommodations ?? 'Not specified' }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-clipboard-list me-2"></i>Desired Job Position</p>
+                                        <p class="mb-0">{{ $pwdProfile->desired_position ?? 'Not specified' }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-clock me-2"></i>Type of Employment</p>
+                                        <p class="mb-0">{{ $pwdProfile->employment_type ?? 'Not specified' }}</p>
+                                    </div>
+                                    <div class="col-12 mb-2 mb-md-3">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-file-upload me-2"></i>Resume</p>
+                                        @if($user->resume)
+                                            <a href="{{ route('profile.downloadResume') }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-download me-1"></i> Download Resume
                                             </a>
-                                            <p class="mb-0 text-muted mt-1" style="font-size: 0.85rem;">
-                                                <i class="fas fa-info-circle me-1"></i>Click image to view full size
-                                            </p>
-                                        </div>
-                                    @endif
+                                        @else
+                                            <span class="text-muted">No resume uploaded</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -254,10 +215,10 @@
                                             </div>
                                         @endif
                                         @if($pwdProfile->qualifications)
-                                            <div class="col-12 col-md-6 mb-2 mb-md-3">
-                                                <p class="mb-1 text-muted small"><i class="fas fa-heart me-2"></i>Interests & Hobbies</p>
-                                                <p class="mb-0">{{ $pwdProfile->qualifications }}</p>
-                                            </div>
+                                                <div class="col-12 col-md-6 mb-2 mb-md-3">
+                                                    <p class="mb-1 text-muted small"><i class="fas fa-graduation-cap me-2"></i>Educational Background & Qualifications</p>
+                                                    <p class="mb-0">{{ $pwdProfile->qualifications }}</p>
+                                                </div>
                                         @endif
                                     </div>
                                 </div>
@@ -296,7 +257,7 @@
                                 <div class="flex-grow-1">
                                     <h5 class="alert-heading mb-1 h6">Complete Your PWD Profile</h5>
                                     <p class="mb-2 small">Please complete your PWD profile to access all features and opportunities.</p>
-                                    <a href="{{ route('profile.pwd-complete-form') }}" class="btn btn-warning btn-sm w-100 w-sm-auto">
+                                    <a href="{{ route('profile.form', ['mode' => 'complete']) }}" class="btn btn-warning btn-sm w-100 w-sm-auto">
                                         <i class="fas fa-clipboard-check me-2"></i>Complete Profile Now
                                     </a>
                                 </div>
@@ -406,8 +367,9 @@
                             <div>
                                 <p class="mb-0 small">Need to update your information?</p>
                             </div>
-                            <a href="{{ route('profile.edit') }}" class="btn btn-primary w-100 w-md-auto">
-                                <i class="fas fa-edit me-2"></i> Edit Profile
+                            <a href="{{ route('profile.form') }}" class="btn btn-primary w-100 w-md-auto">
+                                <i class="fas fa-edit me-2"></i>
+                                {{ ($pwdProfile && $pwdProfile->profile_completed) ? 'Edit Profile' : 'Complete Profile' }}
                             </a>
                         </div>
                     </div>

@@ -192,12 +192,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const panel = document.getElementById('accessibilityPanel');
     const closeBtn = document.getElementById('closeAccessibilityPanel');
 
+    // Add error handling for missing elements
+    if (!toggleBtn) {
+        console.error('❌ Accessibility toggle button not found!');
+        return;
+    }
+    if (!panel) {
+        console.error('❌ Accessibility panel not found!');
+        return;
+    }
+    if (!closeBtn) {
+        console.error('❌ Close button not found!');
+        return;
+    }
+
+    console.log('✅ Accessibility widget elements found and ready');
+
     // Toggle panel visibility
-    toggleBtn.addEventListener('click', function() {
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔄 Toggle button clicked');
         panel.classList.toggle('show');
+        console.log('📌 Panel show state:', panel.classList.contains('show'));
     });
 
-    closeBtn.addEventListener('click', function() {
+    closeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('❌ Close button clicked');
         panel.classList.remove('show');
     });
 
@@ -207,52 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
             panel.classList.remove('show');
         }
     });
-
-    // Font size controls
-                let translatedCount = 0;
-
-                // If switching back to English, restore original text
-                if (targetLang === 'en') {
-                    elementsToTranslate.forEach(el => {
-                        if (el.dataset.originalText) {
-                            el.textContent = el.dataset.originalText;
-                            translatedCount++;
-                        }
-                    });
-                } else {
-                    // Translate to Tagalog
-                    Object.keys(translationMap).forEach(key => {
-                        const translated = data.translations[key];
-                        if (translated) {
-                            translationMap[key].forEach(el => {
-                                el.textContent = translated;
-                                translatedCount++;
-                            });
-                        } else {
-                            console.warn('⚠️ No translation found for:', key);
-                        }
-                    });
-                }
-
-                console.log('✅ Successfully translated', translatedCount, 'elements');
-
-                if (translatedCount > 0) {
-                    showNotification(
-                        targetLang === 'tl'
-                            ? 'Matagumpay na isinalin sa Tagalog!'
-                            : 'Successfully translated to English!',
-                        'success'
-                    );
-                }
-            } else {
-                console.error('❌ Translation failed:', data);
-                showNotification('Translation failed. Please try again.', 'error');
-            }
-        } catch (error) {
-            console.error('❌ Translation error:', error);
-            showNotification('Network error during translation.', 'error');
-        }
-    }
 
     // Font size controls
     document.querySelectorAll('[data-size]').forEach(btn => {
@@ -591,6 +568,7 @@ document.addEventListener('DOMContentLoaded', function() {
     right: 20px !important;
     bottom: 20px !important;
     z-index: 10000 !important;
+    pointer-events: auto !important;
 }
 
 .accessibility-toggle {
@@ -608,6 +586,7 @@ document.addEventListener('DOMContentLoaded', function() {
     transition: all 0.3s ease !important;
     z-index: 10001 !important;
     animation: pulse-green 2s infinite;
+    pointer-events: auto !important;
 }
 
 @keyframes pulse-green {
@@ -642,6 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
     z-index: 10002 !important;
     display: none !important;
     overflow: hidden !important;
+    pointer-events: auto !important;
 }
 
 .accessibility-panel.show {
@@ -1126,10 +1106,725 @@ kbd {
     color: #000000 !important;
 }
 
+/* Bootstrap text utility color overrides for High Contrast */
+.contrast-high .text-muted {
+    color: #000000 !important;
+}
+
+.contrast-high .text-primary {
+    color: #0056b3 !important;
+}
+
+.contrast-high .text-secondary {
+    color: #6c757d !important;
+}
+
+.contrast-high .text-success {
+    color: #155724 !important;
+}
+
+.contrast-high .text-danger {
+    color: #721c24 !important;
+}
+
+.contrast-high .text-warning {
+    color: #856404 !important;
+}
+
+.contrast-high .text-info {
+    color: #004085 !important;
+}
+
+.contrast-high .text-dark {
+    color: #000000 !important;
+}
+
+.contrast-high .text-light {
+    color: #000000 !important;
+}
+
+.contrast-high .text-white {
+    color: #000000 !important;
+}
+
+/* Bootstrap text utility color overrides for Very High Contrast */
+.contrast-very-high .text-muted {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-primary {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-secondary {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-success {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-danger {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-warning {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-info {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-dark {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-light {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .text-white {
+    color: #ffff00 !important;
+}
+
+/* Bootstrap badge backgrounds for High Contrast */
+.contrast-high .badge {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+.contrast-high .badge.bg-primary,
+.contrast-high .badge.bg-secondary,
+.contrast-high .badge.bg-success,
+.contrast-high .badge.bg-danger,
+.contrast-high .badge.bg-warning,
+.contrast-high .badge.bg-info,
+.contrast-high .badge.bg-light,
+.contrast-high .badge.bg-dark {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Bootstrap badge backgrounds for Very High Contrast */
+.contrast-very-high .badge {
+    background: #ffff00 !important;
+    color: #000000 !important;
+}
+
+.contrast-very-high .badge.bg-primary,
+.contrast-very-high .badge.bg-secondary,
+.contrast-very-high .badge.bg-success,
+.contrast-very-high .badge.bg-danger,
+.contrast-very-high .badge.bg-warning,
+.contrast-very-high .badge.bg-info,
+.contrast-very-high .badge.bg-light,
+.contrast-very-high .badge.bg-dark {
+    background: #ffff00 !important;
+    color: #000000 !important;
+}
+
+/* Font awesome icons for High/Very High Contrast */
 .contrast-very-high i,
 .contrast-very-high .fas,
 .contrast-very-high .far,
 .contrast-very-high .fab {
     color: #ffff00 !important;
+}
+
+/* High Contrast Mode - Notifications Page Specific */
+.contrast-high .inbox-header {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-bottom-color: #000000 !important;
+}
+
+.contrast-high .inbox-header h4,
+.contrast-high .inbox-header h4 i,
+.contrast-high .notification-sender,
+.contrast-high .notification-subject,
+.contrast-high .notification-time,
+.contrast-high .notification-preview,
+.contrast-high .inbox-footer,
+.contrast-high .modal-header {
+    color: #000000 !important;
+}
+
+.contrast-high .inbox-body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+.contrast-high .notification-item {
+    background-color: #ffffff !important;
+    border-bottom-color: #000000 !important;
+    color: #000000 !important;
+}
+
+.contrast-high .notification-item:hover {
+    background-color: #f0f0f0 !important;
+}
+
+.contrast-high .notification-item.unread {
+    background: #ffffff !important;
+    border-left-color: #000000 !important;
+    color: #000000 !important;
+}
+
+.contrast-high .notification-icon {
+    background-color: #f0f0f0 !important;
+    color: #000000 !important;
+}
+
+.contrast-high .notification-item:hover .notification-icon {
+    background-color: #e0e0e0 !important;
+}
+
+.contrast-high .alert {
+    color: #000000 !important;
+}
+
+.contrast-high .alert-success {
+    background: #ffffff !important;
+    border: 2px solid #000000 !important;
+    color: #000000 !important;
+}
+
+.contrast-high .alert-danger {
+    background: #ffffff !important;
+    border: 2px solid #000000 !important;
+    color: #000000 !important;
+}
+
+.contrast-high .modal-content {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+.contrast-high .modal-body {
+    background: #ffffff !important;
+    color: #000000 !important;
+}
+
+.contrast-high .modal-body h6,
+.contrast-high .modal-body p {
+    color: #000000 !important;
+}
+
+.contrast-high .modal-body .alert {
+    background: #ffffff !important;
+    border: 2px solid #000000 !important;
+    color: #000000 !important;
+}
+
+.contrast-high .modal-footer {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-top-color: #000000 !important;
+}
+
+.contrast-high .notification-detail-message h6 {
+    color: #000000 !important;
+}
+
+.contrast-high .notification-detail-message p {
+    color: #000000 !important;
+}
+
+.contrast-high .page-link {
+    color: #000000 !important;
+    border-color: #000000 !important;
+    background-color: #ffffff !important;
+}
+
+.contrast-high .page-link:hover {
+    background-color: #f0f0f0 !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+/* Very High Contrast Mode - Notifications Page Specific */
+.contrast-very-high .inbox-header {
+    background: #000000 !important;
+    color: #ffff00 !important;
+    border-bottom-color: #ffff00 !important;
+}
+
+.contrast-very-high .inbox-header h4,
+.contrast-very-high .inbox-header h4 i,
+.contrast-very-high .notification-sender,
+.contrast-very-high .notification-subject,
+.contrast-very-high .notification-time,
+.contrast-very-high .notification-preview,
+.contrast-very-high .inbox-footer,
+.contrast-very-high .modal-header {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .inbox-body {
+    background: #000000 !important;
+    color: #ffff00 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .notification-item {
+    background-color: #000000 !important;
+    border-bottom-color: #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .notification-item:hover {
+    background-color: #1a1a1a !important;
+}
+
+.contrast-very-high .notification-item.unread {
+    background: #000000 !important;
+    border-left-color: #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .notification-icon {
+    background-color: #1a1a1a !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .notification-item:hover .notification-icon {
+    background-color: #2a2a2a !important;
+}
+
+.contrast-very-high .unread-dot {
+    background: #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .alert {
+    color: #ffff00 !important;
+    background: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .alert-success {
+    background: #000000 !important;
+    border: 2px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .alert-danger {
+    background: #000000 !important;
+    border: 2px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .modal-content {
+    background: #000000 !important;
+    color: #ffff00 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .modal-body {
+    background: #000000 !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .modal-body h6,
+.contrast-very-high .modal-body p {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .modal-body .alert {
+    background: #000000 !important;
+    border: 2px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .modal-footer {
+    background: #000000 !important;
+    color: #ffff00 !important;
+    border-top-color: #ffff00 !important;
+}
+
+.contrast-very-high .notification-detail-message h6 {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .notification-detail-message p {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .page-link {
+    color: #ffff00 !important;
+    border-color: #ffff00 !important;
+    background-color: #000000 !important;
+}
+
+.contrast-very-high .page-link:hover {
+    background-color: #1a1a1a !important;
+    color: #ffff00 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .page-item.active .page-link {
+    background: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .inbox-header .badge {
+    background: #ffff00 !important;
+    color: #000000 !important;
+}
+
+/* High Contrast Mode - Button and Text Color Utilities */
+.contrast-high .btn-link {
+    color: #000000 !important;
+    background: transparent !important;
+    border: 2px solid #000000 !important;
+    padding: 0.4rem 0.8rem !important;
+}
+
+.contrast-high .btn-link:hover,
+.contrast-high .btn-link:focus {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000 !important;
+}
+
+.contrast-high .btn-link i {
+    color: #000000 !important;
+}
+
+.contrast-high .btn-link:hover i,
+.contrast-high .btn-link:focus i {
+    color: #ffffff !important;
+}
+
+.contrast-high .text-danger {
+    color: #721c24 !important;
+}
+
+.contrast-high .btn.text-danger {
+    color: #721c24 !important;
+}
+
+.contrast-high .btn.text-danger:hover,
+.contrast-high .btn.text-danger:focus {
+    color: #721c24 !important;
+}
+
+.contrast-high .notification-actions .btn {
+    color: #721c24 !important;
+    border: 2px solid #721c24 !important;
+}
+
+.contrast-high .notification-actions .btn:hover {
+    background: #721c24 !important;
+    color: #ffffff !important;
+}
+
+/* Very High Contrast Mode - Button and Text Color Utilities */
+.contrast-very-high .btn-link {
+    color: #ffff00 !important;
+    background: transparent !important;
+    border: 3px solid #ffff00 !important;
+    padding: 0.4rem 0.8rem !important;
+}
+
+.contrast-very-high .btn-link:hover,
+.contrast-very-high .btn-link:focus {
+    background: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-link i {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-link:hover i,
+.contrast-very-high .btn-link:focus i {
+    color: #000000 !important;
+}
+
+.contrast-very-high .text-danger {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .btn.text-danger {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .btn.text-danger:hover,
+.contrast-very-high .btn.text-danger:focus {
+    color: #ffff00 !important;
+}
+
+.contrast-very-high .notification-actions .btn {
+    color: #ffff00 !important;
+    border: 3px solid #ffff00 !important;
+}
+
+.contrast-very-high .notification-actions .btn:hover {
+    background: #ffff00 !important;
+    color: #000000 !important;
+}
+
+/* High Contrast Mode - Bootstrap Button Classes */
+.contrast-high .btn-primary {
+    background-color: #0056b3 !important;
+    color: #ffffff !important;
+    border-color: #0056b3 !important;
+}
+
+.contrast-high .btn-primary:hover,
+.contrast-high .btn-primary:focus,
+.contrast-high .btn-primary:active {
+    background-color: #003d82 !important;
+    color: #ffffff !important;
+    border-color: #003d82 !important;
+}
+
+.contrast-high .btn-secondary {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+    border-color: #6c757d !important;
+}
+
+.contrast-high .btn-secondary:hover,
+.contrast-high .btn-secondary:focus,
+.contrast-high .btn-secondary:active {
+    background-color: #545b62 !important;
+    color: #ffffff !important;
+    border-color: #545b62 !important;
+}
+
+.contrast-high .btn-success {
+    background-color: #155724 !important;
+    color: #ffffff !important;
+    border-color: #155724 !important;
+}
+
+.contrast-high .btn-success:hover,
+.contrast-high .btn-success:focus,
+.contrast-high .btn-success:active {
+    background-color: #0d3419 !important;
+    color: #ffffff !important;
+    border-color: #0d3419 !important;
+}
+
+.contrast-high .btn-danger {
+    background-color: #721c24 !important;
+    color: #ffffff !important;
+    border-color: #721c24 !important;
+}
+
+.contrast-high .btn-danger:hover,
+.contrast-high .btn-danger:focus,
+.contrast-high .btn-danger:active {
+    background-color: #531019 !important;
+    color: #ffffff !important;
+    border-color: #531019 !important;
+}
+
+.contrast-high .btn-warning {
+    background-color: #856404 !important;
+    color: #ffffff !important;
+    border-color: #856404 !important;
+}
+
+.contrast-high .btn-warning:hover,
+.contrast-high .btn-warning:focus,
+.contrast-high .btn-warning:active {
+    background-color: #614003 !important;
+    color: #ffffff !important;
+    border-color: #614003 !important;
+}
+
+.contrast-high .btn-info {
+    background-color: #004085 !important;
+    color: #ffffff !important;
+    border-color: #004085 !important;
+}
+
+.contrast-high .btn-info:hover,
+.contrast-high .btn-info:focus,
+.contrast-high .btn-info:active {
+    background-color: #002653 !important;
+    color: #ffffff !important;
+    border-color: #002653 !important;
+}
+
+.contrast-high .btn-outline-primary {
+    color: #0056b3 !important;
+    border-color: #0056b3 !important;
+    background-color: #ffffff !important;
+}
+
+.contrast-high .btn-outline-primary:hover,
+.contrast-high .btn-outline-primary:focus,
+.contrast-high .btn-outline-primary:active {
+    background-color: #0056b3 !important;
+    color: #ffffff !important;
+    border-color: #0056b3 !important;
+}
+
+.contrast-high .btn-outline-secondary {
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+    background-color: #ffffff !important;
+}
+
+.contrast-high .btn-outline-secondary:hover,
+.contrast-high .btn-outline-secondary:focus,
+.contrast-high .btn-outline-secondary:active {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+    border-color: #6c757d !important;
+}
+
+.contrast-high .btn-outline-danger {
+    color: #721c24 !important;
+    border-color: #721c24 !important;
+    background-color: #ffffff !important;
+}
+
+.contrast-high .btn-outline-danger:hover,
+.contrast-high .btn-outline-danger:focus,
+.contrast-high .btn-outline-danger:active {
+    background-color: #721c24 !important;
+    color: #ffffff !important;
+    border-color: #721c24 !important;
+}
+
+.contrast-high .btn-outline-warning {
+    color: #856404 !important;
+    border-color: #856404 !important;
+    background-color: #ffffff !important;
+}
+
+.contrast-high .btn-outline-warning:hover,
+.contrast-high .btn-outline-warning:focus,
+.contrast-high .btn-outline-warning:active {
+    background-color: #856404 !important;
+    color: #ffffff !important;
+    border-color: #856404 !important;
+}
+
+.contrast-high .btn-outline-success {
+    color: #155724 !important;
+    border-color: #155724 !important;
+    background-color: #ffffff !important;
+}
+
+.contrast-high .btn-outline-success:hover,
+.contrast-high .btn-outline-success:focus,
+.contrast-high .btn-outline-success:active {
+    background-color: #155724 !important;
+    color: #ffffff !important;
+    border-color: #155724 !important;
+}
+
+.contrast-high .btn-outline-info {
+    color: #004085 !important;
+    border-color: #004085 !important;
+    background-color: #ffffff !important;
+}
+
+.contrast-high .btn-outline-info:hover,
+.contrast-high .btn-outline-info:focus,
+.contrast-high .btn-outline-info:active {
+    background-color: #004085 !important;
+    color: #ffffff !important;
+    border-color: #004085 !important;
+}
+
+/* Very High Contrast Mode - Bootstrap Button Classes */
+.contrast-very-high .btn-primary {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-primary:hover,
+.contrast-very-high .btn-primary:focus,
+.contrast-very-high .btn-primary:active {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-secondary {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-secondary:hover,
+.contrast-very-high .btn-secondary:focus,
+.contrast-very-high .btn-secondary:active {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-success,
+.contrast-very-high .btn-danger,
+.contrast-very-high .btn-warning,
+.contrast-very-high .btn-info {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-success:hover,
+.contrast-very-high .btn-success:focus,
+.contrast-very-high .btn-success:active,
+.contrast-very-high .btn-danger:hover,
+.contrast-very-high .btn-danger:focus,
+.contrast-very-high .btn-danger:active,
+.contrast-very-high .btn-warning:hover,
+.contrast-very-high .btn-warning:focus,
+.contrast-very-high .btn-warning:active,
+.contrast-very-high .btn-info:hover,
+.contrast-very-high .btn-info:focus,
+.contrast-very-high .btn-info:active {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
+}
+
+.contrast-very-high .btn-outline-primary,
+.contrast-very-high .btn-outline-secondary,
+.contrast-very-high .btn-outline-danger,
+.contrast-very-high .btn-outline-warning,
+.contrast-very-high .btn-outline-success,
+.contrast-very-high .btn-outline-info {
+    color: #ffff00 !important;
+    border-color: #ffff00 !important;
+    background-color: #000000 !important;
+}
+
+.contrast-very-high .btn-outline-primary:hover,
+.contrast-very-high .btn-outline-primary:focus,
+.contrast-very-high .btn-outline-primary:active,
+.contrast-very-high .btn-outline-secondary:hover,
+.contrast-very-high .btn-outline-secondary:focus,
+.contrast-very-high .btn-outline-secondary:active,
+.contrast-very-high .btn-outline-danger:hover,
+.contrast-very-high .btn-outline-danger:focus,
+.contrast-very-high .btn-outline-danger:active,
+.contrast-very-high .btn-outline-warning:hover,
+.contrast-very-high .btn-outline-warning:focus,
+.contrast-very-high .btn-outline-warning:active,
+.contrast-very-high .btn-outline-success:hover,
+.contrast-very-high .btn-outline-success:focus,
+.contrast-very-high .btn-outline-success:active,
+.contrast-very-high .btn-outline-info:hover,
+.contrast-very-high .btn-outline-info:focus,
+.contrast-very-high .btn-outline-info:active {
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #ffff00 !important;
 }
 </style>

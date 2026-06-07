@@ -61,6 +61,15 @@ class PwdProfile extends Model
         'pwd_id_number',
         'pwd_id_photo',
         'profile_completed',
+        // Comprehensive fields
+        'nationality',
+        'education_level',
+        'school_name',
+        'limitations',
+        'desired_position',
+        'employment_type',
+        'preferred_work_conditions',
+        'accessibility_accommodations',
     ];
 
     /**

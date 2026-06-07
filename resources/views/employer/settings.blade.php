@@ -8,7 +8,7 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8">
+    <div class="col-12 col-lg-8">
         <!-- Account Settings -->
         <div class="card mb-4">
             <div class="card-header">
@@ -86,7 +86,7 @@
     </div>
 
     <!-- Sidebar -->
-    <div class="col-lg-4">
+    <div class="col-12 col-lg-4 mt-4 mt-lg-0">
         <!-- Quick Actions -->
         <div class="card mb-4">
             <div class="card-header">
@@ -103,6 +103,12 @@
                     <a href="{{ route('contact') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-headset"></i> Contact Support
                     </a>
+                    <form method="POST" action="{{ route('logout') }}" class="d-grid gap-2 mt-2">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -121,7 +127,12 @@
                     <p class="small">Recommendations to improve your account security:</p>
                     <ul class="small">
                         @foreach($recommendations as $recommendation)
-                            <li>{{ $recommendation }}</li>
+                            <li>
+                                @if(is_array($recommendation) && isset($recommendation['icon']))
+                                    <i class="{{ $recommendation['icon'] }} me-1"></i>
+                                @endif
+                                {{ is_array($recommendation) && isset($recommendation['message']) ? $recommendation['message'] : (is_string($recommendation) ? $recommendation : '') }}
+                            </li>
                         @endforeach
                     </ul>
                 @else

@@ -7,6 +7,7 @@ use App\Http\Middleware\EmployerMiddleware;
 use App\Http\Middleware\VerifiedEmployer;
 use App\Http\Middleware\PendingEmployerVerification;
 use App\Http\Middleware\CheckPwdProfileComplete;
+use App\Http\Middleware\LogAnnouncementRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

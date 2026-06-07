@@ -1,0 +1,23 @@
+<form method="POST" action="/admin/announcements" style="border: 2px solid #007bff; padding: 20px; max-width: 600px; margin: 50px auto;">
+    @csrf
+
+    <h2>Announcement Test Form</h2>
+
+    <div style="margin-bottom: 15px;">
+        <label for="title">Title:</label><br>
+        <input type="text" name="title" id="title" value="Test Announcement" required style="width: 100%; padding: 8px;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label for="content">Content:</label><br>
+        <textarea name="content" id="content" required style="width: 100%; padding: 8px; height: 150px;">This is a test announcement to verify the system is working correctly.</textarea>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>
+            <input type="checkbox" name="is_active" value="1" checked> Make Active (send notifications)
+        </label>
+    </div>
+
+    <button type="submit" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer;">Submit Announcement</button>
+</form>

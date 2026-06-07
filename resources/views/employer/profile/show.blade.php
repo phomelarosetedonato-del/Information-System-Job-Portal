@@ -13,7 +13,7 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8">
+    <div class="col-12 col-lg-8">
         <!-- Profile Overview -->
         <div class="card mb-4">
             <div class="card-header">
@@ -129,7 +129,7 @@
     </div>
 
     <!-- Sidebar -->
-    <div class="col-lg-4">
+    <div class="col-12 col-lg-4 mt-4 mt-lg-0">
         <!-- Verification Status -->
         <div class="card mb-4">
             <div class="card-header">

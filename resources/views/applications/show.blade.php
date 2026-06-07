@@ -84,7 +84,11 @@
                                         <label class="small text-muted mb-1">Location</label>
                                         <p class="mb-0">
                                             <i class="fas fa-map-marker-alt text-muted me-2"></i>
-                                            {{ $application->jobPosting->location ?? 'Not specified' }}
+                                            @if($application->jobPosting->location && is_object($application->jobPosting->location))
+                                                {{ $application->jobPosting->location->name ?? 'Not specified' }}
+                                            @else
+                                                {{ $application->jobPosting->location ?? 'Not specified' }}
+                                            @endif
                                         </p>
                                     </div>
                                     <div class="col-12">
@@ -166,6 +170,41 @@
 
                 <!-- Job Description & Requirements -->
                 <div class="row">
+                    <!-- Resume Section -->
+                    <div class="col-12 mb-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-file-pdf me-2"></i>
+                                    Resume
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                @if($application->resume_path)
+                                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <i class="fas fa-file-pdf fa-2x text-danger me-3"></i>
+                                            <div>
+                                                <p class="mb-1 fw-semibold text-dark">{{ basename($application->resume_path) }}</p>
+                                                <small class="text-muted">Click the button below to download your resume</small>
+                                            </div>
+                                        </div>
+                                        <a href="{{ asset('storage/' . $application->resume_path) }}"
+                                           target="_blank"
+                                           class="btn btn-primary ms-2"
+                                           title="Download Resume">
+                                            <i class="fas fa-download me-2"></i> Download
+                                        </a>
+                                    </div>
+                                @else
+                                    <div class="alert alert-warning mb-0" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>No Resume Found</strong> - This application was submitted without a resume attached.
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                     <!-- Job Description -->
                     <div class="col-lg-6 mb-4">
                         <div class="card shadow-sm border-0 h-100">

@@ -1,0 +1,44 @@
+# PWD Profile Images - Quick Fix Reference
+
+## Problem
+Profile images broken/not loading for PWD users.
+
+## Root Cause
+Missing storage symlink (`public/storage`).
+
+## Solution
+One command fixes it:
+```bash
+php artisan storage:link
+```
+
+## What This Does
+Creates a link from `public/storage` → `storage/app/public` so the web server can serve uploaded files.
+
+## Verification
+```bash
+# Should return: True
+Test-Path "public\storage"
+```
+
+## Result
+✅ Profile photos now load
+✅ PWD ID photos display
+✅ All user uploads accessible
+
+## Why It Happens
+- Symlink is server-specific (not in git)
+- Needs to be created after deployment
+- Fresh installations need this command
+
+## To Prevent
+Add to deployment scripts:
+```bash
+php artisan storage:link
+```
+
+---
+
+**Status**: ✅ FIXED
+**Command Run**: `php artisan storage:link`
+**Date**: November 26, 2025

@@ -32,7 +32,7 @@
 
     <!-- Applications by Category -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-4">
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-4">
@@ -134,7 +134,7 @@
 
     <!-- Quick Insights -->
     <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card shadow-sm border-start border-primary border-4">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">
@@ -156,7 +156,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card shadow-sm border-start border-success border-4">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">
@@ -173,7 +173,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card shadow-sm border-start border-info border-4">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">

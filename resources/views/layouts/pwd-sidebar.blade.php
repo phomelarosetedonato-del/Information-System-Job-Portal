@@ -526,7 +526,10 @@
             <span></span>
         </button>
 
-        <div class="nav-brand">PWD Portal</div>
+        <div class="nav-brand">
+            <img src="{{ asset('images/pwdlogo.png') }}" alt="PWD System Logo" style="height:38px; width:auto; margin-right:10px; vertical-align:middle;">
+            PWD Portal
+        </div>
 
     <div class="nav-main" role="navigation" aria-label="Primary navigation">
             <!-- Dashboard -->
@@ -645,21 +648,21 @@
 
                 <!-- Profile Dropdown -->
                 <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="Profile menu">
-                    <a href="{{ route('profile.show') }}" class="dropdown-item {{ request()->routeIs('profile.show') ? 'active' : '' }}">
-                        <i class="fas fa-user"></i>
-                        <span>My Profile</span>
-                    </a>
-
-                    <a href="{{ route('profile.edit') }}" class="dropdown-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                        <i class="fas fa-cog"></i>
-                        <span>Edit Profile</span>
-                    </a>
 
                     @if(!auth()->user()->hasPwdProfile() || !auth()->user()->isProfileComplete())
-                        <a href="{{ route('profile.pwd-complete-form') }}" class="dropdown-item {{ request()->routeIs('profile.pwd-complete*') ? 'active' : '' }}">
+                        <a href="{{ route('profile.form', ['mode' => 'complete']) }}" class="dropdown-item {{ request()->routeIs('profile.form') && request()->get('mode') == 'complete' ? 'active' : '' }}">
                             <i class="fas fa-clipboard-check"></i>
                             <span>Complete PWD Profile</span>
                             <span class="badge bg-danger ms-auto">!</span>
+                        </a>
+                    @else
+                        <a href="{{ route('profile.show') }}" class="dropdown-item {{ request()->routeIs('profile.show') ? 'active' : '' }}">
+                            <i class="fas fa-user"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="{{ route('profile.form', ['mode' => 'edit']) }}" class="dropdown-item {{ request()->routeIs('profile.form') && request()->get('mode') == 'edit' ? 'active' : '' }}">
+                            <i class="fas fa-cog"></i>
+                            <span>Edit Profile</span>
                         </a>
                     @endif
 
@@ -782,16 +785,26 @@
         <div class="mobile-menu-header">Settings</div>
 
         <!-- Edit Profile -->
-        <a href="{{ route('profile.edit') }}" class="mobile-menu-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+        <a href="{{ route('profile.form', ['mode' => 'edit']) }}" class="mobile-menu-item {{ request()->routeIs('profile.form') && request()->get('mode') == 'edit' ? 'active' : '' }}">
             <i class="fas fa-cog"></i>
             <span>Edit Profile</span>
         </a>
 
+
         @if(!auth()->user()->hasPwdProfile() || !auth()->user()->isProfileComplete())
-            <a href="{{ route('profile.pwd-complete-form') }}" class="mobile-menu-item {{ request()->routeIs('profile.pwd-complete*') ? 'active' : '' }}">
+            <a href="{{ route('profile.form', ['mode' => 'complete']) }}" class="mobile-menu-item {{ request()->routeIs('profile.form') && request()->get('mode') == 'complete' ? 'active' : '' }}">
                 <i class="fas fa-clipboard-check"></i>
                 <span>Complete PWD Profile</span>
                 <span class="badge bg-danger">!</span>
+            </a>
+        @else
+            <a href="{{ route('profile.show') }}" class="mobile-menu-item {{ request()->routeIs('profile.show') ? 'active' : '' }}">
+                <i class="fas fa-user"></i>
+                <span>My Profile</span>
+            </a>
+            <a href="{{ route('profile.form', ['mode' => 'edit']) }}" class="mobile-menu-item {{ request()->routeIs('profile.form') && request()->get('mode') == 'edit' ? 'active' : '' }}">
+                <i class="fas fa-cog"></i>
+                <span>Edit Profile</span>
             </a>
         @endif
 

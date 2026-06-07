@@ -55,15 +55,11 @@
         <!-- Right Side - Password Reset Form -->
         <div class="col-lg-6 d-flex align-items-center justify-content-center p-4 p-lg-5">
             <div class="w-100" style="max-width: 450px;">
-                <!-- Header -->
-                <div class="text-center mb-5">
+                <!-- Green Header -->
+                <div class="text-center mb-5" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); border-radius: 12px; padding: 32px 0 20px 0; color: #fff;">
                     <div class="mb-3">
-                        <i class="fas fa-key fa-3x text-success"></i>
+                        <i class="fas fa-key fa-3x" style="color: #fff;"></i>
                     </div>
-                    <h1 class="h2 fw-bold mb-2" style="color: #10b981;">Forgot Your Password?</h1>
-                    <p class="text-muted">
-                        No worries! Enter your email and we'll send you instructions to reset your password.
-                    </p>
                 </div>
 
                 <!-- Status Messages -->

@@ -12,9 +12,24 @@
 
     <style>
         .employer-sidebar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2E8B57 0%, #1A5D34 100%); /* Green gradient */
             min-height: 100vh;
+            height: 100vh;
             color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 16.6667%; /* col-md-2 */
+            z-index: 1030;
+            overflow-y: auto;
+        }
+        @media (max-width: 991.98px) {
+            .employer-sidebar {
+                position: static !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+            }
         }
         .employer-sidebar .nav-link {
             color: rgba(255,255,255,0.8);
@@ -52,108 +67,45 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 employer-sidebar">
-                <div class="position-sticky pt-3">
-                    <div class="text-center mb-4">
-                        <h4 class="fw-bold">{{ config('app.name') }}</h4>
-                        <small>Employer Portal</small>
+            <!-- Mobile Navbar -->
+            <nav class="navbar navbar-dark bg-success d-md-none">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#employerSidebar" aria-controls="employerSidebar" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <span class="navbar-brand ms-2">{{ config('app.name') }} <small class="fw-normal">Employer</small></span>
+                </div>
+            </nav>
+
+            <!-- Sidebar (offcanvas for mobile, sticky for desktop) -->
+
+            <div class="col-md-3 col-lg-2 px-0">
+                <!-- Desktop Sidebar: fixed and full height -->
+                <div class="d-none d-md-block">
+                    <div class="employer-sidebar pt-3">
+                        @include('employer.layouts.sidebar')
                     </div>
-
-                    <!-- Employer Info -->
-                    <div class="text-center mb-4 p-3 bg-dark bg-opacity-25 rounded">
-                        <div class="mb-2">
-                            <i class="fas fa-building fa-2x"></i>
-                        </div>
-                        <h6 class="mb-1">{{ Auth::user()->company_name ?? 'Company Name' }}</h6>
-                        <small class="text-muted">{{ Auth::user()->email }}</small>
-                        <div class="mt-2">
-                            @if(Auth::user()->isEmployerVerified())
-                                <span class="verification-badge">
-                                    <i class="fas fa-check-circle"></i> Verified
-                                </span>
-                            @elseif(Auth::user()->isEmployerPendingVerification())
-                                <span class="verification-badge pending-badge">
-                                    <i class="fas fa-clock"></i> Pending
-                                </span>
-                            @else
-                                <span class="verification-badge rejected-badge">
-                                    <i class="fas fa-exclamation-circle"></i> Unverified
-                                </span>
-                            @endif
-                        </div>
+                </div>
+                <!-- Offcanvas Sidebar for Mobile -->
+                <div class="offcanvas offcanvas-start employer-sidebar d-md-none" tabindex="-1" id="employerSidebar" aria-labelledby="employerSidebarLabel" style="height: 100vh;">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="employerSidebarLabel">{{ config('app.name') }}</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                     </div>
-
-                    <!-- Navigation -->
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('employer.dashboard') ? 'active' : '' }}"
-                               href="{{ route('employer.dashboard') }}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-
-                        @if(Auth::user()->isEmployerVerified())
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('employer.job-postings.*') ? 'active' : '' }}"
-                               href="{{ route('employer.job-postings.index') }}">
-                                <i class="fas fa-briefcase"></i> Job Postings
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('employer.applications.*') ? 'active' : '' }}"
-                               href="{{ route('employer.applications.index') }}">
-                                <i class="fas fa-users"></i> Applications
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-chart-bar"></i> Analytics
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('employer.analytics.overview') }}">Overview</a></li>
-                                <li><a class="dropdown-item" href="{{ route('employer.analytics.performance') }}">Performance</a></li>
-                                <li><a class="dropdown-item" href="{{ route('employer.analytics.applications-trend') }}">Application Trends</a></li>
-                                <li><a class="dropdown-item" href="{{ route('employer.analytics.jobs-performance') }}">Jobs Performance</a></li>
-                            </ul>
-                        </li>
-                        @endif
-
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('employer.profile.*') ? 'active' : '' }}"
-                               href="{{ route('employer.profile.show') }}">
-                                <i class="fas fa-user"></i> Profile
-                            </a>
-                        </li>
-
-                        @if(!Auth::user()->isEmployerVerified())
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('employer.verification.*') ? 'active' : '' }}"
-                               href="{{ route('employer.verification.status') }}">
-                                <i class="fas fa-shield-alt"></i> Verification
-                            </a>
-                        </li>
-                        @endif
-
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('employer.settings') ? 'active' : '' }}"
-                               href="{{ route('employer.settings') }}">
-                                <i class="fas fa-cog"></i> Settings
-                            </a>
-                        </li>
-                    </ul>
+                    <div class="offcanvas-body p-0">
+                        @include('employer.layouts.sidebar')
+                    </div>
                 </div>
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4" style="margin-left: 0; margin-right: 0;">
                 @include('layouts.partials.alerts')
 
                 @yield('content')
             </div>
         </div>
     </div>
-
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

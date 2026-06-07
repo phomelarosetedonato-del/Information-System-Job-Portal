@@ -24,14 +24,13 @@
                     <i class="fas fa-copy"></i> Duplicate
                 </button>
             </form>
-            <form action="{{ route('admin.job-postings.destroy', $jobPosting->id) }}" method="POST" class="d-inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger btn-sm"
-                        onclick="return confirm('Are you sure you want to delete this job posting?')">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </form>
+            <button type="button" class="btn btn-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirmModal"
+                    data-job-id="{{ $jobPosting->id }}"
+                    data-job-title="{{ $jobPosting->title }}">
+                <i class="fas fa-trash"></i> Delete
+            </button>
             <a href="{{ route('admin.job-postings.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
@@ -80,7 +79,7 @@
                             <table class="table table-borderless table-sm">
                                 <tr>
                                     <td class="font-weight-bold" width="40%">Location:</td>
-                                    <td>{{ $jobPosting->location }}</td>
+                                    <td>{{ $jobPosting->location->name ?? $jobPosting->location }}</td>
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold">Employment Type:</td>
@@ -244,4 +243,57 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Job Posting?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Are you sure you want to delete this job posting?</p>
+                <p class="fw-bold mb-3"><span id="jobTitleDisplay"></span></p>
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone. All associated applications will also be deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <form id="deleteJobForm" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete Job Posting
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+    @parent
+
+    <script>
+        // Delete confirmation modal handler
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        deleteConfirmModal.addEventListener('show.bs.modal', function(e) {
+            const button = e.relatedTarget;
+            const jobId = button.getAttribute('data-job-id');
+            const jobTitle = button.getAttribute('data-job-title');
+
+            document.getElementById('jobTitleDisplay').textContent = '"' + jobTitle + '"';
+
+            const form = document.getElementById('deleteJobForm');
+            form.action = `/admin/job-postings/${jobId}`;
+        });
+    </script>
 @endsection

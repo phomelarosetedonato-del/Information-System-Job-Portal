@@ -18,7 +18,7 @@
 
     <!-- Performance Summary -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title mb-3">
@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title mb-3">
@@ -143,7 +143,7 @@
                                     </td>
                                     <td>
                                         <div class="progress" style="height: 20px; min-width: 100px;">
-                                            <div class="progress-bar {{ $performance['completion_rate'] >= 75 ? 'bg-success' : ($performance['completion_rate'] >= 50 ? 'bg-warning' : 'bg-info') }}" 
+                                            <div class="progress-bar {{ $performance['completion_rate'] >= 75 ? 'bg-success' : ($performance['completion_rate'] >= 50 ? 'bg-warning' : 'bg-info') }}"
                                                  style="width: {{ $performance['completion_rate'] }}%">
                                                 {{ number_format($performance['completion_rate'], 0) }}%
                                             </div>
@@ -176,7 +176,7 @@
                     <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
                     <h5 class="text-muted">No Job Performance Data Available</h5>
                     <p class="text-muted">Start posting jobs to see performance metrics here.</p>
-                    <a href="{{ route('job-postings.create') }}" class="btn btn-primary">
+                    <a href="{{ route('employer.job-postings.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Create Job Posting
                     </a>
                 </div>
@@ -188,7 +188,7 @@
     <!-- Performance Insights -->
     @if(!empty($jobsPerformance))
     <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card shadow-sm h-100" style="border-left: 4px solid #0d6efd;">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">
@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card shadow-sm h-100" style="border-left: 4px solid #198754;">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">
@@ -232,7 +232,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card shadow-sm h-100" style="border-left: 4px solid #ffc107;">
                 <div class="card-body">
                     <h6 class="text-muted mb-2">

@@ -171,7 +171,13 @@
                                     <div>
                                         <strong>{{ $application->jobPosting->title }}</strong>
                                         <br>
-                                        <small class="text-muted">{{ $application->jobPosting->location }}</small>
+                                        <small class="text-muted">
+                                            @if($application->jobPosting->location && is_object($application->jobPosting->location))
+                                                {{ $application->jobPosting->location->name }}
+                                            @else
+                                                {{ $application->jobPosting->location ?? 'N/A' }}
+                                            @endif
+                                        </small>
                                     </div>
                                 </td>
                                 <td>

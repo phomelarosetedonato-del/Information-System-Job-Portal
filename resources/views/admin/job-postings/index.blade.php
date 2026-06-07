@@ -173,7 +173,7 @@
                                         <small class="text-muted">Created: {{ $job->created_at->format('M d, Y') }}</small>
                                     </td>
                                     <td>{{ $job->company }}</td>
-                                    <td>{{ $job->location }}</td>
+                                    <td>{{ $job->location->name ?? $job->location }}</td>
                                     <td>
                                         <span class="badge bg-info text-white">{{ $job->employment_type }}</span>
                                     </td>
@@ -231,16 +231,14 @@
                                             </form>
 
                                             <!-- Delete Button -->
-                                            <form action="{{ route('admin.job-postings.destroy', $job->id) }}"
-                                                  method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm"
-                                                        title="Delete"
-                                                        onclick="return confirm('Are you sure you want to delete this job posting? This action cannot be undone.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    title="Delete"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteConfirmModal"
+                                                    data-job-id="{{ $job->id }}"
+                                                    data-job-title="{{ $job->title }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -270,6 +268,39 @@
             @endif
         </div>
     </div>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Delete Job Posting?
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Are you sure you want to delete this job posting?</p>
+                    <p class="fw-bold mb-3"><span id="jobTitleDisplay"></span></p>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. All associated applications will also be deleted.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <form id="deleteJobForm" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Delete Job Posting
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -280,6 +311,19 @@
         // Auto-submit form when status changes
         document.getElementById('status').addEventListener('change', function() {
             this.form.submit();
+        });
+
+        // Delete confirmation modal handler
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        deleteConfirmModal.addEventListener('show.bs.modal', function(e) {
+            const button = e.relatedTarget;
+            const jobId = button.getAttribute('data-job-id');
+            const jobTitle = button.getAttribute('data-job-title');
+
+            document.getElementById('jobTitleDisplay').textContent = '"' + jobTitle + '"';
+
+            const form = document.getElementById('deleteJobForm');
+            form.action = `/admin/job-postings/${jobId}`;
         });
 
         // DataTable initialization (if you have DataTables)

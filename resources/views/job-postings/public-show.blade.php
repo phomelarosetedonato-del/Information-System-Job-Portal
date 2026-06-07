@@ -50,7 +50,13 @@
                         <div class="col-md-6 mb-3">
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-map-marker-alt text-muted me-2"></i>
-                                <span>{{ $jobPosting->location }}</span>
+                                <span>
+                                    @if(is_array($jobPosting->location) || is_object($jobPosting->location))
+                                        {{ $jobPosting->location['name'] ?? $jobPosting->location->name ?? 'N/A' }}
+                                    @else
+                                        {{ $jobPosting->location ?? 'N/A' }}
+                                    @endif
+                                </span>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -75,8 +81,15 @@
                                     You have already applied for this position.
                                 </div>
                             @else
-                                <form action="{{ route('job.apply', $jobPosting) }}" method="POST" class="mb-4">
+                                <form action="{{ route('job.apply', $jobPosting) }}" method="POST" class="mb-4" enctype="multipart/form-data">
                                     @csrf
+                                    <div class="mb-3">
+                                        <label for="resume" class="form-label">Attach Resume (PDF, DOC, DOCX, TXT, max 5MB)</label>
+                                        <input type="file" class="form-control @error('resume') is-invalid @enderror" id="resume" name="resume" accept=".pdf,.doc,.docx,.txt">
+                                        @error('resume')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                     <button type="submit" class="btn btn-lg w-100" style="background: linear-gradient(90deg, #1A5D34 0%, #2E8B57 100%); color: white; border: none;">
                                         <i class="fas fa-paper-plane me-2"></i> Apply Now
                                     </button>

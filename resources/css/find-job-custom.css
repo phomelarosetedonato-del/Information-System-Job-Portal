@@ -1,0 +1,20 @@
+/* Green Apply Now button for Find Job cards */
+.btn-apply-now {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-apply-now:hover, .btn-apply-now:focus {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.22);
+}
+/* Custom darker shadow for job and training cards on Find Job page */
+.job-card,
+.training-card {
+    box-shadow: 0 4px 24px rgba(16, 24, 40, 0.28) !important;
+    border-radius: 1.5rem !important; /* Darker, more pronounced border radius */
+}

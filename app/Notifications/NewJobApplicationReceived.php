@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\JobApplication;
 
-class NewJobApplicationReceived extends Notification 
+class NewJobApplicationReceived extends Notification
 {
     use Queueable;
 
@@ -31,14 +31,25 @@ class NewJobApplicationReceived extends Notification
         $job = $this->application->jobPosting;
 
         return (new MailMessage)
-                    ->subject("New Job Application Received - {$job->title}")
-                    ->greeting("Hello Admin,")
-                    ->line("A new job application has been submitted.")
-                    ->line("**Applicant:** {$user->name}")
-                    ->line("**Position:** {$job->title}")
-                    ->line("**Company:** {$job->company}")
-                    ->line("**Applied On:** {$this->application->created_at->format('M j, Y g:i A')}")
-                    ->action('Review Application', route('admin.applications.index'))
+                    ->subject("📋 New Job Application Received - {$job->title}")
+                    ->greeting("Hello {$notifiable->name},")
+                    ->line("A new job application has been submitted for the position you posted.")
+                    ->line('')
+                    ->line('**Applicant Information:**')
+                    ->line("👤 **Name:** {$user->name}")
+                    ->line("📧 **Email:** {$user->email}")
+                    ->line('')
+                    ->line('**Position Details:**')
+                    ->line("💼 **Position:** {$job->title}")
+                    ->line("🏢 **Company:** {$job->company}")
+                    ->line("📍 **Location:** " . ($job->location ?? 'Not specified'))
+                    ->line('')
+                    ->line('**Application Submission:**')
+                    ->line("📅 **Applied On:** {$this->application->created_at->format('M j, Y g:i A')}")
+                    ->line("📄 **Resume:** " . ($this->application->resume_path ? '✅ Attached' : '❌ Not provided'))
+                    ->line('')
+                    ->action('Review Application & Download Resume', route('admin.applications.show', $this->application))
+                    ->line('The applicant\'s resume and full application details are available for download on the application details page.')
                     ->line('Please review the application at your earliest convenience.');
     }
 

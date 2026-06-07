@@ -15,6 +15,46 @@ use Illuminate\Support\Facades\Schema;
 class JobPostingController extends Controller
 {
     /**
+     * Display a listing of job postings for the currently authenticated employer
+     */
+    public function employerIndex(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->isEmployer()) {
+            abort(403, 'Access denied. Employer account required.');
+        }
+
+        $query = JobPosting::where('created_by', $user->id)->with(['applications']);
+
+        // Optional: Add filters (status, search, etc.)
+        if ($request->has('status') && $request->status) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            } elseif ($request->status === 'expired') {
+                $query->where('application_deadline', '<', now());
+            }
+        }
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%$search%")
+                  ->orWhere('location', 'like', "%$search%")
+                  ->orWhere('employment_type', 'like', "%$search%")
+                  ->orWhere('salary', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ->orWhere('company', 'like', "%$search%")
+                  ;
+            });
+        }
+
+        $jobPostings = $query->latest()->paginate(12);
+
+        return view('jobpostings.index', compact('jobPostings'));
+    }
+
+    /**
      * Display a listing of job postings (Admin view)
      */
     public function index(Request $request)
@@ -57,7 +97,7 @@ class JobPostingController extends Controller
      */
     public function publicIndex(Request $request)
     {
-        $query = JobPosting::with(['suitableDisabilityTypes'])
+        $query = JobPosting::with(['suitableDisabilityTypes', 'location'])
             ->where('is_active', true)
             ->where(function($query) {
                 $query->where('application_deadline', '>=', now())
@@ -79,14 +119,25 @@ class JobPostingController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', '%' . $search . '%')
                   ->orWhere('company', 'like', '%' . $search . '%')
-                  ->orWhere('location', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%');
+                  ->orWhere('description', 'like', '%' . $search . '%')
+                  ->orWhereHas('location', function($q) use ($search) {
+                      $q->where('name', 'like', '%' . $search . '%');
+                  });
             });
         }
 
+            // ========== ACCOMMODATIONS FILTER ==========
+            if ($request->has('accommodations') && $request->input('accommodations') == '1') {
+                $query->where('provides_accommodations', true);
+            }
+
         // ========== LOCATION FILTER ==========
+        // Filter by location name via relationship with locations table
         if (!empty($filters['location'])) {
-            $query->where('location', 'like', '%' . $filters['location'] . '%');
+            $locationName = $filters['location'];
+            $query->whereHas('location', function($q) use ($locationName) {
+                $q->where('name', '=', $locationName);
+            });
         }
 
         // ========== EMPLOYMENT TYPE FILTER ==========
@@ -95,9 +146,15 @@ class JobPostingController extends Controller
         }
 
         // ========== FILTER BY SUITABLE DISABILITY TYPES ==========
+        // Include jobs that either:
+        // 1. Explicitly support the selected disability type, OR
+        // 2. Have NO disability type restrictions (open to all)
         if (!empty($filters['disability_type_id'])) {
-            $query->whereHas('suitableDisabilityTypes', function($q) use ($filters) {
-                $q->where('disability_types.id', $filters['disability_type_id']);
+            $query->where(function($q) use ($filters) {
+                $q->whereHas('suitableDisabilityTypes', function($subQ) use ($filters) {
+                    $subQ->where('disability_types.id', $filters['disability_type_id']);
+                })
+                ->orWhereDoesntHave('suitableDisabilityTypes');
             });
         }
 
@@ -136,15 +193,20 @@ class JobPostingController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $employmentTypes = [
-            'Full-time' => 'Full-time',
-            'Part-time' => 'Part-time',
-            'Contract' => 'Contract',
-            'Temporary' => 'Temporary',
-            'Internship' => 'Internship',
-            'Freelance' => 'Freelance'
-        ];
 
+        $employmentTypes = [
+            'Full-time', 'Part-time', 'Contract', 'Temporary', 'Internship', 'Freelance'
+        ];
+        $locations = \App\Models\Location::activeLocations();
+        $disabilityTypes = \App\Models\DisabilityType::activeTypes();
+
+        // If employer, use employer view
+        $user = Auth::user();
+        if ($user && $user->isEmployer()) {
+            return view('employer.job-postings.create', compact('employmentTypes', 'locations', 'disabilityTypes'));
+        }
+
+        // Admin view (legacy)
         $experienceLevels = [
             'Entry Level' => 'Entry Level',
             'Mid Level' => 'Mid Level',
@@ -152,7 +214,6 @@ class JobPostingController extends Controller
             'Executive' => 'Executive',
             'Not Specified' => 'Not Specified'
         ];
-
         $jobCategories = [
             'IT & Software' => 'IT & Software',
             'Healthcare' => 'Healthcare',
@@ -165,10 +226,8 @@ class JobPostingController extends Controller
             'Hospitality' => 'Hospitality',
             'General' => 'General'
         ];
-
         $disabilityTypes = DisabilityType::orderBy('type')->get();
-
-        return view('admin.job-postings.create', compact('employmentTypes', 'experienceLevels', 'jobCategories', 'disabilityTypes'));
+        return view('admin.job-postings.create', compact('employmentTypes', 'experienceLevels', 'jobCategories', 'disabilityTypes', 'locations'));
     }
 
     /**
@@ -186,21 +245,29 @@ class JobPostingController extends Controller
         if (empty($validated['application_deadline'])) {
             $validated['application_deadline'] = null;
         }
-        // Safely get authenticated user's ID; use optional() to avoid calling methods on unexpected types
         $validated['created_by'] = optional(Auth::user())->id;
         $validated['is_active'] = $request->has('is_active');
-        $validated['is_active'] = $request->has('is_active');
+
 
         // Set default values if not provided
         $validated['views'] = 0;
-        $validated['job_category'] = $validated['job_category'] ?? 'General';
-        $validated['experience_level'] = $validated['experience_level'] ?? 'Not Specified';
+        // Remove fields not in DB
+        unset($validated['job_category'], $validated['experience_level']);
 
-        $job = JobPosting::create($validated);
+        // Ensure location_id is set
+        $job = new JobPosting();
+        $job->fill($validated);
+        $job->location_id = $validated['location_id'];
+        $job->save();
 
         // Sync suitable disability types pivot table
         $job->suitableDisabilityTypes()->sync($request->input('disability_type_ids', []));
 
+        $user = Auth::user();
+        if ($user && $user->isEmployer()) {
+            return redirect()->route('employer.job-postings.index')
+                ->with('success', 'Job posting created successfully.');
+        }
         return redirect()->route('admin.job-postings.index')
             ->with('success', 'Job posting created successfully.');
     }
@@ -265,10 +332,23 @@ class JobPostingController extends Controller
      */
     public function edit(JobPosting $jobPosting)
     {
+        $user = Auth::user();
+        if ($user && $user->isEmployer() && $jobPosting->created_by === $user->id) {
+            $employmentTypes = [
+                'Full-time', 'Part-time', 'Contract', 'Temporary', 'Internship', 'Volunteer', 'Other'
+            ];
+            $disabilityTypes = \App\Models\DisabilityType::orderBy('type')->get();
+            $locations = \App\Models\Location::activeLocations();
+            return view('employer.job-postings.edit', [
+                'job' => $jobPosting,
+                'employmentTypes' => $employmentTypes,
+                'disabilityTypes' => $disabilityTypes,
+                'locations' => $locations,
+            ]);
+        }
         if (!Gate::allows('update-job-posting', $jobPosting)) {
             abort(403, 'Unauthorized action.');
         }
-
         $employmentTypes = [
             'Full-time' => 'Full-time',
             'Part-time' => 'Part-time',
@@ -277,7 +357,6 @@ class JobPostingController extends Controller
             'Internship' => 'Internship',
             'Freelance' => 'Freelance'
         ];
-
         $experienceLevels = [
             'Entry Level' => 'Entry Level',
             'Mid Level' => 'Mid Level',
@@ -285,7 +364,6 @@ class JobPostingController extends Controller
             'Executive' => 'Executive',
             'Not Specified' => 'Not Specified'
         ];
-
         $jobCategories = [
             'IT & Software' => 'IT & Software',
             'Healthcare' => 'Healthcare',
@@ -298,19 +376,28 @@ class JobPostingController extends Controller
             'Hospitality' => 'Hospitality',
             'General' => 'General'
         ];
-
         $disabilityTypes = DisabilityType::orderBy('type')->get();
-
-        return view('admin.job-postings.edit', compact('jobPosting', 'employmentTypes', 'experienceLevels', 'jobCategories', 'disabilityTypes'));
+        $locations = \App\Models\Location::activeLocations();
+        return view('admin.job-postings.edit', compact('jobPosting', 'employmentTypes', 'experienceLevels', 'jobCategories', 'disabilityTypes', 'locations'));
     }
+
+    //
 
     /**
      * Update the specified job posting
      */
     public function update(Request $request, JobPosting $jobPosting)
     {
-        if (!Gate::allows('update-job-posting', $jobPosting)) {
-            abort(403, 'Unauthorized action.');
+        $user = Auth::user();
+        // Allow both admin and employer to update, but check ownership for employer
+        if ($user && $user->isEmployer()) {
+            if ($jobPosting->created_by !== $user->id) {
+                abort(403, 'Access denied. You do not own this job posting.');
+            }
+        } else {
+            if (!Gate::allows('update-job-posting', $jobPosting)) {
+                abort(403, 'Unauthorized action.');
+            }
         }
 
         $validated = $this->validateJobPosting($request, $jobPosting);
@@ -320,13 +407,21 @@ class JobPostingController extends Controller
             $validated['application_deadline'] = null;
         }
 
-        $validated['is_active'] = $request->has('is_active');
+        // Handle is_active checkbox (checked = 1, unchecked = 0)
+        $validated['is_active'] = $request->has('is_active') ? 1 : 0;
 
-        $jobPosting->update($validated);
+        // Ensure location_id is set
+        $jobPosting->fill($validated);
+        $jobPosting->location_id = $validated['location_id'];
+        $jobPosting->save();
 
         // Sync disability types
         $jobPosting->suitableDisabilityTypes()->sync($request->input('disability_type_ids', []));
 
+        if ($user && $user->isEmployer()) {
+            return redirect()->route('employer.job-postings.index')
+                ->with('success', 'Job posting updated successfully.');
+        }
         return redirect()->route('admin.job-postings.index')
             ->with('success', 'Job posting updated successfully.');
     }
@@ -336,17 +431,30 @@ class JobPostingController extends Controller
      */
     public function destroy(JobPosting $jobPosting)
     {
-        if (!Gate::allows('delete-job-posting', $jobPosting)) {
-            abort(403, 'Unauthorized action.');
+        $user = Auth::user();
+        $jobTitle = $jobPosting->title;
+
+        // Allow both admin and employer to delete, but check ownership for employer
+        if ($user && $user->isEmployer()) {
+            if ($jobPosting->created_by !== $user->id) {
+                abort(403, 'Access denied. You do not own this job posting.');
+            }
+        } else {
+            if (!Gate::allows('delete-job-posting', $jobPosting)) {
+                abort(403, 'Unauthorized action.');
+            }
         }
 
         // Delete associated applications first
         $jobPosting->applications()->delete();
-
         $jobPosting->delete();
 
+        if ($user && $user->isEmployer()) {
+            return redirect()->route('employer.job-postings.index')
+                ->with('success', "Job posting '{$jobTitle}' has been deleted successfully.");
+        }
         return redirect()->route('admin.job-postings.index')
-            ->with('success', 'Job posting deleted successfully.');
+            ->with('success', "Job posting '{$jobTitle}' has been deleted successfully.");
     }
 
     /**
@@ -358,7 +466,7 @@ class JobPostingController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string|min:50',
             'requirements' => 'required|string|min:50',
-            'location' => 'required|string|max:255',
+            'location_id' => 'required|integer|exists:locations,id',
             'company' => 'required|string|max:255',
             'employment_type' => 'required|string|max:255',
             'application_deadline' => 'nullable|date|after_or_equal:today',
@@ -604,5 +712,18 @@ public function analytics()  // Changed from statistics() to analytics()
             'expired' => $expired,
             'without_deadline' => $withoutDeadline
         ]);
+    }
+
+    /**
+     * Display the specified job posting for the employer dashboard
+     */
+    public function employerShow(JobPosting $job_posting)
+    {
+        $user = Auth::user();
+        if (!$user->isEmployer() || $job_posting->created_by !== $user->id) {
+            abort(403, 'Access denied. You do not own this job posting.');
+        }
+        $job_posting->load(['suitableDisabilityTypes', 'location']);
+        return view('employer.job-postings.show', ['job' => $job_posting]);
     }
 }

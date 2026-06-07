@@ -42,7 +42,7 @@
                         </div>
                         <div class="mb-2">
                             <strong><i class="fas fa-map-marker-alt"></i> Location:</strong>
-                            {{ $job->location }}
+                            {{ $job->location?->name ?? 'N/A' }}
                         </div>
                         <div class="mb-2">
                             <strong><i class="fas fa-clock"></i> Employment Type:</strong>

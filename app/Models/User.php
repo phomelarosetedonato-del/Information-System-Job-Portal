@@ -59,6 +59,7 @@ use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobApplication[] $jobApplications
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Document[] $documents
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Resume[] $resumes
+ * @method \Illuminate\Database\Query\Builder notifications()
  */
 class User extends Authenticatable
 {
@@ -78,7 +79,8 @@ class User extends Authenticatable
         'company_size', 'company_type', 'website', 'description',
         'verification_documents', 'verification_submitted_at',
         'can_resubmit_verification_at', 'verification_rejected_reason',
-        'verification_notes', 'verification_expires_at'
+        'verification_notes', 'verification_expires_at',
+        'is_qualified', 'qualification_score', 'qualified_at', 'available_for_jobs'
     ];
 
     protected $hidden = [
@@ -123,6 +125,10 @@ class User extends Authenticatable
             'can_resubmit_verification_at' => 'datetime',
             'verification_expires_at' => 'datetime',
             'verification_documents' => 'array',
+            'is_qualified' => 'boolean',
+            'qualification_score' => 'float',
+            'qualified_at' => 'datetime',
+            'available_for_jobs' => 'boolean',
         ];
     }
 

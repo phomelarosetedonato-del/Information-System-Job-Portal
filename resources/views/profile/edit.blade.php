@@ -121,6 +121,12 @@
                         </button>
                     </div>
                 @endif
+            @if($hasProfilePhoto && $pwdProfile)
+                <form id="deletePhotoForm" action="{{ route('profile.deletePhoto') }}" method="POST" style="display: none;" onsubmit="return confirm('Are you sure you want to remove your profile photo?')">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
             </div>
             <div class="col-md-8">
                 <div class="mb-3">
@@ -523,7 +529,7 @@
     </div>
 </div>
 @endsection
-...existing code...
+
 
 @section('styles')
 <style>
@@ -870,6 +876,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('✓ Submit button initialized and ready');
 
+        // Fix: Reset button reloads page to restore original values
+        const resetBtn = form.querySelector('button[type="reset"]');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = window.location.pathname;
+            });
+        }
+
         form.addEventListener('submit', function(e) {
             console.log('✓ Form submit event triggered');
 
@@ -880,7 +895,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 hiddenInput.name = 'skills';
                 hiddenInput.value = skillsOtherInput.value.trim();
                 form.appendChild(hiddenInput);
-                skillsSelect.disabled = true;
             }
 
             // Handle "Others" options for qualifications
@@ -890,7 +904,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 hiddenInput.name = 'qualifications';
                 hiddenInput.value = qualificationsOtherInput.value.trim();
                 form.appendChild(hiddenInput);
-                qualificationsSelect.disabled = true;
             }
 
             // Handle "Others" options for special needs
@@ -900,8 +913,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 hiddenInput.name = 'special_needs';
                 hiddenInput.value = specialNeedsOtherInput.value.trim();
                 form.appendChild(hiddenInput);
-                specialNeedsSelect.disabled = true;
             }
+
+            // Always re-enable selects after submission attempt
+            if (skillsSelect) skillsSelect.disabled = false;
+            if (qualificationsSelect) qualificationsSelect.disabled = false;
+            if (specialNeedsSelect) specialNeedsSelect.disabled = false;
 
             // Validate only VISIBLE required fields
             const requiredFields = form.querySelectorAll('[required]');

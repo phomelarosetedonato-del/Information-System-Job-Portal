@@ -321,9 +321,12 @@ class LoginController extends Controller
             'ip' => $request->ip(),
         ]);
 
-        // Check verification status
+        // Block login if not approved
         if (!$user->isEmployerVerified()) {
-            session()->flash('info', 'Complete employer verification to post jobs.');
+            Auth::logout();
+            throw ValidationException::withMessages([
+                $this->username() => 'Wait until the admin accepts your account.'
+            ]);
         }
 
         // Always redirect employers to their dashboard

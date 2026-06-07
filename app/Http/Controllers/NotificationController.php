@@ -26,7 +26,23 @@ class NotificationController extends Controller
 
         if ($notification) {
             $notification->markAsRead();
+
+            // Return JSON if it's an AJAX request
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Notification marked as read.'
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Notification marked as read.');
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notification not found.'
+            ], 404);
         }
 
         return redirect()->back()->with('error', 'Notification not found.');

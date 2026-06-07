@@ -19,9 +19,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Seed disability types for PWD portal
+        // Seed all seeders
         $this->call([
             \Database\Seeders\DisabilityTypeSeeder::class,
+            \Database\Seeders\AdminUserSeeder::class,
+            \Database\Seeders\LocationSeeder::class,
+            \Database\Seeders\WorkArrangementOptionSeeder::class,
+            \Database\Seeders\AssistiveDeviceOptionSeeder::class,
+            \Database\Seeders\JobPostingSeeder::class,
         ]);
     }
 }

@@ -3,11 +3,11 @@
 @section('title', 'Employer Dashboard')
 
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-1 mb-2 mb-md-3 border-bottom gap-1 gap-md-0">
     <div>
-        <h1 class="h2 mb-1">Employer Dashboard</h1>
-        <p class="text-muted mb-0">
-            Welcome back, {{ Auth::user()->name }}! 
+        <h1 class="h2 mb-1 mb-md-1">Employer Dashboard</h1>
+        <p class="text-muted mb-0 mt-1 mt-md-0">
+            Welcome back, {{ Auth::user()->name }}!
             @if(Auth::user()->isEmployerVerified())
                 <span class="badge bg-success"><i class="fas fa-check-circle"></i> Verified</span>
             @else
@@ -57,7 +57,7 @@
 <div class="row mb-4">
     @if(Auth::user()->isEmployerVerified())
         <!-- Verified Employer Stats -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -74,7 +74,7 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3 mb-4">
             <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -91,7 +91,7 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3 mb-4">
             <div class="card border-left-info shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -108,7 +108,7 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3 mb-4">
             <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -126,7 +126,7 @@
         </div>
     @else
         <!-- Unverified Employer Stats -->
-        <div class="col-md-6 mb-4">
+        <div class="col-12 col-md-6 mb-4">
             <div class="card">
                 <div class="card-body text-center">
                     <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <div class="col-md-6 mb-4">
+        <div class="col-12 col-md-6 mb-4">
             <div class="card">
                 <div class="card-body text-center">
                     <i class="fas fa-tasks fa-3x text-info mb-3"></i>
@@ -176,7 +176,7 @@
 <!-- Recent Activity Section -->
 <div class="row">
     <!-- Recent Applications -->
-    <div class="col-lg-6 mb-4">
+    <div class="col-12 col-lg-6 mb-4">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white border-bottom py-3">
                 <div class="d-flex justify-content-between align-items-center">
@@ -192,12 +192,12 @@
                 @if(isset($recentApplications) && $recentApplications->count() > 0)
                     <div class="list-group list-group-flush">
                         @foreach($recentApplications as $application)
-                            <a href="{{ route('employer.applications.show', $application) }}" 
+                            <a href="{{ route('employer.applications.show', $application) }}"
                                class="list-group-item list-group-item-action border-0 py-3">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
                                         <div class="d-flex align-items-center mb-2">
-                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" 
+                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
                                                  style="width: 40px; height: 40px; flex-shrink: 0;">
                                                 <i class="fas fa-user"></i>
                                             </div>
@@ -207,12 +207,12 @@
                                             </div>
                                         </div>
                                         <p class="mb-1 small text-muted">
-                                            <i class="fas fa-briefcase"></i> 
+                                            <i class="fas fa-briefcase"></i>
                                             Applied for <strong>{{ $application->jobPosting->title ?? 'Job' }}</strong>
                                         </p>
                                         @if($application->user->pwdProfile)
                                             <p class="mb-0 small text-muted">
-                                                <i class="fas fa-wheelchair"></i> 
+                                                <i class="fas fa-wheelchair"></i>
                                                 {{ $application->user->pwdProfile->disability_type ?? 'PWD Candidate' }}
                                             </p>
                                         @endif
@@ -245,7 +245,7 @@
     </div>
 
     <!-- Upcoming Deadlines -->
-    <div class="col-lg-6 mb-4">
+    <div class="col-12 col-lg-6 mb-4">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white border-bottom py-3">
                 <div class="d-flex justify-content-between align-items-center">
@@ -261,7 +261,7 @@
                 @if(isset($upcomingDeadlines) && $upcomingDeadlines->count() > 0)
                     <div class="list-group list-group-flush">
                         @foreach($upcomingDeadlines as $job)
-                            <a href="{{ route('employer.job-postings.show', $job) }}" 
+                            <a href="{{ route('employer.job-postings.show', $job) }}"
                                class="list-group-item list-group-item-action border-0 py-3">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
@@ -277,11 +277,11 @@
                                         </div>
                                         <div class="d-flex gap-2">
                                             <span class="badge bg-primary">
-                                                <i class="fas fa-file-alt"></i> 
+                                                <i class="fas fa-file-alt"></i>
                                                 {{ $job->applications_count ?? 0 }} applications
                                             </span>
                                             <span class="badge bg-info">
-                                                <i class="fas fa-eye"></i> 
+                                                <i class="fas fa-eye"></i>
                                                 {{ $job->views ?? 0 }} views
                                             </span>
                                         </div>
@@ -323,25 +323,25 @@
             </div>
             <div class="card-body">
                 <div class="row text-center">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-12 col-md-3 mb-3">
                         <a href="{{ route('employer.job-postings.create') }}" class="btn btn-outline-primary btn-lg w-100 h-100 py-3">
                             <i class="fas fa-plus fa-2x mb-2"></i><br>
                             Post New Job
                         </a>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-12 col-md-3 mb-3">
                         <a href="{{ route('employer.applications.index') }}" class="btn btn-outline-success btn-lg w-100 h-100 py-3">
                             <i class="fas fa-users fa-2x mb-2"></i><br>
                             View Applications
                         </a>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-12 col-md-3 mb-3">
                         <a href="{{ route('employer.analytics.overview') }}" class="btn btn-outline-info btn-lg w-100 h-100 py-3">
                             <i class="fas fa-chart-bar fa-2x mb-2"></i><br>
                             View Analytics
                         </a>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-12 col-md-3 mb-3">
                         <a href="{{ route('employer.profile.edit') }}" class="btn btn-outline-warning btn-lg w-100 h-100 py-3">
                             <i class="fas fa-user-edit fa-2x mb-2"></i><br>
                             Update Profile

@@ -59,6 +59,8 @@ class AdminMiddleware
             'user_role' => $user->role,
             'user_name' => $user->name,
             'path' => $request->path(),
+            'method' => $request->method(),
+            'isAdmin' => $user->isAdmin() ? 'true' : 'false',
             'ip' => $request->ip()
         ]);
 
@@ -69,9 +71,18 @@ class AdminMiddleware
 
         // Redirect based on user type
         if ($user->isPwd()) {
+            Log::warning('AdminMiddleware: Redirecting PWD user to dashboard', [
+                'user_id' => $user->id,
+                'path' => $request->path(),
+            ]);
             return redirect()->route('dashboard')->with('error', 'Access denied. Admin privileges required.');
         }
 
+        Log::warning('AdminMiddleware: Redirecting user to home', [
+            'user_id' => $user->id,
+            'path' => $request->path(),
+            'role' => $user->role,
+        ]);
         return redirect('/')->with('error', 'Access denied. Admin privileges required.');
     }
 }

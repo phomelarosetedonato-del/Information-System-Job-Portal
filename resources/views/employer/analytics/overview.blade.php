@@ -15,7 +15,7 @@
 
     <!-- Key Statistics Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -63,7 +63,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -82,7 +82,7 @@
 
     <!-- Performance Metrics -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-4">
@@ -118,7 +118,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-4">
@@ -160,7 +160,7 @@
 
     <!-- Quick Actions -->
     <div class="row g-3">
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <a href="{{ route('employer.analytics.performance') }}" class="text-decoration-none">
                 <div class="card border-0 shadow-sm h-100 hover-shadow">
                     <div class="card-body text-center">
@@ -172,7 +172,7 @@
             </a>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <a href="{{ route('employer.analytics.application-trends') }}" class="text-decoration-none">
                 <div class="card border-0 shadow-sm h-100 hover-shadow">
                     <div class="card-body text-center">
@@ -184,7 +184,7 @@
             </a>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <a href="{{ route('employer.analytics.jobs-performance') }}" class="text-decoration-none">
                 <div class="card border-0 shadow-sm h-100 hover-shadow">
                     <div class="card-body text-center">
@@ -196,7 +196,7 @@
             </a>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
             <a href="{{ route('employer.dashboard') }}" class="text-decoration-none">
                 <div class="card border-0 shadow-sm h-100 hover-shadow">
                     <div class="card-body text-center">

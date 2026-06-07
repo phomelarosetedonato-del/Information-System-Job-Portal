@@ -161,6 +161,7 @@
                                             <th class="border-0 ps-4">Applicant & Job Details</th>
                                             <th class="border-0">Company</th>
                                             <th class="border-0">Applied Date</th>
+                                            <th class="border-0">Resume</th>
                                             <th class="border-0">Status</th>
                                             <th class="border-0 pe-4 text-end">Actions</th>
                                         </tr>
@@ -194,6 +195,15 @@
                                                         <div class="mb-1">{{ $application->created_at->format('M j, Y') }}</div>
                                                         <div>{{ $application->created_at->diffForHumans() }}</div>
                                                     </div>
+                                                </td>
+                                                <td>
+                                                    @if($application->resume_path)
+                                                        <a href="{{ asset('storage/' . $application->resume_path) }}" target="_blank" class="btn btn-outline-info btn-sm" title="Download Resume" data-bs-toggle="tooltip">
+                                                            <i class="fas fa-file-download me-1"></i> Resume
+                                                        </a>
+                                                    @else
+                                                        <span class="text-muted small"><i class="fas fa-exclamation-circle me-1"></i> No Resume</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <span class="badge
@@ -244,6 +254,16 @@
                                                                         <i class="fas fa-check me-2"></i>Approve
                                                                     </button>
                                                                 </form>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item text-success mark-qualified-trigger"
+                                                                        data-user-id="{{ $application->user->id }}"
+                                                                        data-applicant-name="{{ $application->user->name }}"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#markQualifiedModal">
+                                                                    <i class="fas fa-check-double me-2"></i>Mark as Qualified
+                                                                </button>
                                                             </li>
                                                             <li><hr class="dropdown-divider"></li>
                                                             <li>
@@ -300,6 +320,49 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mark as Qualified Modal -->
+<div class="modal fade" id="markQualifiedModal" tabindex="-1" aria-labelledby="markQualifiedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="markQualifiedModalLabel">Mark Applicant as Qualified</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="markQualifiedForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p class="text-muted"><strong id="qualifiedApplicantInfo"></strong></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="qualification_score" class="form-label">Qualification Score (0-100)</label>
+                        <input type="number" class="form-control" id="qualification_score" name="qualification_score"
+                               min="0" max="100" step="0.01" required placeholder="Enter score out of 100">
+                        <div class="form-text">Score should be between 0 and 100</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="available_for_jobs" name="available_for_jobs" value="1" checked>
+                            <label class="form-check-label" for="available_for_jobs">
+                                Available for Job Opportunities
+                            </label>
+                        </div>
+                        <div class="form-text">Check if this applicant is available to receive job recommendations</div>
+                    </div>
+                    <!-- Hidden input to handle unchecked state -->
+                    <input type="hidden" name="available_for_jobs" value="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-double me-2"></i>Mark as Qualified
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -376,6 +439,56 @@
         const rejectionModal = new bootstrap.Modal(document.getElementById('rejectionModal'));
         let currentApplicationUrl = '';
 
+        // Mark as Qualified Modal Logic
+        const markQualifiedModal = new bootstrap.Modal(document.getElementById('markQualifiedModal'));
+        let currentUserId = '';
+
+        // Handle mark as qualified trigger clicks
+        document.querySelectorAll('.mark-qualified-trigger').forEach(button => {
+            button.addEventListener('click', function() {
+                currentUserId = this.getAttribute('data-user-id');
+                const applicantName = this.getAttribute('data-applicant-name');
+
+                // Set the application info text
+                document.getElementById('qualifiedApplicantInfo').textContent =
+                    `Mark "${applicantName}" as qualified`;
+
+                // Set the form action to the correct endpoint
+                document.getElementById('markQualifiedForm').action =
+                    "{{ url('admin/qualifications') }}/" + currentUserId + "/mark-qualified";
+
+                // Reset form fields
+                document.getElementById('qualification_score').value = '';
+                document.getElementById('available_for_jobs').checked = true;
+
+                // Show the modal
+                markQualifiedModal.show();
+            });
+        });
+
+        // Handle Mark as Qualified form submission
+        document.getElementById('markQualifiedForm').addEventListener('submit', function(e) {
+            const score = parseFloat(document.getElementById('qualification_score').value);
+
+            if (isNaN(score) || score < 0 || score > 100) {
+                e.preventDefault();
+                alert('Qualification score must be a number between 0 and 100.');
+                return;
+            }
+
+            // Optional: Add confirmation
+            if (!confirm('Are you sure you want to mark this applicant as qualified?')) {
+                e.preventDefault();
+            }
+        });
+
+        // Reset modal when closed
+        document.getElementById('markQualifiedModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('qualification_score').value = '';
+            document.getElementById('available_for_jobs').checked = true;
+            currentUserId = '';
+        });
+
         // Handle rejection trigger clicks
         document.querySelectorAll('.rejection-trigger').forEach(button => {
             button.addEventListener('click', function() {
@@ -387,8 +500,8 @@
                 document.getElementById('rejectionApplicationInfo').textContent =
                     `Reject application from "${applicantName}" for "${jobTitle}"?`;
 
-                // Set the form action
-                currentApplicationUrl = "{{ url('admin/applications') }}/" + applicationId + "/update-status";
+                // Set the form action to the correct reject endpoint
+                currentApplicationUrl = "{{ url('admin/applications') }}/" + applicationId + "/reject";
                 document.getElementById('rejectionForm').action = currentApplicationUrl;
 
                 // Show the modal

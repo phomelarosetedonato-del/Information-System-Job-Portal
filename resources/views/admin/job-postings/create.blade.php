@@ -44,11 +44,18 @@
                                     @enderror
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="location" class="font-weight-bold">Location *</label>
-                                    <input type="text" class="form-control @error('location') is-invalid @enderror"
-                                           id="location" name="location" value="{{ old('location') }}" required>
-                                    @error('location')
+                                <div class="form-group position-relative">
+                                    <label for="location_id" class="font-weight-bold">Location *</label>
+                                    <div class="dropdown-icon-wrapper">
+                                        <select class="form-control @error('location_id') is-invalid @enderror pr-5" id="location_id" name="location_id" required>
+                                            <option value="">Select Location</option>
+                                            @foreach($locations as $location)
+                                                <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{ $location->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="dropdown-caret"><i class="fas fa-chevron-down"></i></span>
+                                    </div>
+                                    @error('location_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -254,6 +261,29 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    .dropdown-icon-wrapper {
+        position: relative;
+    }
+    .dropdown-icon-wrapper select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 2.5rem;
+    }
+    .dropdown-caret {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #888;
+        font-size: 1rem;
+    }
+</style>
+@endpush
 @endsection
 
 @section('scripts')

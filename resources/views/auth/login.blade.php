@@ -91,6 +91,19 @@
                 </div>
 
                 <!-- Session Status Messages -->
+                                <!-- Pending Approval Message -->
+                                @if ($errors->has('login') && $errors->first('login') === 'Wait until the admin accepts your account.')
+                                    <div class="alert alert-warning alert-dismissible fade show" role="alert" aria-live="assertive">
+                                        <div class="d-flex">
+                                            <i class="fas fa-hourglass-half me-3 mt-1" aria-hidden="true"></i>
+                                            <div>
+                                                <strong>Pending Approval</strong><br>
+                                                Your employer account is awaiting admin approval. Please wait until the admin accepts your account before logging in.
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                @endif
                 @if (session('status'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
                         <div class="d-flex">

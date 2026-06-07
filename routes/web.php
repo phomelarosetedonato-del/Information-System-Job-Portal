@@ -23,6 +23,14 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EmployerController;
 use App\Http\Controllers\EmployerVerificationController;
+use App\Http\Controllers\ContactMessageController;
+
+// Auth Controllers
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\VerificationController;
 
 // =========================================================================
 // PUBLIC ROUTES (No authentication required)
@@ -30,6 +38,7 @@ use App\Http\Controllers\EmployerVerificationController;
 
 // Home and static pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/find-job', [HomeController::class, 'findJob'])->name('find-job');
 Route::get('/search', [HomeController::class, 'search'])->name('home.search');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
@@ -60,8 +69,8 @@ Route::get('/test-translation-fix', function () {
 // Authentication Routes
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
-Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
 
 // Password Reset Routes
 Route::prefix('password')->group(function () {
@@ -85,6 +94,14 @@ Route::prefix('jobs')->group(function () {
 Route::prefix('skill-trainings')->group(function () {
     Route::get('/', [SkillTrainingController::class, 'publicIndex'])->name('skill-trainings.public.index');
     Route::get('/{skill_training}', [SkillTrainingController::class, 'publicShow'])->name('skill-trainings.public.show');
+});
+
+// =========================================================================
+// PUBLIC ANNOUNCEMENTS ROUTES (for viewing only)
+// =========================================================================
+Route::prefix('announcements')->group(function () {
+    Route::get('/', [AnnouncementController::class, 'publicIndex'])->name('announcements.public.index');
+    Route::get('/{announcement}', [AnnouncementController::class, 'publicShow'])->name('announcements.show');
 });
 
 // Redirect /home to /dashboard for authenticated users, otherwise to home
@@ -188,7 +205,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [JobPostingController::class, 'employerIndex'])->name('index');
             Route::get('/create', [JobPostingController::class, 'create'])->name('create');
             Route::post('/', [JobPostingController::class, 'store'])->name('store');
-            Route::get('/{job_posting}', [JobPostingController::class, 'show'])->name('show');
+            Route::get('/{job_posting}', [JobPostingController::class, 'employerShow'])->name('show');
             Route::get('/{job_posting}/edit', [JobPostingController::class, 'edit'])->name('edit');
             Route::put('/{job_posting}', [JobPostingController::class, 'update'])->name('update');
             Route::delete('/{job_posting}', [JobPostingController::class, 'destroy'])->name('destroy');
@@ -216,10 +233,12 @@ Route::middleware(['auth'])->group(function () {
 
         // Employer Analytics and Reports
         Route::prefix('analytics')->name('analytics.')->group(function () {
-            Route::get('/overview', [EmployerController::class, 'analyticsOverview'])->name('overview');
-            Route::get('/performance', [EmployerController::class, 'performanceMetrics'])->name('performance');
-            Route::get('/application-trends', [EmployerController::class, 'applicationTrends'])->name('application-trends');
-            Route::get('/jobs-performance', [EmployerController::class, 'jobsPerformance'])->name('jobs-performance');
+              Route::get('/overview', [EmployerController::class, 'analyticsOverview'])->name('overview');
+              Route::get('/performance', [EmployerController::class, 'performanceMetrics'])->name('performance');
+              Route::get('/application-trends', [EmployerController::class, 'applicationTrends'])->name('application-trends');
+              Route::get('/jobs-performance', [EmployerController::class, 'jobsPerformance'])->name('jobs-performance');
+              // Added missing route for applications-trend (hyphen)
+              Route::get('/applications-trend', [\App\Http\Controllers\EmployerAnalyticsController::class, 'applicationsTrend'])->name('applications-trend');
         });
     });
 
@@ -239,7 +258,15 @@ Route::middleware(['auth'])->group(function () {
     // =========================================================================
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'show'])->name('profile.show');
-        Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+
+        // ADDED: Profile completion routes - FIX FOR MISSING ROUTE
+        Route::get('/complete', [ProfileController::class, 'showPwdCompleteForm'])->name('profile.pwd-complete-form');
+        Route::post('/complete', [ProfileController::class, 'completePwdProfile'])->name('profile.complete-pwd-profile');
+
+        // Unified profile form (edit/complete)
+        Route::get('/form/{mode?}', [ProfileController::class, 'form'])->name('profile.form');
+        Route::post('/form/{mode?}', [ProfileController::class, 'submitForm'])->name('profile.form.submit');
+        Route::put('/form/{mode?}', [ProfileController::class, 'submitForm'])->name('profile.form.submit');
         Route::put('/update', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('profile.deletePhoto');
 
@@ -247,10 +274,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/resume/upload', [ProfileController::class, 'uploadResume'])->name('profile.uploadResume');
         Route::get('/resume/download', [ProfileController::class, 'downloadResume'])->name('profile.downloadResume');
         Route::delete('/resume/delete', [ProfileController::class, 'deleteResume'])->name('profile.deleteResume');
-
-        // PWD Profile Completion Routes
-        Route::get('/complete', [ProfileController::class, 'showPwdCompleteForm'])->name('profile.pwd-complete-form');
-        Route::post('/complete', [ProfileController::class, 'completePwdProfile'])->name('profile.pwd-complete');
     });
 
     // =========================================================================
@@ -265,6 +288,15 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // =========================================================================
+    // CONTACT MESSAGES ROUTES (All authenticated users - Public portal)
+    // =========================================================================
+    Route::prefix('contact-messages')->name('contact-messages.')->group(function () {
+        Route::get('/', [ContactMessageController::class, 'index'])->name('index');
+        Route::get('/{contact}', [ContactMessageController::class, 'show'])->name('show');
+        Route::post('/{contact}/mark-read', [ContactMessageController::class, 'markRead'])->name('mark-read');
+    });
+
+    // =========================================================================
     // PWD-SPECIFIC ROUTES (Protected by PwdMiddleware with Profile Completion Check)
     // =========================================================================
     Route::middleware(['pwd', 'pwd.profile.complete'])->group(function () {
@@ -275,6 +307,10 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{application}/withdraw', [JobApplicationController::class, 'withdraw'])->name('applications.withdraw');
             Route::post('/{application}/cancel', [JobApplicationController::class, 'cancel'])->name('applications.cancel');
             Route::post('/job/{job}/apply', [JobApplicationController::class, 'apply'])->name('job.apply');
+            // Redirect GET requests to the job details page (in case user clicks back button or bookmarks)
+            Route::get('/job/{job}/apply', function ($job) {
+                return redirect()->route('job-postings.public.show', $job);
+            });
         });
 
         // Training Enrollments (Protected - requires complete profile)
@@ -321,6 +357,23 @@ Route::middleware(['auth'])->group(function () {
 
         // Admin dashboard - using new separate controller
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Admin Notifications
+        Route::get('/notifications', function () {
+            $notifications = auth()->user()->notifications()->paginate(15);
+            return view('admin.notifications', ['notifications' => $notifications]);
+        })->name('notifications');
+
+        // Contact Messages Management
+        Route::prefix('contacts')->name('contacts.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ContactController::class, 'index'])->name('index');
+            Route::get('/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'show'])->name('show');
+            Route::post('/{contact}/mark-read', [\App\Http\Controllers\Admin\ContactController::class, 'markRead'])->name('mark-read');
+            Route::post('/{contact}/mark-unread', [\App\Http\Controllers\Admin\ContactController::class, 'markUnread'])->name('mark-unread');
+            Route::post('/{contact}/respond', [\App\Http\Controllers\Admin\ContactController::class, 'respond'])->name('respond');
+            Route::delete('/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy'])->name('destroy');
+            Route::get('/export/csv', [\App\Http\Controllers\Admin\ContactController::class, 'export'])->name('export');
+        });
 
         // Settings route
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
@@ -426,6 +479,29 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{announcement}', [AnnouncementController::class, 'update'])->name('update');
             Route::delete('/{announcement}', [AnnouncementController::class, 'destroy'])->name('destroy');
         });
+
+        // Qualified Applicants Management
+        Route::prefix('qualifications')->name('qualifications.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\QualificationController::class, 'index'])->name('index');
+            Route::post('/{user}/mark-qualified', [\App\Http\Controllers\Admin\QualificationController::class, 'markQualified'])->name('mark-qualified');
+            Route::post('/{user}/update', [\App\Http\Controllers\Admin\QualificationController::class, 'updateQualification'])->name('update');
+            Route::delete('/{user}', [\App\Http\Controllers\Admin\QualificationController::class, 'removeQualification'])->name('remove');
+            Route::get('/filter/{availability}', [\App\Http\Controllers\Admin\QualificationController::class, 'filterByAvailability'])->name('filter');
+            Route::get('/export/pdf', [\App\Http\Controllers\Admin\QualificationController::class, 'exportPDF'])->name('export-pdf');
+            Route::get('/export/excel', [\App\Http\Controllers\Admin\QualificationController::class, 'exportExcel'])->name('export-excel');
+        });
+
+        // Community Statistics Management
+        Route::prefix('community-statistics')->name('community-statistics.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'store'])->name('store');
+            Route::get('/{year}/edit', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'edit'])->name('edit');
+            Route::post('/{year}', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'update'])->name('update');
+            Route::delete('/{year}', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'destroy'])->name('destroy');
+            Route::get('/{year}/export-csv', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'exportCSV'])->name('export-csv');
+            Route::post('/{year}/import-csv', [\App\Http\Controllers\Admin\CommunityStatisticsController::class, 'importCSV'])->name('import-csv');
+        });
     });
 });
 
@@ -445,21 +521,21 @@ Route::middleware(['auth'])->group(function () {
 
         // Application API routes
         Route::get('/applications/{application}/status', [JobApplicationController::class, 'show'])->name('api.applications.show');
+
+        // Community Statistics API routes
+        Route::get('/community-stats/{year}', [\App\Http\Controllers\Api\CommunityStatisticsApiController::class, 'getStats'])->name('api.community-stats.get');
     });
 });
 
 // Keep the home route for Laravel compatibility
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home.redirect');
 
 // Laravel Auth Routes (keep for compatibility)
 Auth::routes(['register' => false]);
 
-
-
-
-
-
-
+// =========================================================================
+// TEST ROUTES (Development only)
+// =========================================================================
 
 // Add these test routes at the bottom of your web.php file
 Route::get('/test-email-simple', function () {
@@ -536,6 +612,7 @@ Route::get('/debug-notification', function () {
                '<br>Line: ' . $e->getLine();
     }
 });
+
 // Check queue status
 Route::get('/queue-status', function () {
     $pendingJobs = DB::table('jobs')->count();

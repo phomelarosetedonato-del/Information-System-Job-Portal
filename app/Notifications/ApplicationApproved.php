@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ApplicationApproved extends Notification 
+class ApplicationApproved extends Notification
 {
     use Queueable;
 
@@ -39,16 +39,24 @@ class ApplicationApproved extends Notification
         $company = $this->application->jobPosting->company ?? 'Unknown Company';
 
         return (new MailMessage)
-            ->subject('🎉 Your Job Application Has Been Approved! - PWD System')
-            ->greeting('Congratulations ' . $notifiable->name . '!')
-            ->line('We are pleased to inform you that your job application has been **approved**.')
-            ->line('**Job Position:** ' . $jobTitle)
-            ->line('**Company:** ' . $company)
-            ->line('**Application Date:** ' . $this->application->created_at->format('F j, Y'))
-            ->line('The employer may contact you directly for the next steps in the hiring process.')
+            ->subject('🎉 Application Approved – Congratulations! - PWD System')
+            ->greeting('Dear ' . $notifiable->name . ',')
+            ->line('**Congratulations!** Your application for the position of **' . $jobTitle . '** has been approved by the employer.')
+            ->line('After reviewing your qualifications, they are impressed with your skills and experience.')
+            ->line('')
+            ->line('✅ **Next Steps:**')
+            ->line('You are now invited to proceed to the **interview stage**. The employer will reach out with the schedule, instructions, and interview details soon.')
+            ->line('Please keep your phone and email active to ensure smooth communication.')
+            ->line('')
+            ->line('📋 **Application Details:**')
+            ->line('• **Position:** ' . $jobTitle)
+            ->line('• **Company:** ' . $company)
+            ->line('• **Application Date:** ' . $this->application->created_at->format('F j, Y'))
+            ->line('')
             ->action('View Application Details', url('/applications/' . $this->application->id))
-            ->line('Thank you for using our PWD Job Portal!')
-            ->salutation('Best Regards,<br>PWD System Team');
+            ->line('')
+            ->line('We wish you the best of luck in the next step of the hiring process. Prepare well, stay confident, and showcase your abilities—you are one step closer to achieving your career goals!')
+            ->salutation('Best regards,<br>**Alaminos City PWD Affairs Office**<br>PWD Information System Admin');
     }
 
     /**

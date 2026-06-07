@@ -65,10 +65,16 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="location" class="font-weight-bold">Location *</label>
-                                    <input type="text" class="form-control @error('location') is-invalid @enderror"
-                                           id="location" name="location" value="{{ old('location', $jobPosting->location) }}" required>
-                                    @error('location')
+                                    <label for="location_id" class="font-weight-bold">Location *</label>
+                                    <select class="form-control @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required>
+                                        <option value="">Select Location</option>
+                                        @foreach($locations ?? [] as $loc)
+                                            @if(is_object($loc) && isset($loc->id))
+                                                <option value="{{ $loc->id }}" {{ old('location_id', $jobPosting->location_id) == $loc->id ? 'selected' : '' }}>{{ $loc->name }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                    @error('location_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -285,7 +291,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6 text-right">
-                                <button type="submit" class="btn btn-primary btn-lg">
+                                <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#updateConfirmModal">
                                     <i class="fas fa-save"></i> Update Job Posting
                                 </button>
                                 <a href="{{ route('admin.job-postings.index') }}" class="btn btn-secondary btn-lg">
@@ -331,6 +337,36 @@
     </div>
 </div>
 @endif
+
+<!-- Update Confirmation Modal -->
+<div class="modal fade" id="updateConfirmModal" tabindex="-1" aria-labelledby="updateConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-primary">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="updateConfirmLabel">
+                    <i class="fas fa-pencil-alt me-2"></i>Update Job Posting?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Are you sure you want to update this job posting?</p>
+                <p class="fw-bold mb-3"><span id="jobTitleDisplay"></span></p>
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> All changes will be saved and may affect applications and user visibility.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmUpdateBtn">
+                    <i class="fas fa-check me-1"></i>Update Job Posting
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -339,6 +375,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Character count validation
     const description = document.getElementById('description');
     const requirements = document.getElementById('requirements');
+    const form = document.getElementById('jobPostingForm');
+    const updateConfirmModal = document.getElementById('updateConfirmModal');
+    const confirmUpdateBtn = document.getElementById('confirmUpdateBtn');
+    const jobTitle = document.getElementById('title').value;
 
     function validateMinLength(textarea, minLength) {
         const value = textarea.value.trim();
@@ -370,20 +410,32 @@ document.addEventListener('DOMContentLoaded', function() {
     salaryMin.addEventListener('blur', validateSalary);
     salaryMax.addEventListener('blur', validateSalary);
 
-    // Form submission validation
-    document.getElementById('jobPostingForm').addEventListener('submit', function(e) {
+    // Update confirmation modal handler
+    updateConfirmModal.addEventListener('show.bs.modal', function() {
+        document.getElementById('jobTitleDisplay').textContent = '"' + jobTitle + '"';
+    });
+
+    // Handle update confirmation button click
+    confirmUpdateBtn.addEventListener('click', function() {
         let valid = true;
+        let errorMessages = [];
 
         // Validate description length
         if (description.value.trim().length < 50) {
             description.classList.add('is-invalid');
             valid = false;
+            errorMessages.push('Job Description must be at least 50 characters');
+        } else {
+            description.classList.remove('is-invalid');
         }
 
         // Validate requirements length
         if (requirements.value.trim().length < 50) {
             requirements.classList.add('is-invalid');
             valid = false;
+            errorMessages.push('Requirements must be at least 50 characters');
+        } else {
+            requirements.classList.remove('is-invalid');
         }
 
         // Validate salary range
@@ -392,11 +444,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (max > 0 && min > max) {
             salaryMax.classList.add('is-invalid');
             valid = false;
+            errorMessages.push('Minimum Salary cannot be greater than Maximum Salary');
+        } else {
+            salaryMax.classList.remove('is-invalid');
         }
 
         if (!valid) {
-            e.preventDefault();
-            alert('Please fix the validation errors before submitting.');
+            // Show detailed error message
+            const errorText = 'Please fix the following validation errors before submitting:\n\n' + errorMessages.join('\n');
+            alert(errorText);
+        } else {
+            // Close modal and submit form
+            const modalInstance = bootstrap.Modal.getInstance(updateConfirmModal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            form.submit();
         }
     });
 });

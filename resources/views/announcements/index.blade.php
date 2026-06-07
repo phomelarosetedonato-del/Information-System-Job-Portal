@@ -164,18 +164,15 @@
                                            title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('admin.announcements.destroy', $announcement->id) }}"
-                                              method="POST"
-                                              class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this announcement? This action cannot be undone.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-danger"
-                                                    title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button"
+                                                class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteConfirmModal"
+                                                data-announcement-id="{{ $announcement->id }}"
+                                                data-announcement-title="{{ $announcement->title }}"
+                                                title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -213,47 +210,55 @@
 </div>
 @endsection
 
-@section('styles')
-    @parent
-    <style>
-        /* Pagination styling for admin theme */
-        .pagination {
-            margin-bottom: 0;
-        }
-        .page-link {
-            color: #4e73df;
-            border-color: #dddfeb;
-        }
-        .page-link:hover {
-            color: #224abe;
-            background-color: #eaecf4;
-            border-color: #dddfeb;
-        }
-        .page-item.active .page-link {
-            background-color: #4e73df;
-            border-color: #4e73df;
-        }
-        .page-item.disabled .page-link {
-            color: #858796;
-            background-color: #fff;
-            border-color: #dddfeb;
-        }
-    </style>
-@endsection
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Announcement?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Are you sure you want to delete this announcement?</p>
+                <p class="fw-bold mb-3"><span id="announcementTitleDisplay"></span></p>
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <form id="deleteAnnouncementForm" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete Announcement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section('scripts')
     @parent
 
     <script>
-        // Confirm delete with enhanced message
-        document.querySelectorAll('form[onsubmit]').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const announcementTitle = this.closest('tr').querySelector('strong').textContent;
-                if (!confirm(`Are you sure you want to delete the announcement "${announcementTitle}"?\n\nThis action cannot be undone.`)) {
-                    e.preventDefault();
-                    return false;
-                }
-            });
+        // Delete confirmation modal handler
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        deleteConfirmModal.addEventListener('show.bs.modal', function(e) {
+            const button = e.relatedTarget;
+            const announcementId = button.getAttribute('data-announcement-id');
+            const announcementTitle = button.getAttribute('data-announcement-title');
+
+            document.getElementById('announcementTitleDisplay').textContent = '"' + announcementTitle + '"';
+
+            const form = document.getElementById('deleteAnnouncementForm');
+            form.action = `/admin/announcements/${announcementId}`;
         });
 
         // Auto-hide success message after 5 seconds

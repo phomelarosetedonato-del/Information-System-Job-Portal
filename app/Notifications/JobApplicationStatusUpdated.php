@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\JobApplication;
 
-class JobApplicationStatusUpdated extends Notification 
+class JobApplicationStatusUpdated extends Notification
 {
     use Queueable;
 
@@ -29,17 +29,42 @@ class JobApplicationStatusUpdated extends Notification
 
     public function toMail($notifiable)
     {
-        $subject = "Job Application Status Update - {$this->application->jobPosting->title}";
+        $jobTitle = $this->application->jobPosting->title ?? 'Unknown Position';
+        $company = $this->application->jobPosting->company ?? 'Unknown Company';
+        $statusDisplay = ucfirst(str_replace('_', ' ', $this->status));
+
+        // Determine emoji based on status
+        $statusEmoji = match($this->status) {
+            'approved' => '🎉',
+            'rejected' => '❌',
+            'shortlisted' => '🌟',
+            'pending' => '⏳',
+            'interview_scheduled' => '📅',
+            default => '📋',
+        };
 
         return (new MailMessage)
-                    ->subject($subject)
-                    ->greeting("Hello {$notifiable->name},")
-                    ->line("Your job application for **{$this->application->jobPosting->title}** has been updated.")
-                    ->line("**New Status:** " . ucfirst($this->status))
-                    ->line("**Company:** {$this->application->jobPosting->company}")
-                    ->line("**Position:** {$this->application->jobPosting->title}")
-                    ->action('View Application', route('applications.show', $this->application))
-                    ->line('Thank you for using Alaminos City PWD System!');
+                    ->subject("{$statusEmoji} Job Application Status Update - {$jobTitle}")
+                    ->greeting("Dear {$notifiable->name},")
+                    ->line("This is to inform you that your job application status has been updated.")
+                    ->line('')
+                    ->line("**Status Update Details:**")
+                    ->line("{$statusEmoji} **Current Status:** {$statusDisplay}")
+                    ->line("📋 **Position:** {$jobTitle}")
+                    ->line("🏢 **Company:** {$company}")
+                    ->line("📅 **Last Updated:** " . now()->format('M j, Y g:i A'))
+                    ->line('')
+                    ->line("Your application progress is being monitored closely. For the latest details and to track any further updates, please visit your application dashboard.")
+                    ->action('View Application Status', route('applications.show', $this->application))
+                    ->line('')
+                    ->line("If you have any questions or concerns regarding your application, please don't hesitate to contact our support team.")
+                    ->line('')
+                    ->line('**Contact Information:**')
+                    ->line('📧 pwd.support@alaminoscity.gov.ph')
+                    ->line('📞 (075) 123-4567')
+                    ->line('')
+                    ->line('Thank you for using Alaminos City PWD Information System!')
+                    ->salutation('Best regards,<br>**Alaminos City PWD Affairs Office**<br>PWD Information System Admin');
     }
 
     public function toArray($notifiable)

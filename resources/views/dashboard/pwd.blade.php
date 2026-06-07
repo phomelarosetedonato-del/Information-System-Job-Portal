@@ -14,11 +14,11 @@
         <div class="dashboard-header-content">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="h3 mb-2 text-dark" id="dashboard-heading">
+                    <h1 class="h3 mb-2 text-dark ps-3" id="dashboard-heading" style="padding-left: 1.5rem;">
                         <i class="fas fa-universal-access me-2 text-primary" aria-hidden="true"></i>
                         Welcome back, {{ $user->name }}! 👋
                     </h1>
-                    <p class="mb-0 text-muted" ml-2>Here's your personalized job portal dashboard</p>
+                    <p class="mb-0 text-muted ps-4" style="padding-left: 2.5rem;">Here's your personalized job portal dashboard</p>
                 </div>
 
             </div>
@@ -136,10 +136,12 @@
                                     <!-- Location Input -->
                                     <div class="col-md-3">
                                         <label class="form-label small fw-bold" for="location">Location</label>
-                                        <input id="location" name="location" type="text" class="form-control form-control-sm"
-                                               placeholder="City or province"
-                                               value="{{ $filters['location'] ?? request('location') }}"
-                                               aria-label="Filter by location">
+                                        <select id="location" name="location" class="form-select form-select-sm" aria-label="Location">
+                                            <option value="">All Locations</option>
+                                            @foreach(\App\Models\Location::activeLocations() as $loc)
+                                                <option value="{{ $loc->name }}" {{ ($filters['location'] ?? request('location')) == $loc->name ? 'selected' : '' }}>{{ $loc->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
 
                                     <!-- Employment Type Filter - Single Select Dropdown -->
@@ -277,7 +279,13 @@
                                                                 <div class="card-body">
                                                                     <h6 class="card-title">{{ $job->title }}</h6>
                                                                     <p class="card-text small text-muted mb-1">{{ $job->employer->company_name ?? 'Company' }}</p>
-                                                                    <p class="card-text small text-muted mb-2">{{ $job->location }}</p>
+                                                                    <p class="card-text small text-muted mb-2">
+                                                                        @if($job->location && is_object($job->location))
+                                                                            {{ $job->location->name ?? 'N/A' }}
+                                                                        @else
+                                                                            {{ $job->location ?? 'N/A' }}
+                                                                        @endif
+                                                                    </p>
                                                                     <span class="badge bg-light text-dark small">{{ $job->employment_type }}</span>
                                                                 </div>
                                                                 <div class="card-footer bg-transparent">
@@ -448,23 +456,69 @@
                         </div>
                     </div>
 
-                    <!-- 📅 6. Saved Jobs / Favorites -->
+                    <!-- 📧 Contact Messages & Responses -->
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-header bg-white border-bottom py-3">
-                            <h2 class="h5 mb-0 text-dark">📅 Saved Jobs</h2>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="list-group list-group-flush">
-                                <div class="list-group-item border-0 p-3 text-center text-muted">
-                                    <i class="fas fa-bookmark fa-2x mb-2"></i>
-                                    <p class="mb-2">No saved jobs yet</p>
-                                    <a href="{{ route('job-postings.public') }}" class="btn btn-sm btn-outline-primary">
-                                        Browse Jobs to Save
-                                    </a>
-                                </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h2 class="h5 mb-0 text-dark">📧 Contact Messages</h2>
+                                @php
+                                    $unansweredCount = \App\Models\Contact::where('user_id', Auth::id())
+                                                    ->orWhere('email', Auth::user()->email)
+                                                    ->whereNull('responded_at')
+                                                    ->count();
+                                @endphp
+                                @if($unansweredCount > 0)
+                                    <span class="badge bg-warning">{{ $unansweredCount }} Pending</span>
+                                @else
+                                    <span class="badge bg-success">All Answered</span>
+                                @endif
                             </div>
                         </div>
+                        <div class="card-body p-0">
+                            @php
+                                $recentMessages = \App\Models\Contact::where('user_id', Auth::id())
+                                                ->orWhere('email', Auth::user()->email)
+                                                ->latest()
+                                                ->take(3)
+                                                ->get();
+                            @endphp
+                            @if($recentMessages->count() > 0)
+                                <div class="list-group list-group-flush">
+                                    @foreach($recentMessages as $message)
+                                        <div class="list-group-item border-0 p-3">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1 text-dark">{{ $message->subject }}</h6>
+                                                    <p class="mb-1 small text-muted">{{ $message->created_at->format('M d, Y') }}</p>
+                                                </div>
+                                                @if($message->responded_at)
+                                                    <span class="badge bg-success ms-2">Answered</span>
+                                                @else
+                                                    <span class="badge bg-warning ms-2">Pending</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @if(!$loop->last)
+                                            <hr class="my-0">
+                                        @endif
+                                    @endforeach
+                                </div>
+                                <div class="card-footer bg-white border-top py-2 text-center">
+                                    <a href="{{ route('contact-messages.index') }}" class="btn btn-sm btn-outline-primary">
+                                        View All Messages <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            @else
+                                <div class="text-center py-4">
+                                    <i class="fas fa-envelope-open-text fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-2 small">No messages yet</p>
+                                    <a href="{{ route('contact') }}" class="btn btn-sm btn-outline-primary">Send us a Message</a>
+                                </div>
+                            @endif
+                        </div>
                     </div>
+
+                    <!-- 📅 Saved Jobs / Favorites -->
 
                     <!-- 🧠 7. Skill & Resume Insights -->
                     <div class="card shadow-sm border-info mb-4">
@@ -572,7 +626,7 @@
                     <button type="button" class="btn btn-warning btn-sm" id="uploadResumeBtn">
                         <i class="fas fa-upload me-2"></i>Upload Resume Now
                     </button>
-                    <a href="{{ route('profile.edit') }}" class="btn btn-outline-secondary btn-sm">
+                    <a href="{{ route('profile.form', ['mode' => 'edit']) }}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-user-edit me-2"></i>Go to Profile
                     </a>
                 </div>

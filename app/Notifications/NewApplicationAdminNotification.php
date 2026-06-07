@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewApplicationAdminNotification extends Notification 
+class NewApplicationAdminNotification extends Notification
 {
     use Queueable;
 
@@ -26,16 +26,31 @@ class NewApplicationAdminNotification extends Notification
 
     public function toMail($notifiable)
     {
-        return (new MailMessage)
-            ->subject('New Job Application Received - PWD System')
-            ->greeting('New Job Application!')
-            ->line('A new job application has been submitted.')
-            ->line('Applicant: ' . $this->application->user->name)
-            ->line('Position: ' . $this->application->jobPosting->title)
-            ->line('Company: ' . $this->application->jobPosting->company)
-            ->line('Applied: ' . $this->application->created_at->format('F j, Y g:i A'))
-            ->action('Review Application', url('/admin/applications/' . $this->application->id))
-            ->line('Please review this application at your earliest convenience.');
+        $user = $this->application->user;
+        $job = $this->application->jobPosting;
+
+        $message = (new MailMessage)
+            ->subject('📋 New Job Application Received - PWD System')
+            ->greeting('New Job Application Submitted!')
+            ->line('A new job application has been submitted for review.')
+            ->line('')
+            ->line('**Applicant Details:**')
+            ->line('👤 **Name:** ' . $user->name)
+            ->line('📧 **Email:** ' . $user->email)
+            ->line('')
+            ->line('**Position Details:**')
+            ->line('💼 **Position:** ' . $job->title)
+            ->line('🏢 **Company:** ' . $job->company)
+            ->line('📍 **Location:** ' . ($job->location ?? 'Not specified'))
+            ->line('')
+            ->line('**Application Details:**')
+            ->line('📅 **Applied On:** ' . $this->application->created_at->format('M j, Y g:i A'))
+            ->line('📄 **Resume:** ' . ($this->application->resume_path ? '✅ Attached' : '❌ Not provided'))
+            ->line('')
+            ->action('Review Application & Download Resume', route('admin.applications.show', $this->application))
+            ->line('Please review the application and resume at your earliest convenience.');
+
+        return $message;
     }
 
     public function toArray($notifiable)

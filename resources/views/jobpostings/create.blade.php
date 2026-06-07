@@ -22,8 +22,15 @@
                             <textarea class="form-control" id="requirements" name="requirements" rows="3" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="location" class="form-label">Location</label>
-                            <input type="text" class="form-control" id="location" name="location" required>
+                            <label for="location_id" class="form-label">Location</label>
+                            <select class="form-control" id="location_id" name="location_id" required>
+                                <option value="">Select Location</option>
+                                @foreach($locations ?? [] as $loc)
+                                    @if(is_object($loc) && isset($loc->id))
+                                        <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="company" class="form-label">Company</label>

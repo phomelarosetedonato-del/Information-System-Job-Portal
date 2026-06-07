@@ -125,7 +125,7 @@
                             <a href="{{ route('admin.announcements.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createConfirmModal">
                                 <i class="fas fa-paper-plane"></i> Create Announcement
                             </button>
                         </div>
@@ -137,56 +137,86 @@
 </div>
 @endsection
 
+<!-- Create Announcement Confirmation Modal -->
+<div class="modal fade" id="createConfirmModal" tabindex="-1" aria-labelledby="createConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-primary">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createConfirmLabel">
+                    <i class="fas fa-bullhorn me-2"></i>Create Announcement?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">This announcement will be <strong>sent to all PWD users</strong>:</p>
+                <div class="bg-light p-3 rounded mb-3">
+                    <p class="mb-2"><strong>Title:</strong> <span id="previewTitle"></span></p>
+                    <p class="mb-2"><strong>Content Preview:</strong></p>
+                    <div class="bg-white p-2 rounded" style="max-height: 200px; overflow-y: auto;">
+                        <span id="previewContent"></span>
+                    </div>
+                </div>
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-envelope me-2"></i>
+                    <strong>Notifications will be sent via:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>📧 Email to all PWD users</li>
+                        <li>📱 Dashboard notifications</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmCreateBtn">
+                    <i class="fas fa-paper-plane me-1"></i>Create & Notify Users
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section('scripts')
     @parent
 
     <script>
-        // Character counter for content
-        document.getElementById('content').addEventListener('input', function() {
-            const content = this.value;
-            const charCount = content.length;
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const createConfirmModal = document.getElementById('createConfirmModal');
+            const confirmCreateBtn = document.getElementById('confirmCreateBtn');
+            const titleInput = document.getElementById('title');
+            const contentInput = document.getElementById('content');
 
-            let countText = document.getElementById('charCount');
-            if (!countText) {
-                countText = document.createElement('small');
-                countText.id = 'charCount';
-                countText.className = 'form-text text-muted';
-                this.parentNode.appendChild(countText);
-            }
+            // Update preview when modal opens
+            createConfirmModal.addEventListener('show.bs.modal', function() {
+                const title = titleInput.value || 'No title provided';
+                const content = contentInput.value || 'No content provided';
 
-            countText.textContent = `${charCount} characters`;
-        });
+                document.getElementById('previewTitle').textContent = title;
+                document.getElementById('previewContent').textContent = content;
 
-        // Auto-save draft to localStorage
-        const titleInput = document.getElementById('title');
-        const contentInput = document.getElementById('content');
+                // Validate before opening modal
+                if (!title.trim() || !content.trim()) {
+                    alert('Please fill in both title and content before creating the announcement.');
+                    this.style.display = 'none';
+                }
+            });
 
-        // Load draft on page load
-        window.addEventListener('load', function() {
-            const draftTitle = localStorage.getItem('announcement_draft_title');
-            const draftContent = localStorage.getItem('announcement_draft_content');
+            // Handle confirmation
+            confirmCreateBtn.addEventListener('click', function() {
+                if (!titleInput.value.trim()) {
+                    alert('Title is required.');
+                    return;
+                }
+                if (!contentInput.value.trim()) {
+                    alert('Content is required.');
+                    return;
+                }
 
-            if (draftTitle && !titleInput.value) {
-                titleInput.value = draftTitle;
-            }
-            if (draftContent && !contentInput.value) {
-                contentInput.value = draftContent;
-            }
-        });
-
-        // Save draft on input
-        titleInput.addEventListener('input', function() {
-            localStorage.setItem('announcement_draft_title', this.value);
-        });
-
-        contentInput.addEventListener('input', function() {
-            localStorage.setItem('announcement_draft_content', this.value);
-        });
-
-        // Clear draft on successful submit
-        document.querySelector('form').addEventListener('submit', function() {
-            localStorage.removeItem('announcement_draft_title');
-            localStorage.removeItem('announcement_draft_content');
+                // Submit the form
+                form.submit();
+            });
         });
     </script>
 @endsection

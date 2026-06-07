@@ -382,7 +382,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm" aria-label="Main navigation">
     <div class="container">
         <a class="navbar-brand" href="{{ url('/') }}">
-            <img src="{{ asset('images/pwd_logo.jpg') }}" alt="PWD System">
+            <img src="{{ asset('images/pwdlogo.png') }}" alt="PWD System"><b>PWD PORTAL</b>
 
         </a>
 
@@ -398,6 +398,12 @@
                     <a class="nav-link {{ request()->is('/') ? 'active' : '' }}"
                        href="{{ route('home') }}">
                         <i class="fas fa-home me-2"></i>Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('find-job') ? 'active' : '' }}"
+                       href="{{ route('find-job') }}">
+                        <i class="fas fa-search me-2"></i>Find Job
                     </a>
                 </li>
                 <li class="nav-item">

@@ -105,14 +105,9 @@
                                 <a href="{{ route('admin.announcements.edit', $announcement->id) }}" class="btn btn-primary">
                                     <i class="fas fa-edit"></i> Edit Announcement
                                 </a>
-                                <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger"
-                                            onclick="return confirm('Are you sure you want to delete this announcement? This action cannot be undone.')">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal" data-announcement-id="{{ $announcement->id }}" data-announcement-title="{{ $announcement->title }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -121,4 +116,57 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Announcement?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Are you sure you want to delete this announcement?</p>
+                <p class="fw-bold mb-3"><span id="announcementTitleDisplay"></span></p>
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <form id="deleteAnnouncementForm" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete Announcement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+    @parent
+
+    <script>
+        // Delete confirmation modal handler
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        deleteConfirmModal.addEventListener('show.bs.modal', function(e) {
+            const button = e.relatedTarget;
+            const announcementId = button.getAttribute('data-announcement-id');
+            const announcementTitle = button.getAttribute('data-announcement-title');
+
+            document.getElementById('announcementTitleDisplay').textContent = '"' + announcementTitle + '"';
+
+            const form = document.getElementById('deleteAnnouncementForm');
+            form.action = `/admin/announcements/${announcementId}`;
+        });
+    </script>
 @endsection

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\JobApplication;
 use App\Models\TrainingEnrollment;
 use App\Models\Document;
+use App\Models\CommunityPwdStat;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,6 +31,21 @@ class AdminDashboardController extends Controller
         }
 
         Log::info('Loading admin dashboard data', ['user_id' => $user->id]);
+
+        // Get community statistics (current year)
+        $currentYear = date('Y');
+        $communityStats = CommunityPwdStat::where('year', $currentYear)->get();
+        $communityTotals = [
+            'total_unemployed' => $communityStats->sum('unemployed_count'),
+            'total_employed' => $communityStats->sum('employed_count'),
+            'total_pwd' => $communityStats->sum(function($stat) {
+                return $stat->unemployed_count + $stat->employed_count;
+            }),
+            'employment_rate' => 0,
+        ];
+        if ($communityTotals['total_pwd'] > 0) {
+            $communityTotals['employment_rate'] = round(($communityTotals['total_employed'] / $communityTotals['total_pwd']) * 100, 2);
+        }
 
         // Get comprehensive statistics
         $stats = [
@@ -59,6 +75,8 @@ class AdminDashboardController extends Controller
             'inactive_jobs' => JobPosting::where('is_active', false)->count(),
             'expired_jobs' => JobPosting::where('application_deadline', '<', now())->count(),
             'active_trainings_count' => SkillTraining::where('is_active', true)->count(),
+            'qualified_applicants' => User::where('role', 'pwd')->where('is_qualified', true)->count(),
+            'available_qualified' => User::where('role', 'pwd')->where('is_qualified', true)->where('available_for_jobs', true)->count(),
         ];
 
         // Get recent applications
@@ -95,7 +113,9 @@ class AdminDashboardController extends Controller
             'recentApplications',
             'recentEnrollments',
             'recentUsers',
-            'securityAlerts'
+            'securityAlerts',
+            'communityTotals',
+            'currentYear'
         ));
     }
 }

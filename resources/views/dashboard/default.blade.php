@@ -60,7 +60,7 @@
                                         <a href="{{ route('profile.show') }}" class="btn btn-outline-primary btn-sm">
                                             View Profile
                                         </a>
-                                        <a href="{{ route('profile.edit') }}" class="btn btn-primary btn-sm">
+                                        <a href="{{ route('profile.form', ['mode' => 'edit']) }}" class="btn btn-primary btn-sm">
                                             Edit Profile
                                         </a>
                                     </div>

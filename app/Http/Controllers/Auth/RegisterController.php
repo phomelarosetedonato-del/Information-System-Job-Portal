@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -25,10 +24,41 @@ class RegisterController extends Controller
     protected $maxAttempts = 5;
     protected $decayMinutes = 1440; // 24 hours
 
-    public function __construct()
+    /**
+     * Override the default register method to prevent auto-login after registration.
+     */
+    public function register(Request $request)
     {
-        $this->middleware('guest');
-        $this->middleware('throttle:' . $this->maxAttempts . ',1,' . $this->decayMinutes)->only('register');
+        $this->validator($request->all())->validate();
+
+        $user = $this->create($request->all());
+
+        // Send email verification notification
+        if (method_exists($user, 'sendEmailVerificationNotification')) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        // Send admin notification for new PWD registration
+        if ($user->isPwd()) {
+            $this->notifyAdminOfPwdRegistration($user);
+        }
+
+        $message = 'Account created successfully! ';
+        if ($user->isPwd()) {
+            $message .= 'Please check your email to verify your account and then log in to complete your PWD profile.';
+        } else {
+            $message .= 'Please check your email to verify your account.';
+        }
+
+        return redirect()->route('login')->with('success', $message);
+    }
+
+    /**
+     * Show the application registration form.
+     */
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
     }
 
     protected function validator(array $data)
@@ -198,7 +228,7 @@ class RegisterController extends Controller
 
             $normalizedPhone = $this->normalizePhone($data['phone']);
 
-            $user = User::create([
+            $userData = [
                 'name' => strip_tags(trim($data['name'])),
                 'email' => strtolower(trim($data['email'])),
                 'password' => Hash::make($data['password']),
@@ -215,7 +245,14 @@ class RegisterController extends Controller
                 'account_locked_until' => null,
                 'last_security_activity' => now(),
                 'registration_user_agent' => request()->userAgent(),
-            ]);
+            ];
+
+            // If employer, set verification status to pending
+            if ($data['user_type'] === 'employer') {
+                $userData['employer_verification_status'] = 'pending';
+            }
+
+            $user = User::create($userData);
 
             // Ensure user is fully persisted before accessing ID
             $user->refresh();
@@ -240,8 +277,7 @@ class RegisterController extends Controller
                 ]);
             }
 
-
-          // Log successful registration
+            // Log successful registration
             Log::channel('registration')->info('User registered successfully', [
                 'user_id' => $user->id,
                 'email' => $user->email,
@@ -337,31 +373,10 @@ class RegisterController extends Controller
     /**
      * The user has been registered.
      */
-    protected function registered(Request $request, $user)
-    {
-        // Send email verification notification
-        if (method_exists($user, 'sendEmailVerificationNotification')) {
-            $user->sendEmailVerificationNotification();
-        }
-
-        // Send admin notification for new PWD registration
-        if ($user->isPwd()) {
-            $this->notifyAdminOfPwdRegistration($user);
-        }
-
-        // Show appropriate success message
-        $message = 'Account created successfully! ';
-
-        if ($user->isPwd()) {
-            $message .= 'Please check your email to verify your account and then complete your PWD profile.';
-        } else {
-            $message .= 'Please check your email to verify your account.';
-        }
-
-        return redirect($this->redirectPath())
-            ->with('success', $message)
-            ->with('verified', false);
-    }
+    // protected function registered(Request $request, $user)
+    // {
+    //     // This method is now handled in register() above to prevent auto-login.
+    // }
 
     /**
      * Notify admin of new PWD registration
